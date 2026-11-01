@@ -2,8 +2,11 @@
 
 import * as React from "react";
 import {useCallback, useEffect, useImperativeHandle, useRef, useState} from "react";
+import {useRouter} from "next/navigation";
 import {useTranslations} from "next-intl";
 import type Hls from "hls.js";
+import {RotateCcw, TriangleAlert} from "lucide-react";
+import {Button} from "@/components/ui/button";
 import {formatDuration} from "@/utils/duration";
 import {parseThumbnails, type Thumbnail, thumbnailAt} from "@/components/video/thumbnails";
 import {saveProgressAction} from "@/components/video/actions.server";
@@ -32,6 +35,10 @@ const SAVE_EVERY = 15;
  * Plays a video's HLS renditions with adaptive quality: natively in Safari, through hls.js elsewhere. The browser's own
  * controls handle play, volume, subtitles, speed, full screen and picture-in-picture; below them a timeline shows the
  * chapters and, on hover, the timeline thumbnails. Progress is saved every 15 seconds and when pausing.
+ *
+ * When the video cannot be loaded (the media server cannot be reached, the signed address has expired, the file is
+ * broken), a message replaces the endless loading. Trying again refreshes the page's data, which signs new addresses,
+ * and continues from where playing stopped.
  */
 export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapters, durationSeconds, startAt, recordProgress = true, ref}: Props) {
     const t = useTranslations("Player");
@@ -40,8 +47,13 @@ export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapt
     const [duration, setDuration] = useState(durationSeconds);
     const [thumbnails, setThumbnails] = useState<Thumbnail[]>([]);
     const [hover, setHover] = useState<{ x: number; time: number } | null>(null);
+    const [failed, setFailed] = useState(false);
+    const [attempt, setAttempt] = useState(0);
+    const router = useRouter();
     const lastSaved = useRef(0);
     const played = useRef(false);
+    // Where to start when (re)loading: the requested position first, then where playing got to
+    const resumeAt = useRef(startAt ?? 0);
 
     useImperativeHandle(ref, () => ({
         seek: (seconds: number) => {
@@ -61,30 +73,72 @@ export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapt
         }
 
         let hls: Hls | null = null;
+        let cancelled = false;
+        const position = resumeAt.current;
         const start = () => {
-            if (startAt && startAt > 0) {
-                element.currentTime = startAt;
+            if (position > 0) {
+                element.currentTime = position;
             }
         };
-
-        if (element.canPlayType("application/vnd.apple.mpegurl")) {
-            element.src = masterUrl;
+        const fail = () => {
+            if (!cancelled) {
+                setFailed(true);
+            }
+        };
+        const playNatively = () => {
+            element.addEventListener("error", fail);
             element.addEventListener("loadedmetadata", start, {once: true});
+            element.src = masterUrl;
+        };
+
+        setFailed(false);
+        if (element.canPlayType("application/vnd.apple.mpegurl")) {
+            playNatively();
         } else {
             void import("hls.js").then(({default: HlsClass}) => {
-                if (!HlsClass.isSupported()) {
-                    element.src = masterUrl;
+                if (cancelled) {
                     return;
                 }
-                hls = new HlsClass({startPosition: startAt ?? -1});
-                hls.loadSource(masterUrl);
-                hls.attachMedia(element);
+                if (!HlsClass.isSupported()) {
+                    playNatively();
+                    return;
+                }
+
+                let recovered = false;
+                const instance = new HlsClass({startPosition: position > 0 ? position : -1});
+
+                // hls.js retries loading itself; an error is fatal only when it has given up
+                instance.on(HlsClass.Events.ERROR, (_event, data) => {
+                    if (!data.fatal) {
+                        return;
+                    }
+                    if (data.type === HlsClass.ErrorTypes.MEDIA_ERROR && !recovered) {
+                        recovered = true;
+                        instance.recoverMediaError();
+                        return;
+                    }
+                    instance.destroy();
+                    hls = null;
+                    fail();
+                });
+                instance.loadSource(masterUrl);
+                instance.attachMedia(element);
+                hls = instance;
             });
         }
         return () => {
+            cancelled = true;
+            element.removeEventListener("error", fail);
+            element.removeEventListener("loadedmetadata", start);
             hls?.destroy();
         };
-    }, [masterUrl, startAt]);
+    }, [masterUrl, attempt]);
+
+    const retry = () => {
+        resumeAt.current = video.current?.currentTime || resumeAt.current;
+        router.refresh();
+        setAttempt(value => value + 1);
+    };
 
     useEffect(() => {
         if (!thumbnailsUrl) {
@@ -109,6 +163,9 @@ export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapt
 
         const onTime = () => {
             setTime(element.currentTime);
+            if (element.currentTime > 0) {
+                resumeAt.current = element.currentTime;
+            }
             if (Math.abs(element.currentTime - lastSaved.current) >= SAVE_EVERY) {
                 save(element.currentTime);
             }
@@ -133,19 +190,35 @@ export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapt
 
     return (
         <div className="space-y-2">
-            <video ref={video} controls playsInline crossOrigin="anonymous" preload="metadata"
-                   onPlay={() => {
-                       // Once per page: how many videos are watched, not how often they are paused
-                       if (!played.current) {
-                           played.current = true;
-                           trackEvent("video-play");
-                       }
-                   }}
-                   className="aspect-video w-full rounded-lg bg-black" poster={`/api/poster/${videoId}`}>
-                {subtitles.map(subtitle => (
-                    <track key={subtitle.language} kind="subtitles" src={subtitle.url} srcLang={subtitle.language} label={subtitle.label}/>
-                ))}
-            </video>
+            <div className="relative">
+                <video ref={video} controls playsInline crossOrigin="anonymous" preload="metadata"
+                       onPlay={() => {
+                           // Once per page: how many videos are watched, not how often they are paused
+                           if (!played.current) {
+                               played.current = true;
+                               trackEvent("video-play");
+                           }
+                       }}
+                       className="aspect-video w-full rounded-lg bg-black" poster={`/api/poster/${videoId}`}>
+                    {subtitles.map(subtitle => (
+                        <track key={subtitle.language} kind="subtitles" src={subtitle.url} srcLang={subtitle.language} label={subtitle.label}/>
+                    ))}
+                </video>
+                {failed && (
+                    <div role="alert"
+                         className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-lg bg-black/80 p-4 text-center text-white">
+                        <TriangleAlert className="size-8" aria-hidden/>
+                        <div>
+                            <p className="font-medium">{t("error")}</p>
+                            <p className="text-sm text-white/80">{t("errorHint")}</p>
+                        </div>
+                        <Button variant="secondary" onClick={retry}>
+                            <RotateCcw/>
+                            {t("retry")}
+                        </Button>
+                    </div>
+                )}
+            </div>
             <div className="relative px-1">
                 <div
                     className="relative h-6 cursor-pointer"

@@ -408,7 +408,10 @@
     "edit": "Redigera"
   },
   "Player": {
-    "timeline": "Tidslinje"
+    "timeline": "Tidslinje",
+    "error": "Filmen kunde inte spelas upp.",
+    "errorHint": "Kontrollera anslutningen och försök igen.",
+    "retry": "Försök igen"
   },
   "WatchList": {
     "title": "Min lista",

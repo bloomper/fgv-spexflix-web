@@ -5,19 +5,34 @@ import {type PlayerHandle, VideoPlayer} from "@/components/video/video-player.cl
 
 const saveProgressAction = vi.hoisted(() => vi.fn());
 const trackEvent = vi.hoisted(() => vi.fn());
+const refresh = vi.hoisted(() => vi.fn());
 const hls = vi.hoisted(() => ({
     supported: true,
-    instances: [] as { options: object; loadSource: ReturnType<typeof vi.fn>; attachMedia: ReturnType<typeof vi.fn>; destroy: ReturnType<typeof vi.fn> }[],
+    instances: [] as {
+        options: object;
+        loadSource: ReturnType<typeof vi.fn>;
+        attachMedia: ReturnType<typeof vi.fn>;
+        destroy: ReturnType<typeof vi.fn>;
+        recoverMediaError: ReturnType<typeof vi.fn>;
+        emit: (data: { fatal: boolean; type: string }) => void;
+    }[],
 }));
 
 vi.mock("@/components/video/actions.server", () => ({saveProgressAction}));
 vi.mock("@/utils/umami", () => ({track: trackEvent}));
+vi.mock("next/navigation", () => ({useRouter: () => ({refresh})}));
 vi.mock("hls.js", () => {
     class FakeHls {
         static isSupported = () => hls.supported;
+        static Events = {ERROR: "hlsError"};
+        static ErrorTypes = {NETWORK_ERROR: "networkError", MEDIA_ERROR: "mediaError"};
         loadSource = vi.fn();
         attachMedia = vi.fn();
         destroy = vi.fn();
+        recoverMediaError = vi.fn();
+        listeners: ((event: string, data: { fatal: boolean; type: string }) => void)[] = [];
+        on = (_event: string, listener: (event: string, data: { fatal: boolean; type: string }) => void) => this.listeners.push(listener);
+        emit = (data: { fatal: boolean; type: string }) => this.listeners.forEach(listener => listener("hlsError", data));
 
         constructor(public options: object) {
             hls.instances.push(this);
@@ -73,6 +88,45 @@ describe("VideoPlayer", () => {
 
         unmount();
         expect(hls.instances[0].destroy).toHaveBeenCalled();
+    });
+
+    it("says when hls.js gives up, and tries again from where playing stopped with fresh addresses", async () => {
+        const {container} = show({startAt: 30});
+
+        await waitFor(() => expect(hls.instances).toHaveLength(1));
+        act(() => hls.instances[0].emit({fatal: false, type: "networkError"}));
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+
+        playTo(media(container), 50);
+        act(() => hls.instances[0].emit({fatal: true, type: "networkError"}));
+        expect(screen.getByRole("alert")).toHaveTextContent("error");
+        expect(hls.instances[0].destroy).toHaveBeenCalled();
+
+        fireEvent.click(screen.getByRole("button", {name: "retry"}));
+        expect(refresh).toHaveBeenCalled();
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        await waitFor(() => expect(hls.instances).toHaveLength(2));
+        expect(hls.instances[1].options).toEqual({startPosition: 50});
+    });
+
+    it("recovers once from a media error before giving up", async () => {
+        show();
+
+        await waitFor(() => expect(hls.instances).toHaveLength(1));
+        act(() => hls.instances[0].emit({fatal: true, type: "mediaError"}));
+        expect(hls.instances[0].recoverMediaError).toHaveBeenCalledTimes(1);
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+
+        act(() => hls.instances[0].emit({fatal: true, type: "mediaError"}));
+        expect(screen.getByRole("alert")).toBeInTheDocument();
+    });
+
+    it("says when Safari cannot play the video", () => {
+        vi.mocked(HTMLMediaElement.prototype.canPlayType).mockReturnValue("maybe");
+        const {container} = show();
+
+        fireEvent.error(media(container));
+        expect(screen.getByRole("alert")).toBeInTheDocument();
     });
 
     it("plays natively in Safari and starts at the given position", () => {

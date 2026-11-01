@@ -408,7 +408,10 @@
     "edit": "Edit"
   },
   "Player": {
-    "timeline": "Timeline"
+    "timeline": "Timeline",
+    "error": "The video could not be played.",
+    "errorHint": "Check your connection and try again.",
+    "retry": "Try again"
   },
   "WatchList": {
     "title": "My list",
