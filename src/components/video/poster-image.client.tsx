@@ -1,6 +1,6 @@
 "use client";
 
-import {useState} from "react";
+import {useCallback, useState} from "react";
 import {Film} from "lucide-react";
 import {cn} from "@/utils/utils";
 
@@ -9,6 +9,12 @@ import {cn} from "@/utils/utils";
  */
 export function PosterImage({videoId, title, className}: { videoId: string; title: string; className?: string }) {
     const [failed, setFailed] = useState(false);
+    // An image that failed before React hydrated never fires onError, so a broken one is caught when it mounts
+    const checkLoaded = useCallback((image: HTMLImageElement | null) => {
+        if (image?.complete && image.naturalWidth === 0) {
+            setFailed(true);
+        }
+    }, []);
 
     if (failed) {
         return (
@@ -20,7 +26,7 @@ export function PosterImage({videoId, title, className}: { videoId: string; titl
     }
     return (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={`/api/poster/${videoId}`} alt={title} loading="lazy" onError={() => setFailed(true)}
+        <img src={`/api/poster/${videoId}`} alt={title} loading="lazy" ref={checkLoaded} onError={() => setFailed(true)}
              className={cn("aspect-video object-cover", className)}/>
     );
 }

@@ -55,3 +55,26 @@ test.describe("Editing", () => {
         await expect(page.getByText("40 %")).toBeVisible();
     });
 });
+
+test.describe("Continue watching", () => {
+    test("lists a started video on the start page and resumes where the viewer was", async ({page, loginAs, mock}) => {
+        await mock.progress("1", 30);
+        await loginAs("viewer");
+
+        await expect(page.getByRole("heading", {name: "Fortsätt titta"})).toBeVisible();
+        await page.getByRole("region", {name: "Fortsätt titta"}).getByRole("link", {name: /Nobel/}).click();
+        await expect(page).toHaveURL(/\/videos\/1/);
+        await expect(page.getByRole("heading", {level: 1, name: "Nobel"})).toBeVisible();
+    });
+
+    test("removes a video from the watch list", async ({page, loginAs}) => {
+        await loginAs("viewer");
+        await page.goto("/videos/1");
+        await page.getByRole("button", {name: "Lägg till i min lista"}).click();
+        await page.getByRole("button", {name: "I min lista", exact: true}).click();
+        await expect(page.getByRole("button", {name: "Lägg till i min lista"})).toBeVisible();
+
+        await page.goto("/watchlist");
+        await expect(page.getByText("Din lista är tom. Lägg till filmer från deras sidor.")).toBeVisible();
+    });
+});

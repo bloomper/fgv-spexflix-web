@@ -8,6 +8,7 @@ import {formatDuration} from "@/utils/duration";
 import {parseThumbnails, type Thumbnail, thumbnailAt} from "@/components/video/thumbnails";
 import {saveProgressAction} from "@/components/video/actions.server";
 import {cn} from "@/utils/utils";
+import {track as trackEvent} from "@/utils/umami";
 
 export type PlayerChapter = { startSeconds: number; title: string };
 export type PlayerHandle = { seek: (seconds: number) => void; currentTime: () => number };
@@ -40,6 +41,7 @@ export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapt
     const [thumbnails, setThumbnails] = useState<Thumbnail[]>([]);
     const [hover, setHover] = useState<{ x: number; time: number } | null>(null);
     const lastSaved = useRef(0);
+    const played = useRef(false);
 
     useImperativeHandle(ref, () => ({
         seek: (seconds: number) => {
@@ -132,6 +134,13 @@ export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapt
     return (
         <div className="space-y-2">
             <video ref={video} controls playsInline crossOrigin="anonymous" preload="metadata"
+                   onPlay={() => {
+                       // Once per page: how many videos are watched, not how often they are paused
+                       if (!played.current) {
+                           played.current = true;
+                           trackEvent("video-play");
+                       }
+                   }}
                    className="aspect-video w-full rounded-lg bg-black" poster={`/api/poster/${videoId}`}>
                 {subtitles.map(subtitle => (
                     <track key={subtitle.language} kind="subtitles" src={subtitle.url} srcLang={subtitle.language} label={subtitle.label}/>

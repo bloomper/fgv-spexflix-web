@@ -1,5 +1,5 @@
-// A stand-in for Spexflix Server and Keycloak in E2E tests: GraphQL for videos and watching, the poster and media
-// endpoints the web calls, and a mini-Keycloak (discovery, authorize, token, JWKS, userinfo, logout).
+// A stand-in for Spexflix Server and Keycloak in E2E tests: GraphQL for videos, watching, editing and administration,
+// tus uploads, posters, subtitles and the media server, and a mini-Keycloak (discovery, authorize, token, JWKS, userinfo, logout).
 // All data is fictitious.
 
 import {createServer} from "node:http";
@@ -20,6 +20,12 @@ const PERSONAS = {
 };
 const bySub = Object.fromEntries(Object.values(PERSONAS).map(persona => [persona.sub, persona]));
 let currentPersona = "admin";
+
+// As Spexflix Server words them
+const MESSAGES = {
+    CONFLICT: "Någon annan har ändrat detta. Ladda om sidan och försök igen.",
+    SPEXREGISTER_UNAVAILABLE: "Spexregistret går inte att nå just nu. Försök igen om en stund.",
+};
 
 class GraphQLError extends Error {
     constructor(classification, message) {
@@ -55,6 +61,12 @@ function resetState() {
         ],
         progress: {},
         watchList: new Set(),
+        settings: {welcomeSv: null, welcomeEn: null, maxUploadGb: 50, keepOriginals: true},
+        audit: [],
+        uploads: new Map(),
+        spexregisterUp: true,
+        spexifyUp: true,
+        failNext: new Map(),
     };
 }
 
@@ -76,11 +88,43 @@ function requireUser(persona) {
 const listed = v => v.published && v.status === "READY" && !v.trashedAt;
 const visible = persona => state.videos.filter(v => !v.trashedAt && (listed(v) || isEditor(persona)));
 const personal = v => ({...v, progressSeconds: state.progress[v.id] ?? null, finished: false, inWatchList: state.watchList.has(v.id)});
-const settings = {welcomeSv: null, welcomeEn: null, maxUploadGb: 50, keepOriginals: true};
+const isAdmin = persona => persona.roles.includes("ADMIN");
+
+function requireEditor(persona) {
+    if (!isEditor(persona)) {
+        throw forbidden();
+    }
+}
+
+function requireAdmin(persona) {
+    if (!isAdmin(persona)) {
+        throw forbidden();
+    }
+}
+
+function audit(persona, action, entityId, summary) {
+    state.audit.unshift({id: String(state.nextId++), at: new Date().toISOString(), actorName: persona.name, action,
+        entityType: "VIDEO", entityId, summary, actor: persona.sub});
+}
+
+const videoById = id => {
+    const found = state.videos.find(candidate => candidate.id === id);
+
+    if (!found) {
+        throw new GraphQLError("NOT_FOUND", "Filmen finns inte.");
+    }
+    return found;
+};
+const queue = (target, source) => {
+    target.status = "PROCESSING";
+    target.job = {id: String(state.nextId++), videoId: target.id, videoTitle: target.title, status: "QUEUED", progress: 0, attempts: 0,
+        error: null, createdAt: new Date().toISOString(), startedAt: null, finishedAt: null};
+    target.originalName = source ?? target.originalName;
+};
 const categories = [{id: "1", name: "Chalmersspexet", videoCount: 1}];
 
 const resolvers = {
-    Me: persona => ({me: {username: persona.email, displayName: persona.name, roles: persona.roles, spexifyUser: true}, settings}),
+    Me: persona => ({me: {username: persona.email, displayName: persona.name, roles: persona.roles, spexifyUser: true}, settings: state.settings}),
     Home: () => ({
         continueWatching: state.videos.filter(v => listed(v) && state.progress[v.id]).map(personal),
         recentVideos: state.videos.filter(listed).map(personal),
@@ -90,10 +134,16 @@ const resolvers = {
         videos: visible(persona).filter(v => listed(v) || filter?.includeUnpublished).map(personal), categories, years: [1975],
     }),
     Video: (persona, {id}) => ({video: visible(persona).filter(v => v.id === id).map(personal)[0] ?? null}),
-    Playback: (persona, {videoId}) => ({
-        playback: {masterUrl: `http://localhost:${PORT}/media/${videoId}/master.m3u8`, thumbnailsUrl: null, subtitles: [],
-            expiresAt: new Date(Date.now() + 3600000).toISOString()},
-    }),
+    Playback: (persona, {videoId}) => {
+        const found = videoById(videoId);
+
+        if (found.status !== "READY") {
+            throw new GraphQLError("BAD_REQUEST", "Filmen är inte färdigbearbetad.");
+        }
+        return {playback: {masterUrl: `http://localhost:${PORT}/media/${videoId}/master.m3u8`, thumbnailsUrl: null,
+            subtitles: found.subtitles.map(sub => ({...sub, url: `http://localhost:${PORT}/media/${videoId}/subtitles/${sub.language}.vtt`})),
+            expiresAt: new Date(Date.now() + 3600000).toISOString()}};
+    },
     Search: (persona, {q}) => ({search: visible(persona).filter(v => v.title.toLowerCase().includes(q.toLowerCase())).map(personal)}),
     WatchList: () => ({watchList: state.videos.filter(v => state.watchList.has(v.id)).map(personal)}),
     WatchListAdd: (persona, {videoId}) => {
@@ -109,12 +159,17 @@ const resolvers = {
         return {progressSave: null};
     },
     SpexSearch: persona => {
-        if (!isEditor(persona)) {
-            throw forbidden();
+        requireEditor(persona);
+        if (!state.spexregisterUp) {
+            throw new GraphQLError("SPEXREGISTER_UNAVAILABLE", MESSAGES.SPEXREGISTER_UNAVAILABLE);
         }
         return {spexSearch: [{id: SPEX.id, title: SPEX.title, year: SPEX.year, revival: false, categoryName: SPEX.categoryName}]};
     },
-    SpexifyTracks: () => ({spexifyTracks: [{id: "12", title: "Kärleksduetten", discNumber: 1, trackNumber: 2, albumTitle: "Nobel"}]}),
+    // Empty while Spexify is down, as the server answers
+    SpexifyTracks: persona => {
+        requireEditor(persona);
+        return {spexifyTracks: state.spexifyUp ? [{id: "12", title: "Kärleksduetten", discNumber: 1, trackNumber: 2, albumTitle: "Nobel"}] : []};
+    },
     VideoCreate: (persona, {input}) => {
         if (!isEditor(persona)) {
             throw forbidden();
@@ -125,14 +180,119 @@ const resolvers = {
         });
 
         state.videos.push(created);
+        audit(persona, "CREATE", created.id, `Skapade filmen ${created.title}`);
         return {videoCreate: {id: created.id}};
     },
     VideoPublish: (persona, {id, published}) => {
-        state.videos.find(v => v.id === id).published = published;
+        requireEditor(persona);
+
+        const found = videoById(id);
+
+        if (published && found.status !== "READY") {
+            throw new GraphQLError("BAD_REQUEST", "Filmen kan publiceras när den är färdigbearbetad.");
+        }
+        found.published = published;
+        audit(persona, published ? "PUBLISH" : "UNPUBLISH", id, `${published ? "Publicerade" : "Avpublicerade"} filmen ${found.title}`);
         return {videoPublish: {id}};
     },
-    Queue: () => ({processingQueue: [{id: "1", videoId: "3", videoTitle: "Bearbetas", status: "RUNNING", progress: 40, attempts: 1,
-        error: null, createdAt: "2026-10-31T10:00:00Z", startedAt: "2026-10-31T10:00:00Z", finishedAt: null}]}),
+    VideoUpdate: (persona, {id, input}) => {
+        requireEditor(persona);
+
+        const found = videoById(id);
+
+        Object.assign(found, {title: input.title || found.title, year: input.year ?? found.year, kind: input.kind,
+            performance: input.performance ?? null, performanceDate: input.performanceDate ?? null, description: input.description ?? null});
+        audit(persona, "UPDATE", id, `Ändrade filmen ${found.title}`);
+        return {videoUpdate: {id}};
+    },
+    VideoSetFile: (persona, {id, uploadId}) => {
+        requireEditor(persona);
+
+        const found = videoById(id);
+        const upload = state.uploads.get(uploadId);
+
+        if (!upload || upload.offset < upload.length) {
+            throw new GraphQLError("BAD_REQUEST", "Uppladdningen är inte klar.");
+        }
+        state.uploads.delete(uploadId);
+        queue(found, upload.name);
+        audit(persona, "UPLOAD", id, `Laddade upp filen till ${found.title}`);
+        return {videoSetFile: {id}};
+    },
+    VideoReprocess: (persona, {id}) => {
+        requireAdmin(persona);
+        queue(videoById(id));
+        return {videoReprocess: {id}};
+    },
+    VideoPosterFrame: (persona, {id, seconds}) => {
+        requireEditor(persona);
+        videoById(id).posterSeconds = seconds;
+        return {videoPosterFrame: {id}};
+    },
+    ChaptersSet: (persona, {videoId, chapters}) => {
+        requireEditor(persona);
+        videoById(videoId).chapters = [...chapters].sort((a, b) => a.startSeconds - b.startSeconds)
+            .map(chapter => ({spexifyTrackId: null, spexifyTrackTitle: null, ...chapter}));
+        return {chaptersSet: {id: videoId}};
+    },
+    SubtitleRemove: (persona, {videoId, language}) => {
+        requireEditor(persona);
+
+        const found = videoById(videoId);
+
+        found.subtitles = found.subtitles.filter(sub => sub.language !== language);
+        return {subtitleRemove: {id: videoId}};
+    },
+    VideoTrash: (persona, {id}) => {
+        requireEditor(persona);
+
+        const found = videoById(id);
+
+        found.trashedAt = new Date().toISOString();
+        audit(persona, "TRASH", id, `Lade filmen ${found.title} i papperskorgen`);
+        return {videoTrash: {id}};
+    },
+    VideoRestore: (persona, {id}) => {
+        requireEditor(persona);
+        videoById(id).trashedAt = null;
+        return {videoRestore: {id}};
+    },
+    VideoDelete: (persona, {id}) => {
+        requireAdmin(persona);
+        state.videos = state.videos.filter(v => v.id !== id);
+        return {videoDelete: null};
+    },
+    TrashEmpty: persona => {
+        requireAdmin(persona);
+        state.videos = state.videos.filter(v => !v.trashedAt);
+        return {trashEmpty: null};
+    },
+    Trash: persona => {
+        requireEditor(persona);
+        return {trash: state.videos.filter(v => v.trashedAt).map(personal)};
+    },
+    AuditLog: (persona, {page = 0, size = 50}) => {
+        requireEditor(persona);
+
+        const entries = state.audit.filter(entry => isAdmin(persona) || entry.actor === persona.sub);
+
+        return {auditLog: {entries: entries.slice(page * size, (page + 1) * size), totalCount: entries.length, page, size}};
+    },
+    Settings: () => ({settings: state.settings}),
+    SettingsUpdate: (persona, {input}) => {
+        requireAdmin(persona);
+        if (input.maxUploadGb < 1) {
+            throw new GraphQLError("BAD_REQUEST", "Uppgifterna är inte giltiga.");
+        }
+        state.settings = {...input};
+        return {settingsUpdate: state.settings};
+    },
+    Queue: persona => {
+        requireEditor(persona);
+        return {processingQueue: [{id: "1", videoId: "3", videoTitle: "Bearbetas", status: "RUNNING", progress: 40, attempts: 1,
+            error: null, createdAt: "2026-10-31T10:00:00Z", startedAt: "2026-10-31T10:00:00Z", finishedAt: null},
+            ...state.videos.filter(v => v.job).map(v => v.job)]};
+    },
     Storage: persona => {
         if (!persona.roles.includes("ADMIN")) {
             throw forbidden();
@@ -173,6 +333,12 @@ function handleGraphql(req, body, res) {
     }
     try {
         const persona = requireUser(personaOf(req));
+        const failure = state.failNext.get(op);
+
+        if (failure) {
+            state.failNext.delete(op);
+            throw new GraphQLError(failure, MESSAGES[failure] ?? "Något gick fel.");
+        }
         res.end(JSON.stringify({data: resolver(persona, payload.variables || {})}));
     } catch (error) {
         if (error instanceof GraphQLError) {
@@ -273,13 +439,71 @@ async function handleToken(body, res) {
     }));
 }
 
+function multipartField(body, name) {
+    const match = new RegExp(`name="${name}"\r\n\r\n([^\r]*)`).exec(body);
+
+    return match ? match[1] : null;
+}
+
+// --- tus ------------------------------------------------------------------------------------------------------------
+
+function handleTus(req, path, body, res) {
+    const headers = {"tus-resumable": "1.0.0"};
+    const id = path.split("/")[3];
+    const persona = personaOf(req);
+
+    if (req.method === "OPTIONS") {
+        res.writeHead(204, {...headers, "tus-version": "1.0.0", "tus-extension": "creation,termination", "tus-max-size": "53687091200"}).end();
+    } else if (!persona || !isEditor(persona)) {
+        res.writeHead(403, {"content-type": "application/json"}).end(JSON.stringify({code: "FORBIDDEN", message: "Du har inte behörighet att göra det."}));
+    } else if (req.method === "POST") {
+        const upload = randomUUID();
+        const metadata = Object.fromEntries((req.headers["upload-metadata"] ?? "").split(",").filter(Boolean)
+            .map(pair => pair.trim().split(" ")).map(([key, value]) => [key, Buffer.from(value ?? "", "base64").toString("utf8")]));
+
+        state.uploads.set(upload, {name: metadata.filename ?? "upload", length: Number(req.headers["upload-length"]), offset: 0});
+        res.writeHead(201, {...headers, location: `/api/uploads/${upload}`}).end();
+    } else if (!state.uploads.has(id)) {
+        res.writeHead(404, headers).end();
+    } else if (req.method === "HEAD") {
+        const upload = state.uploads.get(id);
+
+        res.writeHead(200, {...headers, "upload-offset": String(upload.offset), "upload-length": String(upload.length), "cache-control": "no-store"}).end();
+    } else if (req.method === "PATCH") {
+        const upload = state.uploads.get(id);
+
+        if (Number(req.headers["upload-offset"]) !== upload.offset) {
+            res.writeHead(409, headers).end();
+            return;
+        }
+        upload.offset += body.length;
+        res.writeHead(204, {...headers, "upload-offset": String(upload.offset)}).end();
+    } else if (req.method === "DELETE") {
+        state.uploads.delete(id);
+        res.writeHead(204, headers).end();
+    } else {
+        res.writeHead(405).end();
+    }
+}
+
 const server = createServer((req, res) => {
     const chunks = [];
     req.on("data", chunk => chunks.push(chunk));
-    req.on("end", async () => {
+    req.on("end", () => handle(req, res, chunks).catch(error => {
+        // A broken handler answers 500 instead of taking the mock down for every later test
+        console.error(error);
+        if (!res.headersSent) {
+            res.writeHead(500).end();
+        }
+    }));
+});
+
+async function handle(req, res, chunks) {
+    {
         const url = new URL(req.url || "", `http://localhost:${PORT}`);
         const path = url.pathname;
-        const body = Buffer.concat(chunks).toString("utf8");
+        const rawBody = Buffer.concat(chunks);
+        const body = rawBody.toString("utf8");
 
         if (path.endsWith("/.well-known/openid-configuration")) {
             res.writeHead(200, {"content-type": "application/json"}).end(JSON.stringify(oidcConfig));
@@ -301,6 +525,59 @@ const server = createServer((req, res) => {
         } else if (req.method === "POST" && path === "/__persona") {
             currentPersona = JSON.parse(body).persona;
             res.writeHead(204).end();
+        } else if (req.method === "POST" && path === "/__spexregister") {
+            state.spexregisterUp = JSON.parse(body).up;
+            res.writeHead(204).end();
+        } else if (req.method === "POST" && path === "/__spexify") {
+            state.spexifyUp = JSON.parse(body).up;
+            res.writeHead(204).end();
+        } else if (req.method === "POST" && path === "/__fail") {
+            const {operation, classification} = JSON.parse(body);
+
+            state.failNext.set(operation, classification);
+            res.writeHead(204).end();
+        } else if (req.method === "POST" && path === "/__process") {
+            // The worker finishes, or fails, every queued job
+            const {failure} = JSON.parse(body || "{}");
+
+            state.videos.filter(v => v.job && v.job.status !== "DONE").forEach(v => {
+                Object.assign(v.job, {status: failure ? "FAILED" : "DONE", progress: 100, finishedAt: new Date().toISOString(), error: failure ?? null});
+                Object.assign(v, failure ? {status: "FAILED", failure} : {status: "READY", failure: null, durationMs: 60000,
+                    renditions: [{height: 720, width: 1280, bitrateKbps: 3000, copied: false, size: 1000}]});
+            });
+            res.writeHead(204).end();
+        } else if (req.method === "POST" && path === "/__progress") {
+            const {videoId, seconds} = JSON.parse(body);
+
+            state.progress[videoId] = seconds;
+            res.writeHead(204).end();
+        } else if (req.method === "GET" && path === "/__state") {
+            res.writeHead(200, {"content-type": "application/json"}).end(JSON.stringify({
+                uploads: state.uploads.size, progress: state.progress,
+                videos: state.videos.map(({id, title, status, published, trashedAt, posterSeconds, chapters, subtitles, job}) =>
+                    ({id, title, status, published, trashedAt, posterSeconds, chapters, subtitles, jobStatus: job?.status ?? null})),
+            }));
+        } else if (path === "/api/uploads" || path.startsWith("/api/uploads/")) {
+            handleTus(req, path, rawBody, res);
+        } else if (req.method === "POST" && /^\/api\/videos\/[^/]+\/(poster|subtitles)$/.test(path)) {
+            const found = state.videos.find(v => v.id === path.split("/")[3]);
+
+            if (!isEditor(personaOf(req) ?? {roles: []})) {
+                res.writeHead(403, {"content-type": "application/json"}).end(JSON.stringify({code: "FORBIDDEN", message: "Du har inte behörighet att göra det."}));
+                return;
+            }
+            if (path.endsWith("/subtitles")) {
+                const language = multipartField(body, "language");
+
+                if (!/-->/.test(body)) {
+                    res.writeHead(400, {"content-type": "application/json"}).end(JSON.stringify({code: "BAD_REQUEST", message: "Filen är inte WebVTT eller SRT."}));
+                    return;
+                }
+                found.subtitles = [...found.subtitles.filter(sub => sub.language !== language), {language, label: multipartField(body, "label")}];
+            } else {
+                found.posterUploaded = true;
+            }
+            res.writeHead(200, {"content-type": "application/json"}).end(JSON.stringify({id: found.id, title: found.title, subtitles: found.subtitles}));
         } else if (req.method === "GET" && /^\/api\/videos\/[^/]+\/poster$/.test(path)) {
             res.writeHead(404).end();
         } else if (req.method === "GET" && path.startsWith("/media/")) {
@@ -310,8 +587,8 @@ const server = createServer((req, res) => {
         } else {
             res.writeHead(404).end();
         }
-    });
-});
+    }
+}
 
 server.listen(PORT, () => {
     console.log(`[mock-backend] listening on http://localhost:${PORT}`);

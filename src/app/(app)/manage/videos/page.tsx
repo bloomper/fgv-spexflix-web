@@ -35,13 +35,15 @@ export default async function ManageVideosPage() {
                         <TableBody>
                             {data?.videos.map(video => (
                                 <TableRow key={video.id}>
-                                    <TableCell><Link href={`/manage/videos/${video.id}`} className="font-medium hover:underline">{video.title}</Link></TableCell>
+                                    <TableCell className="whitespace-normal"><Link href={`/manage/videos/${video.id}`} className="font-medium hover:underline">{video.title}</Link></TableCell>
                                     <TableCell className="tabular-nums">{video.year}</TableCell>
                                     <TableCell className="hidden sm:table-cell">{tv(`kind.${video.kind}`)}</TableCell>
                                     <TableCell className="hidden tabular-nums sm:table-cell">{video.durationMs ? formatDuration(video.durationMs / 1000) : ""}</TableCell>
-                                    <TableCell className="space-x-1">
-                                        {video.status !== "READY" && <Badge variant={video.status === "FAILED" ? "destructive" : "secondary"}>{tv(`status.${video.status}`)}</Badge>}
-                                        {video.published ? <Badge variant="secondary">{t("published")}</Badge> : <Badge variant="outline">{t("unpublished")}</Badge>}
+                                    <TableCell className="whitespace-normal">
+                                        <div className="flex flex-wrap gap-1">
+                                            {video.status !== "READY" && <Badge variant={video.status === "FAILED" ? "destructive" : "secondary"}>{tv(`status.${video.status}`)}</Badge>}
+                                            {video.published ? <Badge variant="secondary">{t("published")}</Badge> : <Badge variant="outline">{t("unpublished")}</Badge>}
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))}

@@ -8,6 +8,7 @@ import {Button} from "@/components/ui/button";
 import {type PlayerHandle, VideoPlayer} from "@/components/video/video-player.client";
 import {watchListAction} from "@/components/video/actions.server";
 import {formatDuration} from "@/utils/duration";
+import {track} from "@/utils/umami";
 
 type Chapter = { startSeconds: number; title: string; spexifyTrackId?: string | null; spexifyTrackTitle?: string | null };
 
@@ -37,6 +38,7 @@ export function Watch({videoId, playback, chapters, durationSeconds, startAt, in
                              recordProgress={recordProgress}/>
                 <Button variant="outline" disabled={pending} aria-pressed={listed} onClick={() => startTransition(async () => {
                     if (await watchListAction(videoId, !listed)) {
+                        track("watch-list", {listed: !listed});
                         setListed(!listed);
                     } else {
                         toast.error(t("watchListFailed"));

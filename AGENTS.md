@@ -55,8 +55,33 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
 - **Editors** work under `/manage` (videos, the processing queue, the trash, the change log), **admins** under
   `/admin` (storage, settings). Only `READY` videos can be published.
 
+## Look
+
+The look is FGV's, the same as Spexregister's and Nyuppsättning's: `Logo`, `LogoText` and `LogoHome` in
+`src/components/`, `src/app/favicon.ico`, and the colours in `src/app/globals.css`. Don't give the application a logo
+or colours of its own. `src/app/icon.svg` (the FGV logo) is only for the installable app's manifest.
+
+## Consent and visitor statistics
+
+The cookie banner is c15t (`src/components/consent-manager.client.tsx`) in offline mode with only the `necessary`
+category, as in `fgv-revival-web`: the application sets only strictly necessary cookies, and Umami sets none.
+
+Umami, self-hosted in `fgv-infra-deploy`, is reached server-side at `UMAMI_URL`. Browsers never talk to it:
+`src/app/stats/` serves the tracker as `/stats/script.js` and forwards `/stats/api/send` with the browser's IP and
+user agent. `src/components/umami.tsx` renders nothing unless `UMAMI_URL` and `UMAMI_WEBSITE_ID` are both set, and
+drops query strings.
+
+Custom events go through `track()` (`src/utils/umami.ts`; import it as `trackEvent` where `track` is a variable), a
+no-op when the tracker isn't loaded. Event data is enum values, counts and booleans only — never names, emails, ids or
+typed text. Events: `video-create` (`kind`), `video-upload` (`replaced`), `video-publish` (`published`), `video-play` (once per page),
+`watch-list` (`listed`), `language-change` and `theme-change`.
+
 ## Testing
 
+- E2E specs per area (listening/watching, editing, uploads, trash and change log, admin, errors, language). The mock
+  backend keeps state per test (reset automatically) and implements tus; the `mock` fixture switches it: `spexregister(up)`, `spexify(up)`, `failNext(operation, classification)`, `process(failure?)` (the worker finishes or fails the queued jobs), `progress(videoId, seconds)` and `state()`.
+  `state()` lets a spec check what the web sent.
+- Call `hydrated(page, selector)` before `setInputFiles`: a file chosen before React hydrates the input is lost.
 - Unit tests in `__tests__/` beside the code. E2E specs in `e2e/`, one per area, with personas `admin`, `editor`,
   `viewer` and `noaccess` in the mock backend. All test data is fictitious.
 - Use `{exact: true}` for names that are part of others ("I min lista" in "Lägg till i min lista", "Namn" in

@@ -3,7 +3,7 @@ import {MOCK_URL} from "./constants";
 
 type Persona = "admin" | "editor" | "viewer" | "noaccess";
 
-export const test = base.extend<{ resetBackend: void; loginAs: (persona: Persona) => Promise<void> }>({
+export const test = base.extend<{ resetBackend: void; loginAs: (persona: Persona) => Promise<void>; mock: Mock }>({
     resetBackend: [async ({request}, provide) => {
         await request.post(`${MOCK_URL}/__reset`);
         await provide();
@@ -22,7 +22,53 @@ export const test = base.extend<{ resetBackend: void; loginAs: (persona: Persona
             await consentStored(page);
         });
     },
+    mock: async ({request}, provide) => {
+        await provide({
+            spexregister: async (up: boolean) => {
+                await request.post(`${MOCK_URL}/__spexregister`, {data: {up}});
+            },
+            spexify: async (up: boolean) => {
+                await request.post(`${MOCK_URL}/__spexify`, {data: {up}});
+            },
+            failNext: async (operation: string, classification: string) => {
+                await request.post(`${MOCK_URL}/__fail`, {data: {operation, classification}});
+            },
+            process: async (failure?: string) => {
+                await request.post(`${MOCK_URL}/__process`, {data: {failure}});
+            },
+            progress: async (videoId: string, seconds: number) => {
+                await request.post(`${MOCK_URL}/__progress`, {data: {videoId, seconds}});
+            },
+            state: async () => (await request.get(`${MOCK_URL}/__state`)).json() as Promise<MockState>,
+        });
+    },
 });
+
+type MockState = {
+    uploads: number;
+    progress: Record<string, number>;
+    videos: {
+        id: string; title: string; status: string; published: boolean; trashedAt: string | null; posterSeconds: number | null;
+        chapters: { startSeconds: number; title: string; spexifyTrackId: string | null }[];
+        subtitles: { language: string; label: string }[];
+        jobStatus: string | null;
+    }[];
+};
+
+type Mock = {
+    /** Spexregister up or down: down makes spex searches fail with SPEXREGISTER_UNAVAILABLE. */
+    spexregister: (up: boolean) => Promise<void>;
+    /** Spexify up or down: down makes spexifyTracks empty, as the server answers. */
+    spexify: (up: boolean) => Promise<void>;
+    /** Makes the next call of a GraphQL operation, e.g. "VideoUpdate", fail with the classification, e.g. "CONFLICT". */
+    failNext: (operation: string, classification: string) => Promise<void>;
+    /** The worker finishes every queued job, or fails them with the message. */
+    process: (failure?: string) => Promise<void>;
+    /** Where the persona is in a video. */
+    progress: (videoId: string, seconds: number) => Promise<void>;
+    /** What the backend holds, for checking what the web sent. */
+    state: () => Promise<MockState>;
+};
 
 /**
  * c15t stores the dismissed cookie notice after the click, so a page opened right away would show the banner again,
@@ -30,6 +76,18 @@ export const test = base.extend<{ resetBackend: void; loginAs: (persona: Persona
  */
 export async function consentStored(page: Page) {
     await expect.poll(async () => (await page.context().cookies()).some(cookie => cookie.name === "c15t-notice")).toBe(true);
+}
+
+/**
+ * Waits until React has hydrated the element: a file chosen with {@code setInputFiles} before that is lost, since the
+ * browser's change event fires before React listens.
+ */
+export async function hydrated(page: Page, selector: string) {
+    await page.waitForFunction(css => {
+        const element = document.querySelector(css);
+
+        return element !== null && Object.keys(element).some(key => key.startsWith("__reactProps"));
+    }, selector);
 }
 
 export {expect} from "@playwright/test";

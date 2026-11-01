@@ -29,6 +29,7 @@ import {
     trashVideoAction,
     updateVideoAction
 } from "@/app/(app)/manage/actions.server";
+import {track} from "@/utils/umami";
 
 export type EditorVideo = VideoFormValues & {
     id: string;
@@ -120,6 +121,7 @@ export function VideoEditor({video, playback, admin}: { video: EditorVideo; play
             const result = await setFileAction(video.id, uploadId);
 
             if (result.ok) {
+                track("video-upload", {replaced: video.status !== "UPLOADING"});
                 toast.success(t("fileQueued"));
                 router.refresh();
             } else {
@@ -212,7 +214,10 @@ export function VideoEditor({video, playback, admin}: { video: EditorVideo; play
 
             <label className="flex items-center gap-3 rounded-lg border p-3">
                 <Switch checked={video.published} disabled={pending || video.status !== "READY"}
-                        onCheckedChange={checked => run(() => publishVideoAction(video.id, checked))}/>
+                        onCheckedChange={checked => {
+                            track("video-publish", {published: checked});
+                            run(() => publishVideoAction(video.id, checked));
+                        }}/>
                 <span>
                     <span className="block font-medium">{video.published ? t("published") : t("unpublished")}</span>
                     <span className="block text-xs text-muted-foreground">{video.status === "READY" ? t("publishText") : t("publishWhenReady")}</span>
