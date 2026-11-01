@@ -5,7 +5,7 @@ import {progressSave, watchListAdd, watchListRemove} from "@/lib/video/video.ser
 import {withPolicyAction} from "@/utils/route.server";
 import {Policies} from "@/utils/policy.server";
 
-const ID = /^\d{1,19}$/;
+const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Saves where the user is in a video. Failures are ignored: watching does not depend on it.

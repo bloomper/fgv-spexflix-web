@@ -34,17 +34,20 @@ class GraphQLError extends Error {
     }
 }
 
-const SPEX = {id: "1", title: "Nobel", year: 1975, revival: false, categoryId: "1", categoryName: "Chalmersspexet"};
+/** The UUID the server would give the entity numbered n here. */
+const uuidOf = n => `00000000-0000-7000-8000-${String(n).padStart(12, "0")}`;
+
+const SPEX = {id: uuidOf(1), title: "Nobel", year: 1975, revival: false, categoryId: uuidOf(1), categoryName: "Chalmersspexet"};
 
 function video(id, title, extra = {}) {
     return {
-        id, uuid: randomUUID(), title, year: 1975, kind: "FULL_SHOW", performance: "Premiären", performanceDate: "1975-02-14",
+        id, title, year: 1975, kind: "FULL_SHOW", performance: "Premiären", performanceDate: "1975-02-14",
         description: "Inspelat 1975.", spex: SPEX, status: "READY", failure: null, durationMs: 60000, width: 1280, height: 720,
         published: true, publishedAt: "2026-10-01T10:00:00Z", trashedAt: null, originalName: "nobel.mp4", originalSize: 1000000,
         originalKept: true, hasThumbnails: false, posterSeconds: null,
         renditions: [{height: 720, width: 1280, bitrateKbps: 3000, copied: true, size: 1000}],
         chapters: [{startSeconds: 0, title: "Ouvertyr", spexifyTrackId: null, spexifyTrackTitle: null},
-            {startSeconds: 20, title: "Kärleksduetten", spexifyTrackId: "12", spexifyTrackTitle: "Kärleksduetten"}],
+            {startSeconds: 20, title: "Kärleksduetten", spexifyTrackId: uuidOf(12), spexifyTrackTitle: "Kärleksduetten"}],
         subtitles: [], createdAt: "2026-10-01T10:00:00Z", lastModifiedAt: null, job: null, ...extra,
     };
 }
@@ -55,9 +58,9 @@ function resetState() {
     state = {
         nextId: 100,
         videos: [
-            video("1", "Nobel"),
-            video("2", "Opublicerad film", {published: false, kind: "TRAILER"}),
-            video("3", "Bearbetas", {published: false, status: "PROCESSING", renditions: []}),
+            video(uuidOf(1), "Nobel"),
+            video(uuidOf(2), "Opublicerad film", {published: false, kind: "TRAILER"}),
+            video(uuidOf(3), "Bearbetas", {published: false, status: "PROCESSING", renditions: []}),
         ],
         progress: {},
         watchList: new Set(),
@@ -121,7 +124,7 @@ const queue = (target, source) => {
         error: null, createdAt: new Date().toISOString(), startedAt: null, finishedAt: null};
     target.originalName = source ?? target.originalName;
 };
-const categories = [{id: "1", name: "Chalmersspexet", videoCount: 1}];
+const categories = [{id: uuidOf(1), name: "Chalmersspexet", videoCount: 1}];
 
 const resolvers = {
     Me: persona => ({me: {username: persona.email, displayName: persona.name, roles: persona.roles, spexifyUser: true}, settings: state.settings}),
@@ -168,14 +171,14 @@ const resolvers = {
     // Empty while Spexify is down, as the server answers
     SpexifyTracks: persona => {
         requireEditor(persona);
-        return {spexifyTracks: state.spexifyUp ? [{id: "12", title: "Kärleksduetten", discNumber: 1, trackNumber: 2, albumTitle: "Nobel"}] : []};
+        return {spexifyTracks: state.spexifyUp ? [{id: uuidOf(12), title: "Kärleksduetten", discNumber: 1, trackNumber: 2, albumTitle: "Nobel"}] : []};
     },
     VideoCreate: (persona, {input}) => {
         if (!isEditor(persona)) {
             throw forbidden();
         }
 
-        const created = video(String(state.nextId++), input.title || SPEX.title, {
+        const created = video(uuidOf(state.nextId++), input.title || SPEX.title, {
             published: false, status: "UPLOADING", renditions: [], chapters: [], originalName: null, durationMs: null, kind: input.kind,
         });
 
@@ -289,7 +292,7 @@ const resolvers = {
     },
     Queue: persona => {
         requireEditor(persona);
-        return {processingQueue: [{id: "1", videoId: "3", videoTitle: "Bearbetas", status: "RUNNING", progress: 40, attempts: 1,
+        return {processingQueue: [{id: "1", videoId: uuidOf(3), videoTitle: "Bearbetas", status: "RUNNING", progress: 40, attempts: 1,
             error: null, createdAt: "2026-10-31T10:00:00Z", startedAt: "2026-10-31T10:00:00Z", finishedAt: null},
             ...state.videos.filter(v => v.job).map(v => v.job)]};
     },

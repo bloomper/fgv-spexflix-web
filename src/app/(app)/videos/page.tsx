@@ -7,7 +7,7 @@ import {Policies} from "@/utils/policy.server";
 import {withPolicyPage} from "@/utils/route.server";
 import {cn} from "@/utils/utils";
 
-const NUMBER = /^\d{1,19}$/;
+const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const KINDS: VideoKind[] = ["FULL_SHOW", "NUMBER", "TRAILER", "BEHIND_THE_SCENES", "OTHER"];
 
 export default async function VideosPage({searchParams}: { searchParams: Promise<{ category?: string; year?: string; kind?: string }> }) {
@@ -15,7 +15,7 @@ export default async function VideosPage({searchParams}: { searchParams: Promise
         const t = await getTranslations("Videos");
         const tv = await getTranslations("Video");
         const {category, year, kind} = await searchParams;
-        const categoryId = category && NUMBER.test(category) ? category : null;
+        const categoryId = category && ID.test(category) ? category : null;
         const yearNumber = year && /^\d{4}$/.test(year) ? Number(year) : null;
         const kindValue = KINDS.find(value => value === kind) ?? null;
         const data = await getVideos({categoryId, year: yearNumber, kind: kindValue});
