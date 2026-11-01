@@ -1,3 +1,4 @@
+import {uuidOf} from "./constants";
 import {type Page} from "@playwright/test";
 import {expect, hydrated, test} from "./fixtures";
 
@@ -14,7 +15,7 @@ async function newVideo(page: Page) {
     await page.getByLabel("Spex", {exact: true}).fill("Nob");
     await page.getByRole("button", {name: /Nobel 1975/}).click();
     await page.getByRole("button", {name: "Skapa"}).click();
-    await expect(page).toHaveURL(/\/manage\/videos\/\d+$/);
+    await expect(page).toHaveURL(/\/manage\/videos\/[0-9a-f-]{36}$/);
 }
 
 test.describe("Editing a video", () => {
@@ -51,7 +52,7 @@ test.describe("Editing a video", () => {
     });
 
     test("saves the video's details", async ({page}) => {
-        await page.goto("/manage/videos/1");
+        await page.goto(`/manage/videos/${uuidOf(1)}`);
         await page.getByLabel("Föreställning", {exact: true}).fill("Andra föreställningen");
         await page.getByRole("button", {name: "Spara", exact: true}).click();
 
@@ -61,7 +62,7 @@ test.describe("Editing a video", () => {
     });
 
     test("sets chapters, one linked to a track in Spexify", async ({page, mock}) => {
-        await page.goto("/manage/videos/1");
+        await page.goto(`/manage/videos/${uuidOf(1)}`);
         await expect(page.getByText("Markera var numren börjar, och koppla dem till låtarna i Spexify.")).toBeVisible();
         await page.getByRole("button", {name: "Ta bort kapitlet Ouvertyr"}).click();
         await page.getByRole("button", {name: "Lägg till kapitel"}).click();
@@ -70,14 +71,14 @@ test.describe("Editing a video", () => {
         await page.getByRole("button", {name: "Spara kapitlen"}).click();
         await expect(page.getByText("Sparat")).toBeVisible();
 
-        const chapters = (await mock.state()).videos.find(v => v.id === "1")?.chapters;
+        const chapters = (await mock.state()).videos.find(v => v.id === uuidOf(1))?.chapters;
 
         expect(chapters?.map(chapter => [chapter.startSeconds, chapter.title, chapter.spexifyTrackId]))
-            .toEqual([[20, "Kärleksduetten", "12"], [90, "Finalen", null]]);
+            .toEqual([[20, "Kärleksduetten", uuidOf(12)], [90, "Finalen", null]]);
     });
 
     test("refuses a chapter without a start", async ({page}) => {
-        await page.goto("/manage/videos/1");
+        await page.goto(`/manage/videos/${uuidOf(1)}`);
         await page.getByRole("button", {name: "Lägg till kapitel"}).click();
         await page.getByLabel("Titel", {exact: true}).last().fill("Utan tid");
         await page.getByLabel("Start").last().fill("");
@@ -88,12 +89,12 @@ test.describe("Editing a video", () => {
 
     test("chapters are not linked while Spexify is down", async ({page, mock}) => {
         await mock.spexify(false);
-        await page.goto("/manage/videos/1");
+        await page.goto(`/manage/videos/${uuidOf(1)}`);
         await expect(page.getByText(/Spexify har inga låtar för det här spexet/)).toBeVisible();
     });
 
     test("uploads subtitles in SRT and removes them", async ({page, mock}) => {
-        await page.goto("/manage/videos/1");
+        await page.goto(`/manage/videos/${uuidOf(1)}`);
         await page.getByLabel("Språkkod").fill("sv");
         await page.getByLabel("Namn", {exact: true}).fill("Svenska");
         await hydrated(page, "#sub-file");
@@ -103,23 +104,23 @@ test.describe("Editing a video", () => {
         await page.getByRole("button", {name: "Ladda upp", exact: true}).click();
 
         await expect(page.getByRole("button", {name: "Ta bort", exact: true})).toBeVisible();
-        expect((await mock.state()).videos.find(v => v.id === "1")?.subtitles).toEqual([{language: "sv", label: "Svenska"}]);
+        expect((await mock.state()).videos.find(v => v.id === uuidOf(1))?.subtitles).toEqual([{language: "sv", label: "Svenska"}]);
 
         await page.getByRole("button", {name: "Ta bort", exact: true}).click();
         await expect(page.getByRole("button", {name: "Ta bort", exact: true})).toHaveCount(0);
     });
 
     test("takes the poster from the video", async ({page, mock}) => {
-        await page.goto("/manage/videos/1");
+        await page.goto(`/manage/videos/${uuidOf(1)}`);
         await page.getByRole("button", {name: "Använd bilden som affisch"}).click();
 
         await expect(page.getByText("Sparat")).toBeVisible();
-        expect((await mock.state()).videos.find(v => v.id === "1")?.posterSeconds).toBe(0);
+        expect((await mock.state()).videos.find(v => v.id === uuidOf(1))?.posterSeconds).toBe(0);
     });
 
     test("tells the editor when someone else changed the video", async ({page, mock}) => {
         await mock.failNext("VideoUpdate", "CONFLICT");
-        await page.goto("/manage/videos/1");
+        await page.goto(`/manage/videos/${uuidOf(1)}`);
         await page.getByRole("button", {name: "Spara", exact: true}).click();
 
         await expect(page.getByText("Någon annan har ändrat detta. Ladda om sidan och försök igen.")).toBeVisible();

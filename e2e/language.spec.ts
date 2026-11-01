@@ -1,3 +1,4 @@
+import {uuidOf} from "./constants";
 import {expect, test} from "./fixtures";
 
 test.describe("Language", () => {
@@ -6,7 +7,7 @@ test.describe("Language", () => {
         await page.getByRole("button", {name: "Byt språk"}).click();
         await page.getByRole("menuitem", {name: "English"}).click();
 
-        await page.goto("/videos/1");
+        await page.goto(`/videos/${uuidOf(1)}`);
         await expect(page.getByRole("button", {name: "Add to my list"})).toBeVisible();
 
         await page.getByRole("button", {name: "Change language"}).click();

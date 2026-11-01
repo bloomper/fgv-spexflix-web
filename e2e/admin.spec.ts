@@ -1,3 +1,4 @@
+import {uuidOf} from "./constants";
 import {expect, test} from "./fixtures";
 
 test.describe("Administration", () => {
@@ -24,11 +25,11 @@ test.describe("Administration", () => {
     });
 
     test("processes a video again", async ({page, mock}) => {
-        await page.goto("/manage/videos/1");
+        await page.goto(`/manage/videos/${uuidOf(1)}`);
         await page.getByRole("button", {name: "Bearbeta om"}).click();
 
         await expect(page.getByText("Filen väntar på bearbetning")).toBeVisible();
-        expect((await mock.state()).videos.find(v => v.id === "1")?.jobStatus).toBe("QUEUED");
+        expect((await mock.state()).videos.find(v => v.id === uuidOf(1))?.jobStatus).toBe("QUEUED");
     });
 
     test("is not for editors", async ({page, loginAs}) => {

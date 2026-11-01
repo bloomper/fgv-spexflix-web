@@ -12,7 +12,7 @@ import {withPolicyPage} from "@/utils/route.server";
 import {isEditor} from "@/utils/auth";
 import {Watch} from "./watch.client";
 
-const ID = /^\d{1,19}$/;
+const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default async function VideoPage({params, searchParams}: { params: Promise<{ id: string }>; searchParams: Promise<{ t?: string }> }) {
     return withPolicyPage(Policies.app.requireAccess, async (authz) => {

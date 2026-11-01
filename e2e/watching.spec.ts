@@ -1,9 +1,10 @@
+import {uuidOf} from "./constants";
 import {expect, test} from "./fixtures";
 
 test.describe("Watching", () => {
     test("shows a video with its chapters and a link to the number in Spexify", async ({page, loginAs}) => {
         await loginAs("viewer");
-        await page.goto("/videos/1");
+        await page.goto(`/videos/${uuidOf(1)}`);
 
         await expect(page.getByRole("heading", {level: 1, name: "Nobel"})).toBeVisible();
         await expect(page.getByRole("heading", {name: "Kapitel"})).toBeVisible();
@@ -14,7 +15,7 @@ test.describe("Watching", () => {
 
     test("adds a video to the watch list", async ({page, loginAs}) => {
         await loginAs("viewer");
-        await page.goto("/videos/1");
+        await page.goto(`/videos/${uuidOf(1)}`);
         await page.getByRole("button", {name: "Lägg till i min lista"}).click();
         await expect(page.getByRole("button", {name: "I min lista", exact: true})).toBeVisible();
 
@@ -43,7 +44,7 @@ test.describe("Editing", () => {
         await page.getByLabel("Spex", {exact: true}).fill("Nob");
         await page.getByRole("button", {name: /Nobel 1975/}).click();
         await page.getByRole("button", {name: "Skapa"}).click();
-        await expect(page).toHaveURL(/\/manage\/videos\/\d+$/);
+        await expect(page).toHaveURL(/\/manage\/videos\/[0-9a-f-]{36}$/);
         await expect(page.getByRole("button", {name: "Ladda upp filen"})).toBeVisible();
         await expect(page.getByRole("switch").first()).toBeDisabled();
     });
@@ -58,18 +59,18 @@ test.describe("Editing", () => {
 
 test.describe("Continue watching", () => {
     test("lists a started video on the start page and resumes where the viewer was", async ({page, loginAs, mock}) => {
-        await mock.progress("1", 30);
+        await mock.progress(uuidOf(1), 30);
         await loginAs("viewer");
 
         await expect(page.getByRole("heading", {name: "Fortsätt titta"})).toBeVisible();
         await page.getByRole("region", {name: "Fortsätt titta"}).getByRole("link", {name: /Nobel/}).click();
-        await expect(page).toHaveURL(/\/videos\/1/);
+        await expect(page).toHaveURL(`/videos/${uuidOf(1)}`);
         await expect(page.getByRole("heading", {level: 1, name: "Nobel"})).toBeVisible();
     });
 
     test("removes a video from the watch list", async ({page, loginAs}) => {
         await loginAs("viewer");
-        await page.goto("/videos/1");
+        await page.goto(`/videos/${uuidOf(1)}`);
         await page.getByRole("button", {name: "Lägg till i min lista"}).click();
         await page.getByRole("button", {name: "I min lista", exact: true}).click();
         await expect(page.getByRole("button", {name: "Lägg till i min lista"})).toBeVisible();

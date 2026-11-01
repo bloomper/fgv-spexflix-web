@@ -34,7 +34,7 @@ const VideosQuery = graphql(`
 const VideoQuery = graphql(`
     query Video($id: ID!) {
         video(id: $id) {
-            id uuid title year kind performance performanceDate description status failure durationMs width height
+            id title year kind performance performanceDate description status failure durationMs width height
             published publishedAt trashedAt originalName originalSize originalKept hasThumbnails posterSeconds
             progressSeconds finished inWatchList createdAt lastModifiedAt
             spex { id title year revival categoryId categoryName }
