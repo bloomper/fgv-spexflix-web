@@ -30,6 +30,10 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
   `src/auth.ts`, Next.js reserved file names, and shadcn's `src/components/ui/**` and `src/hooks/use-mobile.ts`.
 - Cache Components is on. `(app)/layout.tsx` keeps `export const instant = false`. The root layout's metadata stays
   static.
+- Cache Components keeps visited pages alive, so a client component that copies a server prop into state (an
+  optimistic toggle or rating) uses `useServerState` (`src/hooks/use-server-state.client.ts`), never `useState(prop)`,
+  which would show the old value when the page is shown again. Don't revalidate the video page being watched for such
+  a change: each render signs a new playback address and the player starts over.
 - Locale is a cookie (`sv` default); messages in `messages/{sv,en}.json`. The theme is dark by default.
 - Auth: Better Auth + Keycloak, stateless. `getSessionContext()` in `src/utils/auth.server.ts` is the single entry
   point; roles come from `resource_access["fgv-spexflix"].roles`: `USER` (access), `EDITOR`, `ADMIN`. Gate pages with
