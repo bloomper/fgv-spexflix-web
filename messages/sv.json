@@ -242,6 +242,7 @@
     "auditLog": "Ändringslogg",
     "admin": "Administration",
     "adminStorage": "Lagring",
+    "adminMaintenance": "Underhåll",
     "adminSettings": "Inställningar"
   },
   "Home": {
@@ -439,5 +440,30 @@
     "originals": "Original",
     "renditions": "Kvalitetsnivåer",
     "free": "Ledigt"
+  },
+  "AdminMaintenance": {
+    "title": "Underhåll",
+    "text": "Jobben som servern kör enligt schema, i svensk tid. Du kan också starta ett nu.",
+    "schedule": "Schema",
+    "notScheduled": "Inte schemalagt",
+    "lastRun": "Senaste körning",
+    "running": "Körs",
+    "neverRun": "Inte sedan servern startade",
+    "succeeded": "Lyckades {at}",
+    "failed": "Misslyckades, startade {at}",
+    "startedAt": "Startade {at}",
+    "runNow": "Kör nu",
+    "started": "{job} har startat. Det körs i bakgrunden.",
+    "alreadyRunning": "{job} körs redan.",
+    "jobs": {
+      "SPEX_REFRESH": {
+        "title": "Uppdatering av spex",
+        "description": "Kopierar spexens aktuella titlar, år och kategorier från Spexregistret till videorna."
+      },
+      "UPLOAD_CLEANUP": {
+        "title": "Städning av uppladdningar",
+        "description": "Tar bort uppladdningar som påbörjats men aldrig använts, med sina filer."
+      }
+    }
   }
 }

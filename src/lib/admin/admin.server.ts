@@ -2,7 +2,7 @@ import "server-only";
 
 import {graphql} from "@/gql";
 import {runMutation, runQuery} from "@/lib/graphql.server";
-import type {SettingsInput} from "@/gql/graphql";
+import type {MaintenanceJob, SettingsInput} from "@/gql/graphql";
 
 const TrashQuery = graphql(`
     query Trash { trash { id title year trashedAt status } }
@@ -31,6 +31,11 @@ const SettingsUpdateMutation = graphql(`
     mutation SettingsUpdate($input: SettingsInput!) { settingsUpdate(input: $input) { welcomeSv } }
 `);
 
+const MaintenanceJobsQuery = graphql(`
+    query MaintenanceJobs { maintenanceJobs { job schedule running lastStartedAt lastFinishedAt lastSucceeded } }
+`);
+const MaintenanceJobRunMutation = graphql(`mutation MaintenanceJobRun($job: MaintenanceJob!) { maintenanceJobRun(job: $job) }`);
+
 export const getTrash = async () => (await runQuery(TrashQuery, {}))?.trash ?? [];
 export const getQueue = async () => (await runQuery(QueueQuery, {}))?.processingQueue ?? [];
 export const getStorage = async () => (await runQuery(StorageQuery, {}))?.storage;
@@ -38,3 +43,5 @@ export const getAuditLog = async (page: number, size: number) => (await runQuery
 export const getSettings = async () => (await runQuery(SettingsQuery, {}))?.settings;
 export const trashEmpty = () => runMutation(TrashEmptyMutation, {});
 export const settingsUpdate = (input: SettingsInput) => runMutation(SettingsUpdateMutation, {input});
+export const getMaintenanceJobs = async () => (await runQuery(MaintenanceJobsQuery, {}))?.maintenanceJobs ?? [];
+export const maintenanceJobRun = async (job: MaintenanceJob) => Boolean((await runMutation(MaintenanceJobRunMutation, {job}))?.maintenanceJobRun);

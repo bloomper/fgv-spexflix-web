@@ -21,6 +21,8 @@ type Documents = {
     "\n    query Settings { settings { welcomeSv welcomeEn maxUploadGb keepOriginals } }\n": typeof types.SettingsDocument,
     "mutation TrashEmpty { trashEmpty }": typeof types.TrashEmptyDocument,
     "\n    mutation SettingsUpdate($input: SettingsInput!) { settingsUpdate(input: $input) { welcomeSv } }\n": typeof types.SettingsUpdateDocument,
+    "\n    query MaintenanceJobs { maintenanceJobs { job schedule running lastStartedAt lastFinishedAt lastSucceeded } }\n": typeof types.MaintenanceJobsDocument,
+    "mutation MaintenanceJobRun($job: MaintenanceJob!) { maintenanceJobRun(job: $job) }": typeof types.MaintenanceJobRunDocument,
     "\n    query Me {\n        me { username displayName roles spexifyUser }\n        settings { welcomeSv welcomeEn maxUploadGb keepOriginals }\n    }\n": typeof types.MeDocument,
     "\n    query Home {\n        continueWatching(limit: 12) { id title year kind durationMs progressSeconds finished spex { categoryName revival } }\n        recentVideos(limit: 12) { id title year kind durationMs progressSeconds finished spex { categoryName revival } }\n        categories { id name videoCount }\n        years\n    }\n": typeof types.HomeDocument,
     "\n    query Videos($filter: VideoFilter) {\n        videos(filter: $filter) {\n            id title year kind durationMs status published progressSeconds finished\n            spex { id categoryName revival }\n        }\n        categories { id name videoCount }\n        years\n    }\n": typeof types.VideosDocument,
@@ -53,6 +55,8 @@ const documents: Documents = {
     "\n    query Settings { settings { welcomeSv welcomeEn maxUploadGb keepOriginals } }\n": types.SettingsDocument,
     "mutation TrashEmpty { trashEmpty }": types.TrashEmptyDocument,
     "\n    mutation SettingsUpdate($input: SettingsInput!) { settingsUpdate(input: $input) { welcomeSv } }\n": types.SettingsUpdateDocument,
+    "\n    query MaintenanceJobs { maintenanceJobs { job schedule running lastStartedAt lastFinishedAt lastSucceeded } }\n": types.MaintenanceJobsDocument,
+    "mutation MaintenanceJobRun($job: MaintenanceJob!) { maintenanceJobRun(job: $job) }": types.MaintenanceJobRunDocument,
     "\n    query Me {\n        me { username displayName roles spexifyUser }\n        settings { welcomeSv welcomeEn maxUploadGb keepOriginals }\n    }\n": types.MeDocument,
     "\n    query Home {\n        continueWatching(limit: 12) { id title year kind durationMs progressSeconds finished spex { categoryName revival } }\n        recentVideos(limit: 12) { id title year kind durationMs progressSeconds finished spex { categoryName revival } }\n        categories { id name videoCount }\n        years\n    }\n": types.HomeDocument,
     "\n    query Videos($filter: VideoFilter) {\n        videos(filter: $filter) {\n            id title year kind durationMs status published progressSeconds finished\n            spex { id categoryName revival }\n        }\n        categories { id name videoCount }\n        years\n    }\n": types.VideosDocument,
@@ -120,6 +124,14 @@ export function graphql(source: "mutation TrashEmpty { trashEmpty }"): (typeof d
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n    mutation SettingsUpdate($input: SettingsInput!) { settingsUpdate(input: $input) { welcomeSv } }\n"): (typeof documents)["\n    mutation SettingsUpdate($input: SettingsInput!) { settingsUpdate(input: $input) { welcomeSv } }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    query MaintenanceJobs { maintenanceJobs { job schedule running lastStartedAt lastFinishedAt lastSucceeded } }\n"): (typeof documents)["\n    query MaintenanceJobs { maintenanceJobs { job schedule running lastStartedAt lastFinishedAt lastSucceeded } }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "mutation MaintenanceJobRun($job: MaintenanceJob!) { maintenanceJobRun(job: $job) }"): (typeof documents)["mutation MaintenanceJobRun($job: MaintenanceJob!) { maintenanceJobRun(job: $job) }"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

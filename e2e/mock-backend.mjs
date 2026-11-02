@@ -57,6 +57,10 @@ let state;
 function resetState() {
     state = {
         nextId: 100,
+        maintenanceJobs: [
+            {job: "SPEX_REFRESH", schedule: "0 15 3 * * *", running: false, lastStartedAt: null, lastFinishedAt: null, lastSucceeded: null},
+            {job: "UPLOAD_CLEANUP", schedule: "0 5 * * * *", running: true, lastStartedAt: "2026-11-01T10:05:00Z", lastFinishedAt: null, lastSucceeded: null},
+        ],
         videos: [
             video(uuidOf(1), "Nobel"),
             video(uuidOf(2), "Opublicerad film", {published: false, kind: "TRAILER"}),
@@ -295,6 +299,22 @@ const resolvers = {
         return {processingQueue: [{id: "1", videoId: uuidOf(3), videoTitle: "Bearbetas", status: "RUNNING", progress: 40, attempts: 1,
             error: null, createdAt: "2026-10-31T10:00:00Z", startedAt: "2026-10-31T10:00:00Z", finishedAt: null},
             ...state.videos.filter(v => v.job).map(v => v.job)]};
+    },
+    MaintenanceJobs: persona => {
+        requireAdmin(persona);
+        return {maintenanceJobs: state.maintenanceJobs};
+    },
+    MaintenanceJobRun: (persona, {job}) => {
+        requireAdmin(persona);
+        const status = state.maintenanceJobs.find(j => j.job === job);
+
+        if (!status || status.running) {
+            return {maintenanceJobRun: false};
+        }
+        status.lastStartedAt = "2026-11-01T12:00:00Z";
+        status.lastFinishedAt = "2026-11-01T12:00:01Z";
+        status.lastSucceeded = true;
+        return {maintenanceJobRun: true};
     },
     Storage: persona => {
         if (!persona.roles.includes("ADMIN")) {
