@@ -244,7 +244,9 @@
     "adminStorage": "Lagring",
     "adminMaintenance": "Underhåll",
     "adminSettings": "Inställningar",
-    "adminKinds": "Filmsorter"
+    "adminKinds": "Filmsorter",
+    "collections": "Samlingar",
+    "manageCollections": "Samlingar"
   },
   "Home": {
     "title": "Spexflix",
@@ -256,7 +258,9 @@
     "allVideos": "Alla filmer",
     "empty": "Inga filmer är publicerade ännu.",
     "browse": "Bläddra",
-    "highestRated": "Högst betyg av dig"
+    "highestRated": "Högst betyg av dig",
+    "forget": "Ta bort {title} från Fortsätt titta",
+    "forgetFailed": "Det gick inte att ta bort filmen. Försök igen."
   },
   "Search": {
     "title": "Sök",
@@ -268,7 +272,7 @@
   "Manage": {
     "videos": "Filmer",
     "newVideo": "Ny film",
-    "newVideoText": "Välj spexet filmen hör till. Titel och år hämtas från spexet om du inte anger andra. Ladda sedan upp filen; filmen är opublicerad tills du publicerar den.",
+    "newVideoText": "Välj spexet eller spexen filmen hör till, eller markera att den inte hör till något. Titel och år hämtas från spexet om du inte anger andra. Ladda sedan upp filen; filmen är opublicerad tills du publicerar den.",
     "title": "Titel",
     "year": "År",
     "kind": "Sort",
@@ -277,10 +281,6 @@
     "published": "Publicerad",
     "unpublished": "Opublicerad",
     "spex": "Spex",
-    "spexSearch": "Sök spex på titel eller år",
-    "spexHint": "Lämna tomt för en film som inte hör till ett enskilt spex, t.ex. ett jubileum.",
-    "searching": "Söker…",
-    "change": "Byt",
     "performance": "Föreställning",
     "performancePlaceholder": "Premiären",
     "performanceDate": "Datum",
@@ -356,7 +356,47 @@
     "pages": "Sidor",
     "newer": "Nyare",
     "older": "Äldre",
-    "pageOf": "Sida {page} av {pages}"
+    "pageOf": "Sida {page} av {pages}",
+    "event": "Händelse",
+    "filters": "Filtrera ändringsloggen",
+    "search": "Sök i beskrivningen",
+    "typeLabel": "Sort",
+    "allTypes": "Alla sorter",
+    "actionLabel": "Händelse",
+    "allActions": "Alla händelser",
+    "everyone": "Alla",
+    "from": "Från och med",
+    "to": "Till och med",
+    "filter": "Filtrera",
+    "reset": "Rensa filtret",
+    "count": "{count, plural, =0 {Inga ändringar} one {# ändring} other {# ändringar}}",
+    "none": "Inga ändringar ännu.",
+    "noneFiltered": "Inga ändringar matchar filtret.",
+    "oneRecord": "Visar ändringarna av en post.",
+    "allRecords": "Visa alla poster",
+    "history": "Historik",
+    "historyOf": "Historik för {summary}",
+    "recordHistory": "Ändringar",
+    "allChanges": "Alla {count} ändringar",
+    "action": {
+      "CREATE": "Skapad",
+      "UPDATE": "Ändrad",
+      "PUBLISH": "Publicerad",
+      "UNPUBLISH": "Avpublicerad",
+      "TRASH": "I papperskorgen",
+      "RESTORE": "Återställd",
+      "DELETE": "Raderad",
+      "UPLOAD": "Uppladdad",
+      "REPLACE": "Ny fil",
+      "REPROCESS": "Bearbetad igen",
+      "REVOKE": "Återkallad"
+    },
+    "type": {
+      "VIDEO": "Film",
+      "COLLECTION": "Samling",
+      "VIDEO_KIND": "Filmsort",
+      "SETTINGS": "Inställningar"
+    }
   },
   "AdminSettings": {
     "title": "Inställningar",
@@ -376,7 +416,9 @@
     "allKinds": "Alla sorter",
     "years": "År",
     "allYears": "Alla år",
-    "none": "Inga filmer matchar."
+    "none": "Inga filmer matchar.",
+    "spexFilter": "Filmer från {title}, med nyuppsättningar",
+    "clearSpex": "Visa alla filmer"
   },
   "Video": {
     "status": {
@@ -388,7 +430,9 @@
     "revival": "Nyuppsättning",
     "unpublished": "Opublicerad",
     "seen": "Sedd",
-    "watched": "{percent} % sedd"
+    "watched": "{percent} % sedd",
+    "inSpexregisterOf": "{title} i Spexregistret",
+    "allFromSpex": "Alla filmer från {title}"
   },
   "Watch": {
     "chapters": "Kapitel",
@@ -405,13 +449,28 @@
     "rate": "Ditt betyg för filmen",
     "rateFailed": "Betyget kunde inte sparas.",
     "average": "{average} av 5 i snitt ({count, plural, =1 {# betyg} other {# betyg}})",
-    "noRatings": "Inga betyg ännu"
+    "noRatings": "Inga betyg ännu",
+    "nextIn": "Nästa film börjar om {seconds} s",
+    "playNow": "Spela nu",
+    "cancel": "Avbryt",
+    "next": "Nästa: {title}",
+    "autoplay": "Spela nästa film automatiskt",
+    "markWatched": "Markera som sedd",
+    "markUnwatched": "Markera som osedd",
+    "markedWatched": "Filmen är markerad som sedd.",
+    "markedUnwatched": "Filmen är markerad som osedd.",
+    "watchedFailed": "Det gick inte att spara. Försök igen.",
+    "partOf": "Ingår i"
   },
   "Player": {
     "timeline": "Tidslinje",
     "error": "Filmen kunde inte spelas upp.",
     "errorHint": "Kontrollera anslutningen och försök igen.",
-    "retry": "Försök igen"
+    "retry": "Försök igen",
+    "quality": "Kvalitet",
+    "auto": "Automatisk",
+    "airPlay": "AirPlay",
+    "shortcuts": "Kortkommandon"
   },
   "WatchList": {
     "title": "Min lista",
@@ -489,5 +548,68 @@
   "Rating": {
     "stars": "{count, plural, =1 {# stjärna} other {# stjärnor}}",
     "rated": "{count, plural, =1 {Betyg: # stjärna} other {Betyg: # stjärnor}}"
+  },
+  "Shortcuts": {
+    "title": "Kortkommandon",
+    "description": "Fungerar överallt på sidan utom när du skriver i ett fält.",
+    "toggle": "Spela eller pausa",
+    "seek10": "Spola 10 sekunder bakåt eller framåt",
+    "seek5": "Spola 5 sekunder bakåt eller framåt",
+    "chapter": "Föregående eller nästa kapitel",
+    "fullscreen": "Helskärm",
+    "mute": "Stäng av eller slå på ljudet",
+    "subtitles": "Undertexter av eller på",
+    "help": "Visa kortkommandona"
+  },
+  "Collections": {
+    "title": "Samlingar",
+    "text": "Filmer samlade i en egen ordning, till exempel ett spex genom åren.",
+    "none": "Det finns inga samlingar ännu.",
+    "videos": "{count, plural, one {# film} other {# filmer}}",
+    "empty": "Samlingen har inga filmer ännu.",
+    "playFromStart": "Spela från början",
+    "continue": "Fortsätt med {title}",
+    "edit": "Redigera",
+    "manageTitle": "Samlingar",
+    "manageText": "En samling spelas i sin ordning: när en film tar slut börjar nästa.",
+    "new": "Ny samling",
+    "titleLabel": "Titel",
+    "descriptionLabel": "Beskrivning",
+    "videosLabel": "Filmer",
+    "changed": "Ändrad",
+    "noVideos": "Inga filmer ännu.",
+    "unpublished": "opublicerad",
+    "moveUp": "Flytta upp {title}",
+    "moveDown": "Flytta ner {title}",
+    "remove": "Ta bort {title} från samlingen",
+    "addVideo": "Lägg till film",
+    "chooseVideo": "Välj en film",
+    "add": "Lägg till",
+    "save": "Spara",
+    "create": "Skapa",
+    "saved": "Samlingen är sparad.",
+    "view": "Visa samlingen",
+    "delete": "Radera samlingen",
+    "confirmDelete": "Radera samlingen?",
+    "confirmDeleteText": "Filmerna finns kvar."
+  },
+  "SpexPicker": {
+    "spex": "Spex",
+    "none": "Inte kopplat till något spex",
+    "noneHint": "T.ex. en jubileumsföreställning eller ett kollage ur flera spex. Ange en titel.",
+    "picked": "Valda spex",
+    "main": "Huvudspex",
+    "makeMain": "Gör till huvudspex",
+    "makeMainOf": "Gör {title} till huvudspex",
+    "remove": "Ta bort",
+    "removeOf": "Ta bort {title}",
+    "search": "Sök spex på titel eller år",
+    "searchMore": "Lägg till fler spex, t.ex. för en jubileumsföreställning",
+    "hint": "Nyuppsättningar visas under sitt originalspex. Titel och år hämtas från spexet om du inte anger andra.",
+    "mainHint": "Huvudspexet står först: affischen, kategorin och förvalda titel och år hämtas från det.",
+    "searching": "Söker…",
+    "results": "Sökträffar",
+    "alreadyPicked": "vald",
+    "revival": "Nyuppsättning"
   }
 }

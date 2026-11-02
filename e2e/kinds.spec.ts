@@ -18,7 +18,8 @@ test.describe("Video kinds", () => {
 
         await page.goto("/manage/videos/new");
         await expect(page.getByLabel("Sort")).toHaveValue(uuidOf(902));
-        await page.getByLabel("Titel").fill("Jubileumsfilmen");
+        await page.getByRole("checkbox", {name: "Inte kopplat till något spex"}).click();
+        await page.getByLabel("Titel", {exact: true}).fill("Jubileumsfilmen");
         await page.getByLabel("Sort").selectOption({label: "Jubileum"});
         await page.getByRole("button", {name: "Skapa"}).click();
         await expect(page).toHaveURL(/\/manage\/videos\/[0-9a-f-]{36}$/);

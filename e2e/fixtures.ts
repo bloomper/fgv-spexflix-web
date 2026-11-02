@@ -72,6 +72,8 @@ type MockState = {
     /** The viewer's ratings by video id. */
     ratings: Record<string, number>;
     progress: Record<string, number>;
+    finished: string[];
+    collections: { id: string; title: string; description: string | null; videoIds: string[] }[];
     videos: {
         id: string; title: string; status: string; published: boolean; trashedAt: string | null; posterSeconds: number | null;
         chapters: { startSeconds: number; title: string; spexifyTrackId: string | null }[];

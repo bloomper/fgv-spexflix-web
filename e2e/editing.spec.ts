@@ -12,7 +12,7 @@ async function chooseFile(page: Page, selector: string, name: string, mimeType: 
 
 async function newVideo(page: Page) {
     await page.goto("/manage/videos/new");
-    await page.getByLabel("Spex", {exact: true}).fill("Nob");
+    await page.getByLabel("Sök spex på titel eller år").fill("Nob");
     await page.getByRole("button", {name: /Nobel 1975/}).click();
     await page.getByRole("button", {name: "Skapa"}).click();
     await expect(page).toHaveURL(/\/manage\/videos\/[0-9a-f-]{36}$/);
@@ -35,7 +35,7 @@ test.describe("Editing a video", () => {
         // The page refreshes itself while the job waits or runs
         await expect(page.getByText(/Kvalitetsnivåer: 720p/)).toBeVisible({timeout: 10_000});
         await page.getByRole("switch").first().click();
-        await expect(page.getByText("Publicerad", {exact: true})).toBeVisible();
+        await expect(page.getByText("Publicerad", {exact: true}).first()).toBeVisible();
 
         await loginAs("viewer");
         await page.goto("/videos");

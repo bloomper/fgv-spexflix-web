@@ -17,7 +17,8 @@ type Documents = {
     "\n    query Trash { trash { id title year trashedAt status } }\n": typeof types.TrashDocument,
     "\n    query Queue {\n        processingQueue { id videoId videoTitle status progress attempts error createdAt startedAt finishedAt }\n    }\n": typeof types.QueueDocument,
     "\n    query Storage { storage { originalsBytes renditionsBytes freeBytes videoCount } }\n": typeof types.StorageDocument,
-    "\n    query AuditLog($page: Int, $size: Int) {\n        auditLog(page: $page, size: $size) {\n            totalCount page size\n            entries { id at actorName action entityType entityId summary }\n        }\n    }\n": typeof types.AuditLogDocument,
+    "\n    query AuditLog($page: Int, $size: Int, $filter: AuditFilter) {\n        auditLog(page: $page, size: $size, filter: $filter) {\n            totalCount page size\n            entries { id at actorId actorName action entityType entityId summary }\n        }\n    }\n": typeof types.AuditLogDocument,
+    "\n    query AuditActors { auditActors { id name } }\n": typeof types.AuditActorsDocument,
     "\n    query Settings { settings { welcomeSv welcomeEn maxUploadGb keepOriginals } }\n": typeof types.SettingsDocument,
     "mutation TrashEmpty { trashEmpty }": typeof types.TrashEmptyDocument,
     "\n    mutation SettingsUpdate($input: SettingsInput!) { settingsUpdate(input: $input) { welcomeSv } }\n": typeof types.SettingsUpdateDocument,
@@ -25,14 +26,16 @@ type Documents = {
     "mutation MaintenanceJobRun($job: MaintenanceJob!) { maintenanceJobRun(job: $job) }": typeof types.MaintenanceJobRunDocument,
     "\n    fragment KindFields on VideoKind { id nameSv nameEn isDefault }\n": typeof types.KindFieldsFragmentDoc,
     "\n    query Me {\n        me { username displayName roles spexifyUser }\n        settings { welcomeSv welcomeEn maxUploadGb keepOriginals }\n    }\n": typeof types.MeDocument,
-    "\n    query Home {\n        continueWatching(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { categoryName revival } }\n        highestRated(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished myRating spex { categoryName revival } }\n        recentVideos(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { categoryName revival } }\n        categories { id name videoCount }\n        years\n    }\n": typeof types.HomeDocument,
-    "\n    query Videos($filter: VideoFilter) {\n        videos(filter: $filter) {\n            id title year kind { ...KindFields } durationMs status published progressSeconds finished\n            spex { id categoryName revival }\n        }\n        categories { id name videoCount }\n        years\n        videoKinds { ...KindFields }\n    }\n": typeof types.VideosDocument,
+    "\n    query Home {\n        continueWatching(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }\n        highestRated(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished myRating spex { id title familyId categoryName revival } }\n        recentVideos(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }\n        categories { id name videoCount }\n        years\n    }\n": typeof types.HomeDocument,
+    "\n    query Videos($filter: VideoFilter) {\n        videos(filter: $filter) {\n            id title year kind { ...KindFields } durationMs status published progressSeconds finished\n            spex { id title familyId categoryName revival }\n        }\n        categories { id name videoCount }\n        years\n        videoKinds { ...KindFields }\n    }\n": typeof types.VideosDocument,
     "\n    query VideoKinds {\n        videoKinds { ...KindFields position videoCount }\n    }\n": typeof types.VideoKindsDocument,
-    "\n    query Video($id: ID!) {\n        video(id: $id) {\n            id title year kind { ...KindFields } performance performanceDate description status failure durationMs width height\n            published publishedAt trashedAt originalName originalSize originalKept hasThumbnails posterSeconds\n            progressSeconds finished inWatchList myRating averageRating ratingCount createdAt lastModifiedAt\n            spex { id title year revival categoryId categoryName }\n            renditions { height width bitrateKbps copied size }\n            chapters { startSeconds title spexifyTrackId spexifyTrackTitle }\n            subtitles { language label }\n            job { id status progress attempts error createdAt startedAt finishedAt }\n        }\n    }\n": typeof types.VideoDocument,
+    "\n    query Video($id: ID!) {\n        video(id: $id) {\n            id title year kind { ...KindFields } performance performanceDate description status failure durationMs width height\n            published publishedAt trashedAt originalName originalSize originalKept hasThumbnails posterSeconds\n            progressSeconds finished inWatchList myRating averageRating ratingCount createdAt lastModifiedAt\n            spex { id title year revival parentId familyId categoryId categoryName }\n            renditions { height width bitrateKbps copied size }\n            chapters { startSeconds title spexifyTrackId spexifyTrackTitle }\n            subtitles { language label }\n            job { id status progress attempts error createdAt startedAt finishedAt }\n            collections { id title }\n            next { id title year kind { ...KindFields } durationMs }\n        }\n    }\n": typeof types.VideoDocument,
+    "\n    query Collections {\n        collections {\n            id title description createdAt lastModifiedAt\n            videos { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }\n        }\n    }\n": typeof types.CollectionsDocument,
+    "\n    query Collection($id: ID!) {\n        collection(id: $id) {\n            id title description createdAt lastModifiedAt\n            videos { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }\n        }\n    }\n": typeof types.CollectionDocument,
     "\n    query Playback($videoId: ID!) {\n        playback(videoId: $videoId) { masterUrl thumbnailsUrl expiresAt subtitles { language label url } }\n    }\n": typeof types.PlaybackDocument,
-    "\n    query Search($q: String!) {\n        search(q: $q) { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { categoryName revival } }\n    }\n": typeof types.SearchDocument,
-    "\n    query WatchList {\n        watchList { id title year kind { ...KindFields } durationMs progressSeconds finished spex { categoryName revival } }\n    }\n": typeof types.WatchListDocument,
-    "\n    query SpexSearch($q: String!) { spexSearch(q: $q) { id title year revival categoryName } }\n": typeof types.SpexSearchDocument,
+    "\n    query Search($q: String!) {\n        search(q: $q) { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }\n    }\n": typeof types.SearchDocument,
+    "\n    query WatchList {\n        watchList { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }\n    }\n": typeof types.WatchListDocument,
+    "\n    query SpexSearch($q: String!) { spexSearch(q: $q) { id title year revival parentId categoryName } }\n": typeof types.SpexSearchDocument,
     "\n    query SpexifyTracks($videoId: ID!) { spexifyTracks(videoId: $videoId) { id title discNumber trackNumber albumTitle } }\n": typeof types.SpexifyTracksDocument,
     "mutation VideoKindCreate($input: VideoKindInput!) { videoKindCreate(input: $input) { id } }": typeof types.VideoKindCreateDocument,
     "mutation VideoKindUpdate($id: ID!, $input: VideoKindInput!) { videoKindUpdate(id: $id, input: $input) { id } }": typeof types.VideoKindUpdateDocument,
@@ -53,12 +56,18 @@ type Documents = {
     "mutation VideoRate($videoId: ID!, $rating: Int!) { videoRate(videoId: $videoId, rating: $rating) }": typeof types.VideoRateDocument,
     "mutation WatchListAdd($videoId: ID!) { watchListAdd(videoId: $videoId) }": typeof types.WatchListAddDocument,
     "mutation WatchListRemove($videoId: ID!) { watchListRemove(videoId: $videoId) }": typeof types.WatchListRemoveDocument,
+    "mutation ProgressClear($videoId: ID!) { progressClear(videoId: $videoId) }": typeof types.ProgressClearDocument,
+    "mutation VideoMarkWatched($videoId: ID!) { videoMarkWatched(videoId: $videoId) }": typeof types.VideoMarkWatchedDocument,
+    "mutation CollectionCreate($input: CollectionInput!) { collectionCreate(input: $input) { id } }": typeof types.CollectionCreateDocument,
+    "mutation CollectionUpdate($id: ID!, $input: CollectionInput!) { collectionUpdate(id: $id, input: $input) { id } }": typeof types.CollectionUpdateDocument,
+    "mutation CollectionDelete($id: ID!) { collectionDelete(id: $id) }": typeof types.CollectionDeleteDocument,
 };
 const documents: Documents = {
     "\n    query Trash { trash { id title year trashedAt status } }\n": types.TrashDocument,
     "\n    query Queue {\n        processingQueue { id videoId videoTitle status progress attempts error createdAt startedAt finishedAt }\n    }\n": types.QueueDocument,
     "\n    query Storage { storage { originalsBytes renditionsBytes freeBytes videoCount } }\n": types.StorageDocument,
-    "\n    query AuditLog($page: Int, $size: Int) {\n        auditLog(page: $page, size: $size) {\n            totalCount page size\n            entries { id at actorName action entityType entityId summary }\n        }\n    }\n": types.AuditLogDocument,
+    "\n    query AuditLog($page: Int, $size: Int, $filter: AuditFilter) {\n        auditLog(page: $page, size: $size, filter: $filter) {\n            totalCount page size\n            entries { id at actorId actorName action entityType entityId summary }\n        }\n    }\n": types.AuditLogDocument,
+    "\n    query AuditActors { auditActors { id name } }\n": types.AuditActorsDocument,
     "\n    query Settings { settings { welcomeSv welcomeEn maxUploadGb keepOriginals } }\n": types.SettingsDocument,
     "mutation TrashEmpty { trashEmpty }": types.TrashEmptyDocument,
     "\n    mutation SettingsUpdate($input: SettingsInput!) { settingsUpdate(input: $input) { welcomeSv } }\n": types.SettingsUpdateDocument,
@@ -66,14 +75,16 @@ const documents: Documents = {
     "mutation MaintenanceJobRun($job: MaintenanceJob!) { maintenanceJobRun(job: $job) }": types.MaintenanceJobRunDocument,
     "\n    fragment KindFields on VideoKind { id nameSv nameEn isDefault }\n": types.KindFieldsFragmentDoc,
     "\n    query Me {\n        me { username displayName roles spexifyUser }\n        settings { welcomeSv welcomeEn maxUploadGb keepOriginals }\n    }\n": types.MeDocument,
-    "\n    query Home {\n        continueWatching(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { categoryName revival } }\n        highestRated(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished myRating spex { categoryName revival } }\n        recentVideos(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { categoryName revival } }\n        categories { id name videoCount }\n        years\n    }\n": types.HomeDocument,
-    "\n    query Videos($filter: VideoFilter) {\n        videos(filter: $filter) {\n            id title year kind { ...KindFields } durationMs status published progressSeconds finished\n            spex { id categoryName revival }\n        }\n        categories { id name videoCount }\n        years\n        videoKinds { ...KindFields }\n    }\n": types.VideosDocument,
+    "\n    query Home {\n        continueWatching(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }\n        highestRated(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished myRating spex { id title familyId categoryName revival } }\n        recentVideos(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }\n        categories { id name videoCount }\n        years\n    }\n": types.HomeDocument,
+    "\n    query Videos($filter: VideoFilter) {\n        videos(filter: $filter) {\n            id title year kind { ...KindFields } durationMs status published progressSeconds finished\n            spex { id title familyId categoryName revival }\n        }\n        categories { id name videoCount }\n        years\n        videoKinds { ...KindFields }\n    }\n": types.VideosDocument,
     "\n    query VideoKinds {\n        videoKinds { ...KindFields position videoCount }\n    }\n": types.VideoKindsDocument,
-    "\n    query Video($id: ID!) {\n        video(id: $id) {\n            id title year kind { ...KindFields } performance performanceDate description status failure durationMs width height\n            published publishedAt trashedAt originalName originalSize originalKept hasThumbnails posterSeconds\n            progressSeconds finished inWatchList myRating averageRating ratingCount createdAt lastModifiedAt\n            spex { id title year revival categoryId categoryName }\n            renditions { height width bitrateKbps copied size }\n            chapters { startSeconds title spexifyTrackId spexifyTrackTitle }\n            subtitles { language label }\n            job { id status progress attempts error createdAt startedAt finishedAt }\n        }\n    }\n": types.VideoDocument,
+    "\n    query Video($id: ID!) {\n        video(id: $id) {\n            id title year kind { ...KindFields } performance performanceDate description status failure durationMs width height\n            published publishedAt trashedAt originalName originalSize originalKept hasThumbnails posterSeconds\n            progressSeconds finished inWatchList myRating averageRating ratingCount createdAt lastModifiedAt\n            spex { id title year revival parentId familyId categoryId categoryName }\n            renditions { height width bitrateKbps copied size }\n            chapters { startSeconds title spexifyTrackId spexifyTrackTitle }\n            subtitles { language label }\n            job { id status progress attempts error createdAt startedAt finishedAt }\n            collections { id title }\n            next { id title year kind { ...KindFields } durationMs }\n        }\n    }\n": types.VideoDocument,
+    "\n    query Collections {\n        collections {\n            id title description createdAt lastModifiedAt\n            videos { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }\n        }\n    }\n": types.CollectionsDocument,
+    "\n    query Collection($id: ID!) {\n        collection(id: $id) {\n            id title description createdAt lastModifiedAt\n            videos { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }\n        }\n    }\n": types.CollectionDocument,
     "\n    query Playback($videoId: ID!) {\n        playback(videoId: $videoId) { masterUrl thumbnailsUrl expiresAt subtitles { language label url } }\n    }\n": types.PlaybackDocument,
-    "\n    query Search($q: String!) {\n        search(q: $q) { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { categoryName revival } }\n    }\n": types.SearchDocument,
-    "\n    query WatchList {\n        watchList { id title year kind { ...KindFields } durationMs progressSeconds finished spex { categoryName revival } }\n    }\n": types.WatchListDocument,
-    "\n    query SpexSearch($q: String!) { spexSearch(q: $q) { id title year revival categoryName } }\n": types.SpexSearchDocument,
+    "\n    query Search($q: String!) {\n        search(q: $q) { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }\n    }\n": types.SearchDocument,
+    "\n    query WatchList {\n        watchList { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }\n    }\n": types.WatchListDocument,
+    "\n    query SpexSearch($q: String!) { spexSearch(q: $q) { id title year revival parentId categoryName } }\n": types.SpexSearchDocument,
     "\n    query SpexifyTracks($videoId: ID!) { spexifyTracks(videoId: $videoId) { id title discNumber trackNumber albumTitle } }\n": types.SpexifyTracksDocument,
     "mutation VideoKindCreate($input: VideoKindInput!) { videoKindCreate(input: $input) { id } }": types.VideoKindCreateDocument,
     "mutation VideoKindUpdate($id: ID!, $input: VideoKindInput!) { videoKindUpdate(id: $id, input: $input) { id } }": types.VideoKindUpdateDocument,
@@ -94,6 +105,11 @@ const documents: Documents = {
     "mutation VideoRate($videoId: ID!, $rating: Int!) { videoRate(videoId: $videoId, rating: $rating) }": types.VideoRateDocument,
     "mutation WatchListAdd($videoId: ID!) { watchListAdd(videoId: $videoId) }": types.WatchListAddDocument,
     "mutation WatchListRemove($videoId: ID!) { watchListRemove(videoId: $videoId) }": types.WatchListRemoveDocument,
+    "mutation ProgressClear($videoId: ID!) { progressClear(videoId: $videoId) }": types.ProgressClearDocument,
+    "mutation VideoMarkWatched($videoId: ID!) { videoMarkWatched(videoId: $videoId) }": types.VideoMarkWatchedDocument,
+    "mutation CollectionCreate($input: CollectionInput!) { collectionCreate(input: $input) { id } }": types.CollectionCreateDocument,
+    "mutation CollectionUpdate($id: ID!, $input: CollectionInput!) { collectionUpdate(id: $id, input: $input) { id } }": types.CollectionUpdateDocument,
+    "mutation CollectionDelete($id: ID!) { collectionDelete(id: $id) }": types.CollectionDeleteDocument,
 };
 
 /**
@@ -125,7 +141,11 @@ export function graphql(source: "\n    query Storage { storage { originalsBytes 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    query AuditLog($page: Int, $size: Int) {\n        auditLog(page: $page, size: $size) {\n            totalCount page size\n            entries { id at actorName action entityType entityId summary }\n        }\n    }\n"): (typeof documents)["\n    query AuditLog($page: Int, $size: Int) {\n        auditLog(page: $page, size: $size) {\n            totalCount page size\n            entries { id at actorName action entityType entityId summary }\n        }\n    }\n"];
+export function graphql(source: "\n    query AuditLog($page: Int, $size: Int, $filter: AuditFilter) {\n        auditLog(page: $page, size: $size, filter: $filter) {\n            totalCount page size\n            entries { id at actorId actorName action entityType entityId summary }\n        }\n    }\n"): (typeof documents)["\n    query AuditLog($page: Int, $size: Int, $filter: AuditFilter) {\n        auditLog(page: $page, size: $size, filter: $filter) {\n            totalCount page size\n            entries { id at actorId actorName action entityType entityId summary }\n        }\n    }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    query AuditActors { auditActors { id name } }\n"): (typeof documents)["\n    query AuditActors { auditActors { id name } }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -157,11 +177,11 @@ export function graphql(source: "\n    query Me {\n        me { username display
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    query Home {\n        continueWatching(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { categoryName revival } }\n        highestRated(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished myRating spex { categoryName revival } }\n        recentVideos(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { categoryName revival } }\n        categories { id name videoCount }\n        years\n    }\n"): (typeof documents)["\n    query Home {\n        continueWatching(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { categoryName revival } }\n        highestRated(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished myRating spex { categoryName revival } }\n        recentVideos(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { categoryName revival } }\n        categories { id name videoCount }\n        years\n    }\n"];
+export function graphql(source: "\n    query Home {\n        continueWatching(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }\n        highestRated(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished myRating spex { id title familyId categoryName revival } }\n        recentVideos(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }\n        categories { id name videoCount }\n        years\n    }\n"): (typeof documents)["\n    query Home {\n        continueWatching(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }\n        highestRated(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished myRating spex { id title familyId categoryName revival } }\n        recentVideos(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }\n        categories { id name videoCount }\n        years\n    }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    query Videos($filter: VideoFilter) {\n        videos(filter: $filter) {\n            id title year kind { ...KindFields } durationMs status published progressSeconds finished\n            spex { id categoryName revival }\n        }\n        categories { id name videoCount }\n        years\n        videoKinds { ...KindFields }\n    }\n"): (typeof documents)["\n    query Videos($filter: VideoFilter) {\n        videos(filter: $filter) {\n            id title year kind { ...KindFields } durationMs status published progressSeconds finished\n            spex { id categoryName revival }\n        }\n        categories { id name videoCount }\n        years\n        videoKinds { ...KindFields }\n    }\n"];
+export function graphql(source: "\n    query Videos($filter: VideoFilter) {\n        videos(filter: $filter) {\n            id title year kind { ...KindFields } durationMs status published progressSeconds finished\n            spex { id title familyId categoryName revival }\n        }\n        categories { id name videoCount }\n        years\n        videoKinds { ...KindFields }\n    }\n"): (typeof documents)["\n    query Videos($filter: VideoFilter) {\n        videos(filter: $filter) {\n            id title year kind { ...KindFields } durationMs status published progressSeconds finished\n            spex { id title familyId categoryName revival }\n        }\n        categories { id name videoCount }\n        years\n        videoKinds { ...KindFields }\n    }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -169,7 +189,15 @@ export function graphql(source: "\n    query VideoKinds {\n        videoKinds { 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    query Video($id: ID!) {\n        video(id: $id) {\n            id title year kind { ...KindFields } performance performanceDate description status failure durationMs width height\n            published publishedAt trashedAt originalName originalSize originalKept hasThumbnails posterSeconds\n            progressSeconds finished inWatchList myRating averageRating ratingCount createdAt lastModifiedAt\n            spex { id title year revival categoryId categoryName }\n            renditions { height width bitrateKbps copied size }\n            chapters { startSeconds title spexifyTrackId spexifyTrackTitle }\n            subtitles { language label }\n            job { id status progress attempts error createdAt startedAt finishedAt }\n        }\n    }\n"): (typeof documents)["\n    query Video($id: ID!) {\n        video(id: $id) {\n            id title year kind { ...KindFields } performance performanceDate description status failure durationMs width height\n            published publishedAt trashedAt originalName originalSize originalKept hasThumbnails posterSeconds\n            progressSeconds finished inWatchList myRating averageRating ratingCount createdAt lastModifiedAt\n            spex { id title year revival categoryId categoryName }\n            renditions { height width bitrateKbps copied size }\n            chapters { startSeconds title spexifyTrackId spexifyTrackTitle }\n            subtitles { language label }\n            job { id status progress attempts error createdAt startedAt finishedAt }\n        }\n    }\n"];
+export function graphql(source: "\n    query Video($id: ID!) {\n        video(id: $id) {\n            id title year kind { ...KindFields } performance performanceDate description status failure durationMs width height\n            published publishedAt trashedAt originalName originalSize originalKept hasThumbnails posterSeconds\n            progressSeconds finished inWatchList myRating averageRating ratingCount createdAt lastModifiedAt\n            spex { id title year revival parentId familyId categoryId categoryName }\n            renditions { height width bitrateKbps copied size }\n            chapters { startSeconds title spexifyTrackId spexifyTrackTitle }\n            subtitles { language label }\n            job { id status progress attempts error createdAt startedAt finishedAt }\n            collections { id title }\n            next { id title year kind { ...KindFields } durationMs }\n        }\n    }\n"): (typeof documents)["\n    query Video($id: ID!) {\n        video(id: $id) {\n            id title year kind { ...KindFields } performance performanceDate description status failure durationMs width height\n            published publishedAt trashedAt originalName originalSize originalKept hasThumbnails posterSeconds\n            progressSeconds finished inWatchList myRating averageRating ratingCount createdAt lastModifiedAt\n            spex { id title year revival parentId familyId categoryId categoryName }\n            renditions { height width bitrateKbps copied size }\n            chapters { startSeconds title spexifyTrackId spexifyTrackTitle }\n            subtitles { language label }\n            job { id status progress attempts error createdAt startedAt finishedAt }\n            collections { id title }\n            next { id title year kind { ...KindFields } durationMs }\n        }\n    }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    query Collections {\n        collections {\n            id title description createdAt lastModifiedAt\n            videos { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }\n        }\n    }\n"): (typeof documents)["\n    query Collections {\n        collections {\n            id title description createdAt lastModifiedAt\n            videos { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }\n        }\n    }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    query Collection($id: ID!) {\n        collection(id: $id) {\n            id title description createdAt lastModifiedAt\n            videos { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }\n        }\n    }\n"): (typeof documents)["\n    query Collection($id: ID!) {\n        collection(id: $id) {\n            id title description createdAt lastModifiedAt\n            videos { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }\n        }\n    }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -177,15 +205,15 @@ export function graphql(source: "\n    query Playback($videoId: ID!) {\n        
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    query Search($q: String!) {\n        search(q: $q) { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { categoryName revival } }\n    }\n"): (typeof documents)["\n    query Search($q: String!) {\n        search(q: $q) { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { categoryName revival } }\n    }\n"];
+export function graphql(source: "\n    query Search($q: String!) {\n        search(q: $q) { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }\n    }\n"): (typeof documents)["\n    query Search($q: String!) {\n        search(q: $q) { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }\n    }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    query WatchList {\n        watchList { id title year kind { ...KindFields } durationMs progressSeconds finished spex { categoryName revival } }\n    }\n"): (typeof documents)["\n    query WatchList {\n        watchList { id title year kind { ...KindFields } durationMs progressSeconds finished spex { categoryName revival } }\n    }\n"];
+export function graphql(source: "\n    query WatchList {\n        watchList { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }\n    }\n"): (typeof documents)["\n    query WatchList {\n        watchList { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }\n    }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    query SpexSearch($q: String!) { spexSearch(q: $q) { id title year revival categoryName } }\n"): (typeof documents)["\n    query SpexSearch($q: String!) { spexSearch(q: $q) { id title year revival categoryName } }\n"];
+export function graphql(source: "\n    query SpexSearch($q: String!) { spexSearch(q: $q) { id title year revival parentId categoryName } }\n"): (typeof documents)["\n    query SpexSearch($q: String!) { spexSearch(q: $q) { id title year revival parentId categoryName } }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -266,6 +294,26 @@ export function graphql(source: "mutation WatchListAdd($videoId: ID!) { watchLis
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "mutation WatchListRemove($videoId: ID!) { watchListRemove(videoId: $videoId) }"): (typeof documents)["mutation WatchListRemove($videoId: ID!) { watchListRemove(videoId: $videoId) }"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "mutation ProgressClear($videoId: ID!) { progressClear(videoId: $videoId) }"): (typeof documents)["mutation ProgressClear($videoId: ID!) { progressClear(videoId: $videoId) }"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "mutation VideoMarkWatched($videoId: ID!) { videoMarkWatched(videoId: $videoId) }"): (typeof documents)["mutation VideoMarkWatched($videoId: ID!) { videoMarkWatched(videoId: $videoId) }"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "mutation CollectionCreate($input: CollectionInput!) { collectionCreate(input: $input) { id } }"): (typeof documents)["mutation CollectionCreate($input: CollectionInput!) { collectionCreate(input: $input) { id } }"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "mutation CollectionUpdate($id: ID!, $input: CollectionInput!) { collectionUpdate(id: $id, input: $input) { id } }"): (typeof documents)["mutation CollectionUpdate($id: ID!, $input: CollectionInput!) { collectionUpdate(id: $id, input: $input) { id } }"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "mutation CollectionDelete($id: ID!) { collectionDelete(id: $id) }"): (typeof documents)["mutation CollectionDelete($id: ID!) { collectionDelete(id: $id) }"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

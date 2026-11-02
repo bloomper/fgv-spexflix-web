@@ -1,3 +1,4 @@
+import type {ReactNode} from "react";
 import Link from "next/link";
 import {useLocale, useTranslations} from "next-intl";
 import {Badge} from "@/components/ui/badge";
@@ -15,13 +16,19 @@ export type VideoSummary = {
     published?: boolean;
     progressSeconds?: number | null;
     finished?: boolean;
-    spex?: { categoryName?: string | null; revival?: boolean | null } | null;
+    /** The main spex first. */
+    spex?: { categoryName?: string | null; revival?: boolean | null }[];
 };
 
 /**
  * Videos as poster cards, with how far the user has come.
  */
-export function VideoGrid({videos, hrefFor}: { videos: VideoSummary[]; hrefFor?: (id: string) => string }) {
+export function VideoGrid({videos, hrefFor, action}: {
+    videos: VideoSummary[];
+    hrefFor?: (id: string) => string;
+    /** Something to do with a video, shown on its card's corner, e.g. taking it off "continue watching". */
+    action?: (video: VideoSummary) => ReactNode;
+}) {
     const t = useTranslations("Video");
     const locale = useLocale();
 
@@ -32,7 +39,8 @@ export function VideoGrid({videos, hrefFor}: { videos: VideoSummary[]; hrefFor?:
                 const watched = video.finished ? 1 : duration > 0 && video.progressSeconds ? Math.min(1, video.progressSeconds / duration) : 0;
 
                 return (
-                    <li key={video.id}>
+                    <li key={video.id} className="relative">
+                        {action && <div className="absolute top-2 right-2 z-10">{action(video)}</div>}
                         <Link href={hrefFor ? hrefFor(video.id) : `/videos/${video.id}`}
                               className="group block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring">
                             <div className="relative overflow-hidden rounded-lg shadow-sm">
@@ -52,10 +60,10 @@ export function VideoGrid({videos, hrefFor}: { videos: VideoSummary[]; hrefFor?:
                             <div className="mt-2 space-y-0.5">
                                 <div className="line-clamp-2 font-medium leading-tight">{video.title}</div>
                                 <div className="text-xs text-muted-foreground">
-                                    {[video.year, video.spex?.categoryName, kindName(video.kind, locale)].filter(Boolean).join(" · ")}
+                                    {[video.year, video.spex?.[0]?.categoryName, kindName(video.kind, locale)].filter(Boolean).join(" · ")}
                                 </div>
                                 <div className="flex flex-wrap gap-1 pt-0.5">
-                                    {video.spex?.revival && <Badge variant="secondary">{t("revival")}</Badge>}
+                                    {video.spex?.[0]?.revival && <Badge variant="secondary">{t("revival")}</Badge>}
                                     {video.published === false && <Badge variant="outline">{t("unpublished")}</Badge>}
                                     {video.status && video.status !== "READY" && <Badge variant={video.status === "FAILED" ? "destructive" : "secondary"}>{t(`status.${video.status}`)}</Badge>}
                                     {video.finished && <Badge variant="secondary">{t("seen")}</Badge>}

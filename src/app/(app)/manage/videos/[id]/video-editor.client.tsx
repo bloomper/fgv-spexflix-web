@@ -114,12 +114,14 @@ export function VideoEditor({video, playback, admin, kinds}: {
         return () => clearInterval(timer);
     }, [busy, video.status, router]);
 
+    const spexKey = (video.spex ?? []).map(spex => spex.id).join(",");
+
     useEffect(() => {
-        if (!video.spex) {
+        if (!spexKey) {
             return;
         }
         void spexifyTracksAction(video.id).then(result => result.ok && setTracks(result.data));
-    }, [video.id, video.spex]);
+    }, [video.id, spexKey]);
 
     const sendFile = async (file: File) => {
         setUpload({name: file.name, progress: 0});

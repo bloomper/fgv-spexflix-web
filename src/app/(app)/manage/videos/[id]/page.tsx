@@ -6,6 +6,8 @@ import {Policies} from "@/utils/policy.server";
 import {withPolicyPage} from "@/utils/route.server";
 import {isAdmin} from "@/utils/auth";
 import {VideoEditor} from "./video-editor.client";
+import {RecordHistory} from "@/components/audit/change-log";
+import {auditLink} from "../../audit/links";
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -32,8 +34,9 @@ export default async function EditVideoPage({params}: { params: Promise<{ id: st
                     <h1 className="text-2xl font-semibold tracking-tight">{video.title}</h1>
                     <Link href={`/videos/${video.id}`} className="text-sm text-primary hover:underline">{t("viewAsViewer")}</Link>
                 </div>
-                <VideoEditor video={{...video, spex: video.spex ? {...video.spex, revival: video.spex.revival === true} : null}}
+                <VideoEditor video={video}
                              playback={playback} admin={isAdmin(authz.roles)} kinds={kinds}/>
+                <RecordHistory entityId={video.id} path="/manage/audit" linkOf={auditLink}/>
             </div>
         );
     });

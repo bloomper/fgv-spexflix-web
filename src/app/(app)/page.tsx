@@ -2,6 +2,7 @@ import Link from "next/link";
 import {getLocale, getTranslations} from "next-intl/server";
 import {Badge} from "@/components/ui/badge";
 import {VideoGrid} from "@/components/video/video-grid";
+import {ForgetProgressButton} from "@/components/video/forget-progress.client";
 import {getHome, getMe} from "@/lib/video/video.server";
 import {Policies} from "@/utils/policy.server";
 import {withPolicyPage} from "@/utils/route.server";
@@ -25,7 +26,8 @@ export default async function HomePage() {
                 {home && home.continueWatching.length > 0 && (
                     <section className="space-y-3" aria-labelledby="continue">
                         <h2 id="continue" className="text-lg font-semibold">{t("continueWatching")}</h2>
-                        <VideoGrid videos={home.continueWatching}/>
+                        <VideoGrid videos={home.continueWatching}
+                                   action={video => <ForgetProgressButton videoId={video.id} title={video.title}/>}/>
                     </section>
                 )}
 

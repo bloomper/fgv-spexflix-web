@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import {useMemo} from "react";
-import {Bookmark, Clapperboard, Drama, House, type LucideIcon, Pencil, Settings, Wrench} from "lucide-react";
+import {Bookmark, Clapperboard, Drama, House, Layers, type LucideIcon, Pencil, Settings, Wrench} from "lucide-react";
 
 import {NavMain} from "@/components/nav-main.client";
 import {NavSecondary} from "@/components/nav-secondary.client";
@@ -58,6 +58,7 @@ export function AppSidebar({roles, accountUrl, ...props}: AppSidebarProps) {
         const mainItems: NavItem[] = [
             {title: t("Nav.home"), url: "/", icon: House, isActive: pathname === "/"},
             {title: t("Nav.videos"), url: "/videos", icon: Clapperboard, isActive: pathname.startsWith("/videos")},
+            {title: t("Nav.collections"), url: "/collections", icon: Layers, isActive: pathname.startsWith("/collections")},
             {title: t("Nav.watchList"), url: "/watchlist", icon: Bookmark, isActive: pathname.startsWith("/watchlist")},
         ];
 
@@ -69,6 +70,7 @@ export function AppSidebar({roles, accountUrl, ...props}: AppSidebarProps) {
                 isActive: pathname.startsWith("/manage"),
                 items: [
                     {title: t("Nav.manageVideos"), url: "/manage/videos"},
+                    {title: t("Nav.manageCollections"), url: "/manage/collections"},
                     {title: t("Nav.queue"), url: "/manage/queue"},
                     {title: t("Nav.trash"), url: "/manage/trash"},
                     {title: t("Nav.auditLog"), url: "/manage/audit"},
