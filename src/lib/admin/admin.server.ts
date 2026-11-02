@@ -2,7 +2,7 @@ import "server-only";
 
 import {graphql} from "@/gql";
 import {runMutation, runQuery} from "@/lib/graphql.server";
-import type {MaintenanceJob, SettingsInput} from "@/gql/graphql";
+import type {AuditFilter, MaintenanceJob, SettingsInput} from "@/gql/graphql";
 
 const TrashQuery = graphql(`
     query Trash { trash { id title year trashedAt status } }
@@ -16,12 +16,15 @@ const StorageQuery = graphql(`
     query Storage { storage { originalsBytes renditionsBytes freeBytes videoCount } }
 `);
 const AuditLogQuery = graphql(`
-    query AuditLog($page: Int, $size: Int) {
-        auditLog(page: $page, size: $size) {
+    query AuditLog($page: Int, $size: Int, $filter: AuditFilter) {
+        auditLog(page: $page, size: $size, filter: $filter) {
             totalCount page size
-            entries { id at actorName action entityType entityId summary }
+            entries { id at actorId actorName action entityType entityId summary }
         }
     }
+`);
+const AuditActorsQuery = graphql(`
+    query AuditActors { auditActors { id name } }
 `);
 const SettingsQuery = graphql(`
     query Settings { settings { welcomeSv welcomeEn maxUploadGb keepOriginals } }
@@ -39,7 +42,9 @@ const MaintenanceJobRunMutation = graphql(`mutation MaintenanceJobRun($job: Main
 export const getTrash = async () => (await runQuery(TrashQuery, {}))?.trash ?? [];
 export const getQueue = async () => (await runQuery(QueueQuery, {}))?.processingQueue ?? [];
 export const getStorage = async () => (await runQuery(StorageQuery, {}))?.storage;
-export const getAuditLog = async (page: number, size: number) => (await runQuery(AuditLogQuery, {page, size}))?.auditLog;
+export const getAuditLog = async (page: number, size: number, filter: AuditFilter = {}) =>
+    (await runQuery(AuditLogQuery, {page, size, filter}))?.auditLog;
+export const getAuditActors = async () => (await runQuery(AuditActorsQuery, {}))?.auditActors ?? [];
 export const getSettings = async () => (await runQuery(SettingsQuery, {}))?.settings;
 export const trashEmpty = () => runMutation(TrashEmptyMutation, {});
 export const settingsUpdate = (input: SettingsInput) => runMutation(SettingsUpdateMutation, {input});

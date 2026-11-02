@@ -244,7 +244,9 @@
     "adminStorage": "Lagring",
     "adminMaintenance": "Underhåll",
     "adminSettings": "Inställningar",
-    "adminKinds": "Filmsorter"
+    "adminKinds": "Filmsorter",
+    "collections": "Samlingar",
+    "manageCollections": "Samlingar"
   },
   "Home": {
     "title": "Spexflix",
@@ -256,7 +258,9 @@
     "allVideos": "Alla filmer",
     "empty": "Inga filmer är publicerade ännu.",
     "browse": "Bläddra",
-    "highestRated": "Högst betyg av dig"
+    "highestRated": "Högst betyg av dig",
+    "forget": "Ta bort {title} från Fortsätt titta",
+    "forgetFailed": "Det gick inte att ta bort filmen. Försök igen."
   },
   "Search": {
     "title": "Sök",
@@ -356,7 +360,47 @@
     "pages": "Sidor",
     "newer": "Nyare",
     "older": "Äldre",
-    "pageOf": "Sida {page} av {pages}"
+    "pageOf": "Sida {page} av {pages}",
+    "event": "Händelse",
+    "filters": "Filtrera ändringsloggen",
+    "search": "Sök i beskrivningen",
+    "typeLabel": "Sort",
+    "allTypes": "Alla sorter",
+    "actionLabel": "Händelse",
+    "allActions": "Alla händelser",
+    "everyone": "Alla",
+    "from": "Från och med",
+    "to": "Till och med",
+    "filter": "Filtrera",
+    "reset": "Rensa filtret",
+    "count": "{count, plural, =0 {Inga ändringar} one {# ändring} other {# ändringar}}",
+    "none": "Inga ändringar ännu.",
+    "noneFiltered": "Inga ändringar matchar filtret.",
+    "oneRecord": "Visar ändringarna av en post.",
+    "allRecords": "Visa alla poster",
+    "history": "Historik",
+    "historyOf": "Historik för {summary}",
+    "recordHistory": "Ändringar",
+    "allChanges": "Alla {count} ändringar",
+    "action": {
+      "CREATE": "Skapad",
+      "UPDATE": "Ändrad",
+      "PUBLISH": "Publicerad",
+      "UNPUBLISH": "Avpublicerad",
+      "TRASH": "I papperskorgen",
+      "RESTORE": "Återställd",
+      "DELETE": "Raderad",
+      "UPLOAD": "Uppladdad",
+      "REPLACE": "Ny fil",
+      "REPROCESS": "Bearbetad igen",
+      "REVOKE": "Återkallad"
+    },
+    "type": {
+      "VIDEO": "Film",
+      "COLLECTION": "Samling",
+      "VIDEO_KIND": "Filmsort",
+      "SETTINGS": "Inställningar"
+    }
   },
   "AdminSettings": {
     "title": "Inställningar",
@@ -405,13 +449,28 @@
     "rate": "Ditt betyg för filmen",
     "rateFailed": "Betyget kunde inte sparas.",
     "average": "{average} av 5 i snitt ({count, plural, =1 {# betyg} other {# betyg}})",
-    "noRatings": "Inga betyg ännu"
+    "noRatings": "Inga betyg ännu",
+    "nextIn": "Nästa film börjar om {seconds} s",
+    "playNow": "Spela nu",
+    "cancel": "Avbryt",
+    "next": "Nästa: {title}",
+    "autoplay": "Spela nästa film automatiskt",
+    "markWatched": "Markera som sedd",
+    "markUnwatched": "Markera som osedd",
+    "markedWatched": "Filmen är markerad som sedd.",
+    "markedUnwatched": "Filmen är markerad som osedd.",
+    "watchedFailed": "Det gick inte att spara. Försök igen.",
+    "partOf": "Ingår i"
   },
   "Player": {
     "timeline": "Tidslinje",
     "error": "Filmen kunde inte spelas upp.",
     "errorHint": "Kontrollera anslutningen och försök igen.",
-    "retry": "Försök igen"
+    "retry": "Försök igen",
+    "quality": "Kvalitet",
+    "auto": "Automatisk",
+    "airPlay": "AirPlay",
+    "shortcuts": "Kortkommandon"
   },
   "WatchList": {
     "title": "Min lista",
@@ -489,5 +548,49 @@
   "Rating": {
     "stars": "{count, plural, =1 {# stjärna} other {# stjärnor}}",
     "rated": "{count, plural, =1 {Betyg: # stjärna} other {Betyg: # stjärnor}}"
+  },
+  "Shortcuts": {
+    "title": "Kortkommandon",
+    "description": "Fungerar överallt på sidan utom när du skriver i ett fält.",
+    "toggle": "Spela eller pausa",
+    "seek10": "Spola 10 sekunder bakåt eller framåt",
+    "seek5": "Spola 5 sekunder bakåt eller framåt",
+    "chapter": "Föregående eller nästa kapitel",
+    "fullscreen": "Helskärm",
+    "mute": "Stäng av eller slå på ljudet",
+    "subtitles": "Undertexter av eller på",
+    "help": "Visa kortkommandona"
+  },
+  "Collections": {
+    "title": "Samlingar",
+    "text": "Filmer samlade i en egen ordning, till exempel ett spex genom åren.",
+    "none": "Det finns inga samlingar ännu.",
+    "videos": "{count, plural, one {# film} other {# filmer}}",
+    "empty": "Samlingen har inga filmer ännu.",
+    "playFromStart": "Spela från början",
+    "continue": "Fortsätt med {title}",
+    "edit": "Redigera",
+    "manageTitle": "Samlingar",
+    "manageText": "En samling spelas i sin ordning: när en film tar slut börjar nästa.",
+    "new": "Ny samling",
+    "titleLabel": "Titel",
+    "descriptionLabel": "Beskrivning",
+    "videosLabel": "Filmer",
+    "changed": "Ändrad",
+    "noVideos": "Inga filmer ännu.",
+    "unpublished": "opublicerad",
+    "moveUp": "Flytta upp {title}",
+    "moveDown": "Flytta ner {title}",
+    "remove": "Ta bort {title} från samlingen",
+    "addVideo": "Lägg till film",
+    "chooseVideo": "Välj en film",
+    "add": "Lägg till",
+    "save": "Spara",
+    "create": "Skapa",
+    "saved": "Samlingen är sparad.",
+    "view": "Visa samlingen",
+    "delete": "Radera samlingen",
+    "confirmDelete": "Radera samlingen?",
+    "confirmDeleteText": "Filmerna finns kvar."
   }
 }

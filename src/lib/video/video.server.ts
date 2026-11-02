@@ -2,7 +2,7 @@ import "server-only";
 
 import {graphql} from "@/gql";
 import {runMutation, runQuery} from "@/lib/graphql.server";
-import type {ChapterInput, VideoFilter, VideoInput, VideoKindInput} from "@/gql/graphql";
+import type {ChapterInput, CollectionInput, VideoFilter, VideoInput, VideoKindInput} from "@/gql/graphql";
 
 export const KindFieldsFragment = graphql(`
     fragment KindFields on VideoKind { id nameSv nameEn isDefault }
@@ -54,6 +54,26 @@ const VideoQuery = graphql(`
             chapters { startSeconds title spexifyTrackId spexifyTrackTitle }
             subtitles { language label }
             job { id status progress attempts error createdAt startedAt finishedAt }
+            collections { id title }
+            next { id title year kind { ...KindFields } durationMs }
+        }
+    }
+`);
+
+const CollectionsQuery = graphql(`
+    query Collections {
+        collections {
+            id title description createdAt lastModifiedAt
+            videos { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { categoryName revival } }
+        }
+    }
+`);
+
+const CollectionQuery = graphql(`
+    query Collection($id: ID!) {
+        collection(id: $id) {
+            id title description createdAt lastModifiedAt
+            videos { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { categoryName revival } }
         }
     }
 `);
@@ -103,6 +123,11 @@ const ProgressSaveMutation = graphql(`mutation ProgressSave($videoId: ID!, $posi
 const VideoRateMutation = graphql(`mutation VideoRate($videoId: ID!, $rating: Int!) { videoRate(videoId: $videoId, rating: $rating) }`);
 const WatchListAddMutation = graphql(`mutation WatchListAdd($videoId: ID!) { watchListAdd(videoId: $videoId) }`);
 const WatchListRemoveMutation = graphql(`mutation WatchListRemove($videoId: ID!) { watchListRemove(videoId: $videoId) }`);
+const ProgressClearMutation = graphql(`mutation ProgressClear($videoId: ID!) { progressClear(videoId: $videoId) }`);
+const VideoMarkWatchedMutation = graphql(`mutation VideoMarkWatched($videoId: ID!) { videoMarkWatched(videoId: $videoId) }`);
+const CollectionCreateMutation = graphql(`mutation CollectionCreate($input: CollectionInput!) { collectionCreate(input: $input) { id } }`);
+const CollectionUpdateMutation = graphql(`mutation CollectionUpdate($id: ID!, $input: CollectionInput!) { collectionUpdate(id: $id, input: $input) { id } }`);
+const CollectionDeleteMutation = graphql(`mutation CollectionDelete($id: ID!) { collectionDelete(id: $id) }`);
 
 export const getMe = () => runQuery(MeQuery, {});
 export const getHome = () => runQuery(HomeQuery, {});
@@ -134,6 +159,13 @@ export const progressSave = (videoId: string, positionSeconds: number) => runMut
 export const videoRate = (videoId: string, rating: number) => runMutation(VideoRateMutation, {videoId, rating});
 export const watchListAdd = (videoId: string) => runMutation(WatchListAddMutation, {videoId});
 export const watchListRemove = (videoId: string) => runMutation(WatchListRemoveMutation, {videoId});
+export const progressClear = (videoId: string) => runMutation(ProgressClearMutation, {videoId});
+export const videoMarkWatched = (videoId: string) => runMutation(VideoMarkWatchedMutation, {videoId});
+export const getCollections = async () => (await runQuery(CollectionsQuery, {}))?.collections ?? [];
+export const getCollection = async (id: string) => (await runQuery(CollectionQuery, {id}))?.collection ?? null;
+export const collectionCreate = async (input: CollectionInput) => (await runMutation(CollectionCreateMutation, {input}))?.collectionCreate;
+export const collectionUpdate = (id: string, input: CollectionInput) => runMutation(CollectionUpdateMutation, {id, input});
+export const collectionDelete = (id: string) => runMutation(CollectionDeleteMutation, {id});
 
 /**
  * Spexify's address, for links from chapters to tracks; null when it is not configured.

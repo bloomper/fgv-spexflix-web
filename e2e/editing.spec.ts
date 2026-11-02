@@ -35,7 +35,7 @@ test.describe("Editing a video", () => {
         // The page refreshes itself while the job waits or runs
         await expect(page.getByText(/Kvalitetsnivåer: 720p/)).toBeVisible({timeout: 10_000});
         await page.getByRole("switch").first().click();
-        await expect(page.getByText("Publicerad", {exact: true})).toBeVisible();
+        await expect(page.getByText("Publicerad", {exact: true}).first()).toBeVisible();
 
         await loginAs("viewer");
         await page.goto("/videos");

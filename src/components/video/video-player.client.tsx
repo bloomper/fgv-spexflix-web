@@ -5,8 +5,10 @@ import {useCallback, useEffect, useImperativeHandle, useRef, useState} from "rea
 import {useRouter} from "next/navigation";
 import {useTranslations} from "next-intl";
 import type Hls from "hls.js";
-import {RotateCcw, TriangleAlert} from "lucide-react";
+import {Airplay, Keyboard, RotateCcw, TriangleAlert} from "lucide-react";
 import {Button} from "@/components/ui/button";
+import {NativeSelect, NativeSelectOption} from "@/components/ui/native-select";
+import {useVideoShortcuts, VideoShortcutsDialog} from "@/components/video/shortcuts.client";
 import {formatDuration} from "@/utils/duration";
 import {parseThumbnails, type Thumbnail, thumbnailAt} from "@/components/video/thumbnails";
 import {saveProgressAction} from "@/components/video/actions.server";
@@ -14,7 +16,12 @@ import {cn} from "@/utils/utils";
 import {track as trackEvent} from "@/utils/umami";
 
 export type PlayerChapter = { startSeconds: number; title: string };
-export type PlayerHandle = { seek: (seconds: number) => void; currentTime: () => number };
+export type PlayerHandle = { seek: (seconds: number) => void; currentTime: () => number; play: () => void };
+
+/** A quality level hls.js can play: its height and bitrate. */
+type Level = { height: number; bitrate: number };
+
+type AirPlayVideo = HTMLVideoElement & { webkitShowPlaybackTargetPicker?: () => void };
 
 type Props = {
     videoId: string;
@@ -26,6 +33,12 @@ type Props = {
     startAt?: number | null;
     /** Editors watching unpublished videos do not record progress. */
     recordProgress?: boolean;
+    /** Starts playing once loaded, e.g. when the previous video ended and this one follows it. */
+    autoPlay?: boolean;
+    /** Called as the video plays, with the position in seconds. */
+    onTime?: (seconds: number) => void;
+    /** Called when the video has played to its end. */
+    onEnded?: () => void;
     ref?: React.Ref<PlayerHandle>;
 };
 
@@ -34,13 +47,15 @@ const SAVE_EVERY = 15;
 /**
  * Plays a video's HLS renditions with adaptive quality: natively in Safari, through hls.js elsewhere. The browser's own
  * controls handle play, volume, subtitles, speed, full screen and picture-in-picture; below them a timeline shows the
- * chapters and, on hover, the timeline thumbnails. Progress is saved every 15 seconds and when pausing.
+ * chapters and, on hover, the timeline thumbnails, and with hls.js a choice of quality. Safari offers AirPlay. Keyboard
+ * shortcuts work anywhere on the page. Progress is saved every 15 seconds and when pausing.
  *
  * When the video cannot be loaded (the media server cannot be reached, the signed address has expired, the file is
  * broken), a message replaces the endless loading. Trying again refreshes the page's data, which signs new addresses,
  * and continues from where playing stopped.
  */
-export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapters, durationSeconds, startAt, recordProgress = true, ref}: Props) {
+export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapters, durationSeconds, startAt, recordProgress = true,
+                                autoPlay = false, onTime, onEnded, ref}: Props) {
     const t = useTranslations("Player");
     const video = useRef<HTMLVideoElement>(null);
     const [time, setTime] = useState(startAt ?? 0);
@@ -54,6 +69,32 @@ export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapt
     const played = useRef(false);
     // Where to start when (re)loading: the requested position first, then where playing got to
     const resumeAt = useRef(startAt ?? 0);
+    const hlsRef = useRef<Hls | null>(null);
+    const [levels, setLevels] = useState<Level[]>([]);
+    const [level, setLevel] = useState(-1);
+    const [airPlay, setAirPlay] = useState(false);
+    const [shortcutsOpen, setShortcutsOpen] = useState(false);
+    const callbacks = useRef({onTime, onEnded});
+
+    useEffect(() => {
+        callbacks.current = {onTime, onEnded};
+    }, [onTime, onEnded]);
+
+    useVideoShortcuts(video, chapters, () => setShortcutsOpen(true));
+
+    // Safari tells whether there is an AirPlay receiver nearby
+    useEffect(() => {
+        const element = video.current;
+
+        if (!element || !("WebKitPlaybackTargetAvailabilityEvent" in window)) {
+            return;
+        }
+
+        const onAvailability = (event: Event) => setAirPlay((event as Event & { availability?: string }).availability === "available");
+
+        element.addEventListener("webkitplaybacktargetavailabilitychanged", onAvailability);
+        return () => element.removeEventListener("webkitplaybacktargetavailabilitychanged", onAvailability);
+    }, []);
 
     useImperativeHandle(ref, () => ({
         seek: (seconds: number) => {
@@ -63,6 +104,7 @@ export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapt
             }
         },
         currentTime: () => video.current?.currentTime ?? 0,
+        play: () => void video.current?.play().catch(() => undefined),
     }), []);
 
     useEffect(() => {
@@ -78,6 +120,9 @@ export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapt
         const start = () => {
             if (position > 0) {
                 element.currentTime = position;
+            }
+            if (autoPlay) {
+                void element.play().catch(() => undefined);
             }
         };
         const fail = () => {
@@ -121,9 +166,16 @@ export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapt
                     hls = null;
                     fail();
                 });
+                instance.on(HlsClass.Events.MANIFEST_PARSED, (_event, data) => {
+                    setLevels(data.levels.map(candidate => ({height: candidate.height, bitrate: candidate.bitrate})));
+                    if (autoPlay) {
+                        void element.play().catch(() => undefined);
+                    }
+                });
                 instance.loadSource(masterUrl);
                 instance.attachMedia(element);
                 hls = instance;
+                hlsRef.current = instance;
             });
         }
         return () => {
@@ -131,8 +183,21 @@ export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapt
             element.removeEventListener("error", fail);
             element.removeEventListener("loadedmetadata", start);
             hls?.destroy();
+            hlsRef.current = null;
+            setLevels([]);
+            setLevel(-1);
         };
+        // autoPlay counts only for the first load, not for a retry
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [masterUrl, attempt]);
+
+    const chooseLevel = (value: number) => {
+        setLevel(value);
+        if (hlsRef.current) {
+            // -1 lets hls.js choose by the connection again
+            hlsRef.current.currentLevel = value;
+        }
+    };
 
     const retry = () => {
         resumeAt.current = video.current?.currentTime || resumeAt.current;
@@ -163,6 +228,7 @@ export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapt
 
         const onTime = () => {
             setTime(element.currentTime);
+            callbacks.current.onTime?.(element.currentTime);
             if (element.currentTime > 0) {
                 resumeAt.current = element.currentTime;
             }
@@ -171,16 +237,20 @@ export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapt
             }
         };
         const onPause = () => save(element.currentTime);
+        const onEnd = () => {
+            save(element.currentTime);
+            callbacks.current.onEnded?.();
+        };
         const onDuration = () => Number.isFinite(element.duration) && setDuration(element.duration);
 
         element.addEventListener("timeupdate", onTime);
         element.addEventListener("pause", onPause);
-        element.addEventListener("ended", onPause);
+        element.addEventListener("ended", onEnd);
         element.addEventListener("durationchange", onDuration);
         return () => {
             element.removeEventListener("timeupdate", onTime);
             element.removeEventListener("pause", onPause);
-            element.removeEventListener("ended", onPause);
+            element.removeEventListener("ended", onEnd);
             element.removeEventListener("durationchange", onDuration);
         };
     }, [save]);
@@ -191,7 +261,7 @@ export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapt
     return (
         <div className="space-y-2">
             <div className="relative">
-                <video ref={video} controls playsInline crossOrigin="anonymous" preload="metadata"
+                <video ref={video} controls playsInline crossOrigin="anonymous" preload="metadata" x-webkit-airplay="allow"
                        onPlay={() => {
                            // Once per page: how many videos are watched, not how often they are paused
                            if (!played.current) {
@@ -281,6 +351,28 @@ export function VideoPlayer({videoId, masterUrl, thumbnailsUrl, subtitles, chapt
                     <span>{formatDuration(duration)}</span>
                 </div>
             </div>
+            <div className="flex flex-wrap items-center gap-2 px-1">
+                {levels.length > 1 && (
+                    <label className="flex items-center gap-2 text-sm">
+                        <span className="text-muted-foreground">{t("quality")}</span>
+                        <NativeSelect size="sm" value={String(level)} onChange={event => chooseLevel(Number(event.target.value))}>
+                            <NativeSelectOption value="-1">{t("auto")}</NativeSelectOption>
+                            {levels.map((candidate, i) => (
+                                <NativeSelectOption key={`${candidate.height}-${candidate.bitrate}`} value={String(i)}>{candidate.height}p</NativeSelectOption>
+                            ))}
+                        </NativeSelect>
+                    </label>
+                )}
+                {airPlay && (
+                    <Button variant="outline" size="sm" onClick={() => (video.current as AirPlayVideo | null)?.webkitShowPlaybackTargetPicker?.()}>
+                        <Airplay/>{t("airPlay")}
+                    </Button>
+                )}
+                <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setShortcutsOpen(true)}>
+                    <Keyboard/>{t("shortcuts")}
+                </Button>
+            </div>
+            <VideoShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen}/>
         </div>
     );
 }

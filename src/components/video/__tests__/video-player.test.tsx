@@ -15,6 +15,8 @@ const hls = vi.hoisted(() => ({
         destroy: ReturnType<typeof vi.fn>;
         recoverMediaError: ReturnType<typeof vi.fn>;
         emit: (data: { fatal: boolean; type: string }) => void;
+        emitManifest: (levels: { height: number; bitrate: number }[]) => void;
+        currentLevel: number;
     }[],
 }));
 
@@ -24,15 +26,19 @@ vi.mock("next/navigation", () => ({useRouter: () => ({refresh})}));
 vi.mock("hls.js", () => {
     class FakeHls {
         static isSupported = () => hls.supported;
-        static Events = {ERROR: "hlsError"};
+        static Events = {ERROR: "hlsError", MANIFEST_PARSED: "hlsManifestParsed"};
         static ErrorTypes = {NETWORK_ERROR: "networkError", MEDIA_ERROR: "mediaError"};
         loadSource = vi.fn();
         attachMedia = vi.fn();
         destroy = vi.fn();
         recoverMediaError = vi.fn();
-        listeners: ((event: string, data: { fatal: boolean; type: string }) => void)[] = [];
-        on = (_event: string, listener: (event: string, data: { fatal: boolean; type: string }) => void) => this.listeners.push(listener);
-        emit = (data: { fatal: boolean; type: string }) => this.listeners.forEach(listener => listener("hlsError", data));
+        currentLevel = -1;
+        listeners: { event: string; listener: (event: string, data: never) => void }[] = [];
+        on = (event: string, listener: (event: string, data: never) => void) => this.listeners.push({event, listener});
+        fire = (event: string, data: unknown) => this.listeners.filter(entry => entry.event === event)
+            .forEach(entry => entry.listener(event, data as never));
+        emit = (data: { fatal: boolean; type: string }) => this.fire("hlsError", data);
+        emitManifest = (levels: { height: number; bitrate: number }[]) => this.fire("hlsManifestParsed", {levels});
 
         constructor(public options: object) {
             hls.instances.push(this);
@@ -231,5 +237,53 @@ describe("VideoPlayer", () => {
         expect(media(container).currentTime).toBe(90);
         expect(HTMLMediaElement.prototype.play).toHaveBeenCalled();
         expect(ref.current?.currentTime()).toBe(90);
+    });
+
+    it("offers the quality levels hls.js found and picks one, or lets hls.js choose again", async () => {
+        const {container} = show();
+
+        await waitFor(() => expect(hls.instances).toHaveLength(1));
+        act(() => hls.instances[0].emitManifest([{height: 360, bitrate: 800_000}, {height: 720, bitrate: 2_500_000}]));
+
+        const quality = screen.getByRole("combobox");
+
+        fireEvent.change(quality, {target: {value: "1"}});
+        expect(hls.instances[0].currentLevel).toBe(1);
+        fireEvent.change(quality, {target: {value: "-1"}});
+        expect(hls.instances[0].currentLevel).toBe(-1);
+        expect(media(container)).toHaveAttribute("x-webkit-airplay", "allow");
+    });
+
+    it("tells when the video ends and plays at once when asked to", async () => {
+        const onEnded = vi.fn();
+        const play = vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
+        const {container} = show({onEnded, autoPlay: true});
+
+        await waitFor(() => expect(hls.instances).toHaveLength(1));
+        act(() => hls.instances[0].emitManifest([]));
+        expect(play).toHaveBeenCalled();
+        act(() => {
+            fireEvent.ended(media(container));
+        });
+        expect(onEnded).toHaveBeenCalled();
+    });
+
+    it("plays, seeks and jumps between chapters from the keyboard", async () => {
+        const {container} = show();
+        const element = media(container);
+        const play = vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
+
+        await waitFor(() => expect(hls.instances).toHaveLength(1));
+        fireEvent.keyDown(document.body, {key: "k"});
+        expect(play).toHaveBeenCalled();
+        element.currentTime = 30;
+        fireEvent.keyDown(document.body, {key: "l"});
+        expect(element.currentTime).toBe(40);
+        fireEvent.keyDown(document.body, {key: "n"});
+        expect(element.currentTime).toBe(60);
+        fireEvent.keyDown(document.body, {key: "m"});
+        expect(element.muted).toBe(true);
+        fireEvent.keyDown(document.body, {key: "?"});
+        expect(await screen.findByRole("dialog", {name: "title"})).toBeInTheDocument();
     });
 });

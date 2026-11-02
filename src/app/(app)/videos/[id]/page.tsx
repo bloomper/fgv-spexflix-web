@@ -12,11 +12,11 @@ import {formatDuration, parsePosition} from "@/utils/duration";
 import {Policies} from "@/utils/policy.server";
 import {withPolicyPage} from "@/utils/route.server";
 import {isEditor} from "@/utils/auth";
-import {Watch} from "./watch.client";
+import {CollectionLinks, Watch} from "./watch.client";
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export default async function VideoPage({params, searchParams}: { params: Promise<{ id: string }>; searchParams: Promise<{ t?: string }> }) {
+export default async function VideoPage({params, searchParams}: { params: Promise<{ id: string }>; searchParams: Promise<{ t?: string; autoplay?: string }> }) {
     return withPolicyPage(Policies.app.requireAccess, async (authz) => {
         const {id} = await params;
 
@@ -34,7 +34,8 @@ export default async function VideoPage({params, searchParams}: { params: Promis
         }
 
         const playback = video.status === "READY" ? await getPlayback(id) : null;
-        const requested = parsePosition((await searchParams).t);
+        const query = await searchParams;
+        const requested = parsePosition(query.t);
         const startAt = requested ?? (video.finished ? 0 : video.progressSeconds ?? 0);
         const register = process.env.SPEXREGISTER_WEB_URL?.replace(/\/$/, "");
 
@@ -42,8 +43,9 @@ export default async function VideoPage({params, searchParams}: { params: Promis
             <div className="space-y-6 p-4 sm:p-6">
                 {playback ? (
                     <Watch videoId={video.id} playback={playback} chapters={video.chapters} durationSeconds={(video.durationMs ?? 0) / 1000}
-                           startAt={startAt} inWatchList={video.inWatchList} spexifyUrl={me?.me.spexifyUser ? spexifyUrl() : null}
-                           recordProgress={video.published}/>
+                           startAt={startAt} inWatchList={video.inWatchList} finished={video.finished}
+                           spexifyUrl={me?.me.spexifyUser ? spexifyUrl() : null} recordProgress={video.published}
+                           next={video.next ? {id: video.next.id, title: video.next.title} : null} autoPlay={query.autoplay === "1"}/>
                 ) : (
                     <div className="relative">
                         <PosterImage videoId={video.id} title={video.title} className="w-full max-w-3xl rounded-lg opacity-60"/>
@@ -64,6 +66,7 @@ export default async function VideoPage({params, searchParams}: { params: Promis
                     {video.published && (
                         <VideoRating videoId={video.id} rating={video.myRating} averageRating={video.averageRating} ratingCount={video.ratingCount}/>
                     )}
+                    <CollectionLinks collections={video.collections}/>
                     {video.description && <p className="whitespace-pre-line text-sm">{video.description}</p>}
                     <div className="flex flex-wrap gap-3 text-sm">
                         {video.spex && <Link href={`/videos?category=${video.spex.categoryId ?? ""}&year=${video.year ?? ""}`}

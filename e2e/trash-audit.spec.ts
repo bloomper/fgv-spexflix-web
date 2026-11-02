@@ -33,7 +33,7 @@ test.describe("The trash", () => {
         await page.getByRole("button", {name: "Töm papperskorgen"}).click();
         await answerDialog(page, "Töm papperskorgen");
         await expect(page.getByText("Papperskorgen är tom.")).toBeVisible();
-        expect((await mock.state()).videos.map(v => v.title)).toEqual(["Bearbetas"]);
+        expect((await mock.state()).videos.map(v => v.title)).toEqual(["Bearbetas", "Extranumret"]);
     });
 });
 
@@ -49,6 +49,6 @@ test.describe("The change log", () => {
         await loginAs("admin");
         await page.goto("/manage/audit");
         await expect(page.getByText("Avpublicerade filmen Nobel")).toBeVisible();
-        await expect(page.getByText("Erik Redaktör").first()).toBeVisible();
+        await expect(page.getByRole("cell", {name: "Erik Redaktör"}).first()).toBeVisible();
     });
 });

@@ -244,7 +244,9 @@
     "adminStorage": "Storage",
     "adminMaintenance": "Maintenance",
     "adminSettings": "Settings",
-    "adminKinds": "Video kinds"
+    "adminKinds": "Video kinds",
+    "collections": "Collections",
+    "manageCollections": "Collections"
   },
   "Home": {
     "title": "Spexflix",
@@ -256,7 +258,9 @@
     "allVideos": "All videos",
     "empty": "No videos are published yet.",
     "browse": "Browse",
-    "highestRated": "Highest rated by you"
+    "highestRated": "Highest rated by you",
+    "forget": "Remove {title} from Continue watching",
+    "forgetFailed": "The video could not be removed. Try again."
   },
   "Search": {
     "title": "Search",
@@ -356,7 +360,47 @@
     "pages": "Pages",
     "newer": "Newer",
     "older": "Older",
-    "pageOf": "Page {page} of {pages}"
+    "pageOf": "Page {page} of {pages}",
+    "event": "Event",
+    "filters": "Filter the change log",
+    "search": "Search the descriptions",
+    "typeLabel": "Kind",
+    "allTypes": "All kinds",
+    "actionLabel": "Event",
+    "allActions": "All events",
+    "everyone": "Everyone",
+    "from": "From",
+    "to": "To",
+    "filter": "Filter",
+    "reset": "Clear the filter",
+    "count": "{count, plural, =0 {No changes} one {# change} other {# changes}}",
+    "none": "No changes yet.",
+    "noneFiltered": "No changes match the filter.",
+    "oneRecord": "Showing the changes of one record.",
+    "allRecords": "Show all records",
+    "history": "History",
+    "historyOf": "History of {summary}",
+    "recordHistory": "Changes",
+    "allChanges": "All {count} changes",
+    "action": {
+      "CREATE": "Created",
+      "UPDATE": "Changed",
+      "PUBLISH": "Published",
+      "UNPUBLISH": "Unpublished",
+      "TRASH": "Trashed",
+      "RESTORE": "Restored",
+      "DELETE": "Deleted",
+      "UPLOAD": "Uploaded",
+      "REPLACE": "New file",
+      "REPROCESS": "Reprocessed",
+      "REVOKE": "Revoked"
+    },
+    "type": {
+      "VIDEO": "Video",
+      "COLLECTION": "Collection",
+      "VIDEO_KIND": "Video kind",
+      "SETTINGS": "Settings"
+    }
   },
   "AdminSettings": {
     "title": "Settings",
@@ -405,13 +449,28 @@
     "rate": "Your rating of the video",
     "rateFailed": "The rating could not be saved.",
     "average": "{average} of 5 on average ({count, plural, =1 {# rating} other {# ratings}})",
-    "noRatings": "No ratings yet"
+    "noRatings": "No ratings yet",
+    "nextIn": "The next video starts in {seconds} s",
+    "playNow": "Play now",
+    "cancel": "Cancel",
+    "next": "Next: {title}",
+    "autoplay": "Play the next video automatically",
+    "markWatched": "Mark as watched",
+    "markUnwatched": "Mark as unwatched",
+    "markedWatched": "The video is marked as watched.",
+    "markedUnwatched": "The video is marked as unwatched.",
+    "watchedFailed": "It could not be saved. Try again.",
+    "partOf": "Part of"
   },
   "Player": {
     "timeline": "Timeline",
     "error": "The video could not be played.",
     "errorHint": "Check your connection and try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "quality": "Quality",
+    "auto": "Automatic",
+    "airPlay": "AirPlay",
+    "shortcuts": "Keyboard shortcuts"
   },
   "WatchList": {
     "title": "My list",
@@ -489,5 +548,49 @@
   "Rating": {
     "stars": "{count, plural, =1 {# star} other {# stars}}",
     "rated": "{count, plural, =1 {Rated # star} other {Rated # stars}}"
+  },
+  "Shortcuts": {
+    "title": "Keyboard shortcuts",
+    "description": "They work everywhere on the page except while you type in a field.",
+    "toggle": "Play or pause",
+    "seek10": "Go back or forward 10 seconds",
+    "seek5": "Go back or forward 5 seconds",
+    "chapter": "Previous or next chapter",
+    "fullscreen": "Full screen",
+    "mute": "Mute or unmute",
+    "subtitles": "Subtitles off or on",
+    "help": "Show the keyboard shortcuts"
+  },
+  "Collections": {
+    "title": "Collections",
+    "text": "Videos gathered in an order of their own, e.g. a spex over the years.",
+    "none": "There are no collections yet.",
+    "videos": "{count, plural, one {# video} other {# videos}}",
+    "empty": "The collection has no videos yet.",
+    "playFromStart": "Play from the start",
+    "continue": "Continue with {title}",
+    "edit": "Edit",
+    "manageTitle": "Collections",
+    "manageText": "A collection plays in its order: when a video ends, the next one starts.",
+    "new": "New collection",
+    "titleLabel": "Title",
+    "descriptionLabel": "Description",
+    "videosLabel": "Videos",
+    "changed": "Changed",
+    "noVideos": "No videos yet.",
+    "unpublished": "unpublished",
+    "moveUp": "Move {title} up",
+    "moveDown": "Move {title} down",
+    "remove": "Remove {title} from the collection",
+    "addVideo": "Add a video",
+    "chooseVideo": "Choose a video",
+    "add": "Add",
+    "save": "Save",
+    "create": "Create",
+    "saved": "The collection was saved.",
+    "view": "Show the collection",
+    "delete": "Delete the collection",
+    "confirmDelete": "Delete the collection?",
+    "confirmDeleteText": "The videos stay."
   }
 }

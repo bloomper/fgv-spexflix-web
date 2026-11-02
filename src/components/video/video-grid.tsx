@@ -1,3 +1,4 @@
+import type {ReactNode} from "react";
 import Link from "next/link";
 import {useLocale, useTranslations} from "next-intl";
 import {Badge} from "@/components/ui/badge";
@@ -21,7 +22,12 @@ export type VideoSummary = {
 /**
  * Videos as poster cards, with how far the user has come.
  */
-export function VideoGrid({videos, hrefFor}: { videos: VideoSummary[]; hrefFor?: (id: string) => string }) {
+export function VideoGrid({videos, hrefFor, action}: {
+    videos: VideoSummary[];
+    hrefFor?: (id: string) => string;
+    /** Something to do with a video, shown on its card's corner, e.g. taking it off "continue watching". */
+    action?: (video: VideoSummary) => ReactNode;
+}) {
     const t = useTranslations("Video");
     const locale = useLocale();
 
@@ -32,7 +38,8 @@ export function VideoGrid({videos, hrefFor}: { videos: VideoSummary[]; hrefFor?:
                 const watched = video.finished ? 1 : duration > 0 && video.progressSeconds ? Math.min(1, video.progressSeconds / duration) : 0;
 
                 return (
-                    <li key={video.id}>
+                    <li key={video.id} className="relative">
+                        {action && <div className="absolute top-2 right-2 z-10">{action(video)}</div>}
                         <Link href={hrefFor ? hrefFor(video.id) : `/videos/${video.id}`}
                               className="group block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring">
                             <div className="relative overflow-hidden rounded-lg shadow-sm">

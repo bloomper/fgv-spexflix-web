@@ -44,7 +44,17 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
   `playback(videoId)` and plays it natively in Safari, through hls.js elsewhere. The browser's controls do play, volume,
   subtitles (`<track>`, `crossOrigin="anonymous"`), speed, full screen and picture-in-picture; a timeline below shows
   chapters and the thumbnail sprites from the WebVTT index (`parseThumbnails`). Progress is saved every 15 seconds and
-  on pause (`saveProgressAction`), and a page opened with `?t=` (seconds or m:ss) starts there.
+  on pause (`saveProgressAction`), and a page opened with `?t=` (seconds or m:ss) starts there, with `?autoplay=1` at
+  once. With hls.js the viewer can pick a quality level (`-1` hands the choice back to hls.js); Safari shows an AirPlay
+  button when a receiver is near. Keyboard shortcuts (`src/components/video/shortcuts.client.tsx`) work anywhere on the
+  page except where the focused element uses the key; `?` lists them. Chromecast is not supported.
+- **What plays next** is `Video.next` (the next in a collection, else of the same spex): when a video ends, `Watch`
+  counts down ten seconds and opens it with `?autoplay=1`, unless the viewer turned that off (`localStorage`
+  `spexflix.autoplay`). The chapter list beside the player marks the chapter that plays.
+- **Watched**: `setWatchedAction` marks a video watched (`videoMarkWatched`) or forgets the position (`progressClear`,
+  which also takes it off "continue watching", where each card has a button for it).
+- **Collections** (`/collections`, edited under `/manage/collections`) are videos in an order of their own; listeners
+  see only listed videos. EDITOR creates and changes them, ADMIN deletes them.
 - **Posters** come from `/api/poster/[id]` (uploaded, a frame, or the spex poster; 404 and `PosterImage`'s
   placeholder). Never `next/image`.
 - **Uploads** use tus through `/api/uploads/[[...path]]`; `videoSetFile` queues the upload for the worker. The editor
@@ -59,7 +69,10 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
 - **Dialogs**: never `window.confirm`, `window.prompt` or `window.alert`. Ask with `useDialogs()` (`confirm` and
   `prompt`, from `DialogsProvider` in `src/components/dialogs.client.tsx`, which the `(app)` layout mounts). The e2e
   fixture `noNativeDialogs` fails any test that opens a native dialog; answer the app's own with `answerDialog`.
-- **Editors** work under `/manage` (videos, the processing queue, the trash, the change log), **admins** under
+- **The change log** (`ChangeLog` in `src/components/audit/change-log.tsx`) filters by kind, event, person (ADMIN),
+  period and text through the address, links each change to its record, and `RecordHistory` shows a record's latest
+  changes on its edit page. Record kinds and their pages are in `src/app/(app)/manage/audit/links.ts`.
+- **Editors** work under `/manage` (videos, collections, the processing queue, the trash, the change log), **admins** under
   `/admin` (storage, settings). Only `READY` videos can be published.
 
 ## Look
@@ -81,7 +94,8 @@ drops query strings.
 Custom events go through `track()` (`src/utils/umami.ts`; import it as `trackEvent` where `track` is a variable), a
 no-op when the tracker isn't loaded. Event data is enum values, counts and booleans only — never names, emails, ids or
 typed text. Events: `video-create` (`defaultKind`), `video-rate` (`rating`), `video-upload` (`replaced`), `video-publish` (`published`), `video-play` (once per page),
-`watch-list` (`listed`), `language-change` and `theme-change`.
+`watch-list` (`listed`), `video-next` (`automatic`), `video-watched` (`watched`), `continue-forget`, `collection-create`
+(`videos`), `language-change` and `theme-change`.
 
 ## Testing
 

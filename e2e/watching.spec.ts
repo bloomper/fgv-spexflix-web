@@ -68,6 +68,18 @@ test.describe("Continue watching", () => {
         await expect(page.getByRole("heading", {level: 1, name: "Nobel"})).toBeVisible();
     });
 
+    test("takes a video off continue watching from the start page", async ({page, loginAs, mock}) => {
+        await mock.progress(uuidOf(1), 30);
+        await loginAs("viewer");
+
+        const row = page.getByRole("region", {name: "Fortsätt titta"});
+
+        await expect(row.getByRole("link", {name: /Nobel/})).toBeVisible();
+        await row.getByRole("button", {name: "Ta bort Nobel från Fortsätt titta"}).click();
+        await expect(page.getByRole("heading", {name: "Fortsätt titta"})).toHaveCount(0);
+        expect((await mock.state()).progress[uuidOf(1)]).toBeUndefined();
+    });
+
     test("removes a video from the watch list", async ({page, loginAs}) => {
         await loginAs("viewer");
         await page.goto(`/videos/${uuidOf(1)}`);

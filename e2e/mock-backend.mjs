@@ -72,7 +72,11 @@ function resetState() {
             video(uuidOf(1), "Nobel"),
             video(uuidOf(2), "Opublicerad film", {published: false, kindId: uuidOf(903)}),
             video(uuidOf(3), "Bearbetas", {published: false, status: "PROCESSING", renditions: []}),
+            video(uuidOf(4), "Extranumret", {kindId: uuidOf(902), performanceDate: "1975-02-15"}),
         ],
+        collections: [{id: uuidOf(500), title: "Nobel genom åren", description: "Allt från Nobel.", videoIds: [uuidOf(4), uuidOf(2), uuidOf(1)],
+            createdAt: "2026-10-01T10:00:00Z", lastModifiedAt: null}],
+        finished: new Set(),
         progress: {},
         // The viewer's ratings by video id, and everyone else's
         ratings: {},
@@ -109,7 +113,30 @@ const kindOf = kindId => ({...state.kinds.find(kind => kind.id === kindId), isDe
 const ratingsOf = id => [...(state.otherRatings[id] ?? []), ...(state.ratings[id] ? [state.ratings[id]] : [])];
 const personal = v => ({...v, kind: kindOf(v.kindId), myRating: state.ratings[v.id] ?? 0,
     averageRating: ratingsOf(v.id).length ? ratingsOf(v.id).reduce((a, b) => a + b, 0) / ratingsOf(v.id).length : null,
-    ratingCount: ratingsOf(v.id).length, progressSeconds: state.progress[v.id] ?? null, finished: false, inWatchList: state.watchList.has(v.id)});
+    ratingCount: ratingsOf(v.id).length, progressSeconds: state.progress[v.id] ?? null, finished: state.finished.has(v.id),
+    inWatchList: state.watchList.has(v.id)});
+const collectionsOf = (persona, videoId) => state.collections
+    .filter(collection => collection.videoIds.includes(videoId))
+    .map(collection => ({id: collection.id, title: collection.title}));
+const collectionOut = (persona, collection) => ({...collection,
+    videos: collection.videoIds.map(id => visible(persona).find(v => v.id === id)).filter(Boolean).map(personal)});
+// The next listed video: in the first collection with one after it, else of the same spex by kind and performance date
+const nextOf = (persona, current) => {
+    for (const collection of state.collections.filter(candidate => candidate.videoIds.includes(current.id))) {
+        const ids = collection.videoIds.filter(id => id === current.id || state.videos.some(v => v.id === id && listed(v)));
+        const next = ids[ids.indexOf(current.id) + 1];
+
+        if (next) {
+            return personal(videoById(next));
+        }
+    }
+
+    const siblings = state.videos.filter(v => v.id === current.id || (listed(v) && v.spex?.id === current.spex?.id))
+        .sort((a, b) => kindOf(a.kindId).position - kindOf(b.kindId).position || (a.performanceDate ?? "").localeCompare(b.performanceDate ?? ""));
+    const next = siblings[siblings.findIndex(v => v.id === current.id) + 1];
+
+    return next ? personal(next) : null;
+};
 const isAdmin = persona => persona.roles.includes("ADMIN");
 
 function requireEditor(persona) {
@@ -124,9 +151,9 @@ function requireAdmin(persona) {
     }
 }
 
-function audit(persona, action, entityId, summary) {
+function audit(persona, action, entityId, summary, entityType = "VIDEO") {
     state.audit.unshift({id: String(state.nextId++), at: new Date().toISOString(), actorName: persona.name, action,
-        entityType: "VIDEO", entityId, summary, actor: persona.sub});
+        entityType, entityId, summary, actor: persona.sub});
 }
 
 const videoById = id => {
@@ -157,7 +184,55 @@ const resolvers = {
         videos: visible(persona).filter(v => listed(v) || filter?.includeUnpublished).filter(v => !filter?.kindId || v.kindId === filter.kindId).map(personal),
         categories, years: [1975], videoKinds: sortedKinds().map(kind => kindOf(kind.id)),
     }),
-    Video: (persona, {id}) => ({video: visible(persona).filter(v => v.id === id).map(personal)[0] ?? null}),
+    Video: (persona, {id}) => {
+        const found = visible(persona).find(v => v.id === id);
+
+        return {video: found ? {...personal(found), collections: collectionsOf(persona, id), next: nextOf(persona, found)} : null};
+    },
+    Collections: persona => ({
+        collections: state.collections.map(collection => collectionOut(persona, collection))
+            .filter(collection => isEditor(persona) || collection.videos.length > 0),
+    }),
+    Collection: (persona, {id}) => {
+        const found = state.collections.find(collection => collection.id === id);
+
+        return {collection: found ? collectionOut(persona, found) : null};
+    },
+    CollectionCreate: (persona, {input}) => {
+        requireEditor(persona);
+
+        const created = {id: uuidOf(state.nextId++), title: input.title, description: input.description ?? null, videoIds: input.videoIds,
+            createdAt: new Date().toISOString(), lastModifiedAt: null};
+
+        state.collections.push(created);
+        audit(persona, "CREATE", created.id, `Skapade samlingen ${created.title}`, "COLLECTION");
+        return {collectionCreate: {id: created.id}};
+    },
+    CollectionUpdate: (persona, {id, input}) => {
+        requireEditor(persona);
+
+        const found = state.collections.find(collection => collection.id === id);
+
+        Object.assign(found, {title: input.title, description: input.description ?? null, videoIds: input.videoIds, lastModifiedAt: new Date().toISOString()});
+        audit(persona, "UPDATE", id, `Ändrade samlingen ${found.title}`, "COLLECTION");
+        return {collectionUpdate: {id}};
+    },
+    CollectionDelete: (persona, {id}) => {
+        requireAdmin(persona);
+        state.collections = state.collections.filter(collection => collection.id !== id);
+        audit(persona, "DELETE", id, "Tog bort samlingen", "COLLECTION");
+        return {collectionDelete: null};
+    },
+    ProgressClear: (persona, {videoId}) => {
+        delete state.progress[videoId];
+        state.finished.delete(videoId);
+        return {progressClear: null};
+    },
+    VideoMarkWatched: (persona, {videoId}) => {
+        state.progress[videoId] = 0;
+        state.finished.add(videoId);
+        return {videoMarkWatched: null};
+    },
     Playback: (persona, {videoId}) => {
         const found = videoById(videoId);
 
@@ -338,12 +413,25 @@ const resolvers = {
         requireEditor(persona);
         return {trash: state.videos.filter(v => v.trashedAt).map(personal)};
     },
-    AuditLog: (persona, {page = 0, size = 50}) => {
+    AuditLog: (persona, {page = 0, size = 50, filter = {}}) => {
         requireEditor(persona);
 
-        const entries = state.audit.filter(entry => isAdmin(persona) || entry.actor === persona.sub);
+        const f = filter ?? {};
+        const entries = state.audit
+            .filter(entry => isAdmin(persona) ? !f.actorId || entry.actor === f.actorId : entry.actor === persona.sub)
+            .filter(entry => (!f.entityType || entry.entityType === f.entityType) && (!f.action || entry.action === f.action)
+                && (!f.entityId || entry.entityId === f.entityId) && (!f.q || entry.summary.toLowerCase().includes(f.q.toLowerCase()))
+                && (!f.from || entry.at >= f.from) && (!f.to || entry.at < f.to))
+            .map(entry => ({...entry, actorId: entry.actor}));
 
         return {auditLog: {entries: entries.slice(page * size, (page + 1) * size), totalCount: entries.length, page, size}};
+    },
+    AuditActors: persona => {
+        requireEditor(persona);
+
+        const actors = new Map(state.audit.filter(entry => isAdmin(persona) || entry.actor === persona.sub).map(entry => [entry.actor, entry.actorName]));
+
+        return {auditActors: [...actors].map(([id, name]) => ({id, name}))};
     },
     Settings: () => ({settings: state.settings}),
     SettingsUpdate: (persona, {input}) => {
@@ -637,6 +725,7 @@ async function handle(req, res, chunks) {
         } else if (req.method === "GET" && path === "/__state") {
             res.writeHead(200, {"content-type": "application/json"}).end(JSON.stringify({
                 uploads: state.uploads.size, progress: state.progress, kinds: state.kinds, ratings: state.ratings,
+                finished: [...state.finished], collections: state.collections,
                 videos: state.videos.map(({id, title, status, published, trashedAt, posterSeconds, chapters, subtitles, job}) =>
                     ({id, title, status, published, trashedAt, posterSeconds, chapters, subtitles, jobStatus: job?.status ?? null})),
             }));

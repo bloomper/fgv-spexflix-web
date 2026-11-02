@@ -1,7 +1,7 @@
 "use server";
 
 import {revalidatePath} from "next/cache";
-import {progressSave, videoRate, watchListAdd, watchListRemove} from "@/lib/video/video.server";
+import {progressClear, progressSave, videoMarkWatched, videoRate, watchListAdd, watchListRemove} from "@/lib/video/video.server";
 import {withPolicyAction} from "@/utils/route.server";
 import {Policies} from "@/utils/policy.server";
 
@@ -19,6 +19,26 @@ export async function saveProgressAction(videoId: string, positionSeconds: numbe
             await progressSave(videoId, Math.max(0, Math.round(positionSeconds)));
         } catch {
             // the server is unavailable; the next save catches up
+        }
+    });
+}
+
+/**
+ * Marks a video as watched, or forgets where the user is in it (unwatched, and off "continue watching"). False when it
+ * could not be saved.
+ */
+export async function setWatchedAction(videoId: string, watched: boolean): Promise<boolean> {
+    if (!ID.test(videoId)) {
+        return false;
+    }
+    return withPolicyAction(Policies.app.requireAccess, async () => {
+        try {
+            await (watched ? videoMarkWatched(videoId) : progressClear(videoId));
+            revalidatePath("/");
+            revalidatePath(`/videos/${videoId}`);
+            return true;
+        } catch {
+            return false;
         }
     });
 }
