@@ -272,7 +272,7 @@
   "Manage": {
     "videos": "Videos",
     "newVideo": "New video",
-    "newVideoText": "Pick the spex the video belongs to. Title and year come from the spex unless you give others. Then upload the file; the video is unpublished until you publish it.",
+    "newVideoText": "Choose the spex the video is about, or mark that it is not about any. Title and year come from the spex unless you give others. Then upload the file; the video is unpublished until you publish it.",
     "title": "Title",
     "year": "Year",
     "kind": "Kind",
@@ -281,10 +281,6 @@
     "published": "Published",
     "unpublished": "Unpublished",
     "spex": "Spex",
-    "spexSearch": "Search spex by title or year",
-    "spexHint": "Leave empty for a video not about one spex, e.g. a jubilee.",
-    "searching": "Searching…",
-    "change": "Change",
     "performance": "Performance",
     "performancePlaceholder": "Premiere",
     "performanceDate": "Date",
@@ -420,7 +416,9 @@
     "allKinds": "All kinds",
     "years": "Years",
     "allYears": "All years",
-    "none": "No videos match."
+    "none": "No videos match.",
+    "spexFilter": "Videos of {title}, revivals included",
+    "clearSpex": "Show all videos"
   },
   "Video": {
     "status": {
@@ -432,7 +430,9 @@
     "revival": "Revival",
     "unpublished": "Unpublished",
     "seen": "Watched",
-    "watched": "{percent} % watched"
+    "watched": "{percent} % watched",
+    "inSpexregisterOf": "{title} in Spexregister",
+    "allFromSpex": "All videos of {title}"
   },
   "Watch": {
     "chapters": "Chapters",
@@ -592,5 +592,24 @@
     "delete": "Delete the collection",
     "confirmDelete": "Delete the collection?",
     "confirmDeleteText": "The videos stay."
+  },
+  "SpexPicker": {
+    "spex": "Spex",
+    "none": "Not about any spex",
+    "noneHint": "E.g. a jubilee show or a montage of several spex. Give a title.",
+    "picked": "Chosen spex",
+    "main": "Main spex",
+    "makeMain": "Make main spex",
+    "makeMainOf": "Make {title} the main spex",
+    "remove": "Remove",
+    "removeOf": "Remove {title}",
+    "search": "Search spex by title or year",
+    "searchMore": "Add more spex, e.g. for a jubilee show",
+    "hint": "Revivals are shown under their original spex. Title and year are taken from the spex unless you give others.",
+    "mainHint": "The main spex comes first: the poster, the category and the default title and year come from it.",
+    "searching": "Searching…",
+    "results": "Search results",
+    "alreadyPicked": "chosen",
+    "revival": "Revival"
   }
 }

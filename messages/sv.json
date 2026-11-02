@@ -272,7 +272,7 @@
   "Manage": {
     "videos": "Filmer",
     "newVideo": "Ny film",
-    "newVideoText": "Välj spexet filmen hör till. Titel och år hämtas från spexet om du inte anger andra. Ladda sedan upp filen; filmen är opublicerad tills du publicerar den.",
+    "newVideoText": "Välj spexet eller spexen filmen hör till, eller markera att den inte hör till något. Titel och år hämtas från spexet om du inte anger andra. Ladda sedan upp filen; filmen är opublicerad tills du publicerar den.",
     "title": "Titel",
     "year": "År",
     "kind": "Sort",
@@ -281,10 +281,6 @@
     "published": "Publicerad",
     "unpublished": "Opublicerad",
     "spex": "Spex",
-    "spexSearch": "Sök spex på titel eller år",
-    "spexHint": "Lämna tomt för en film som inte hör till ett enskilt spex, t.ex. ett jubileum.",
-    "searching": "Söker…",
-    "change": "Byt",
     "performance": "Föreställning",
     "performancePlaceholder": "Premiären",
     "performanceDate": "Datum",
@@ -420,7 +416,9 @@
     "allKinds": "Alla sorter",
     "years": "År",
     "allYears": "Alla år",
-    "none": "Inga filmer matchar."
+    "none": "Inga filmer matchar.",
+    "spexFilter": "Filmer från {title}, med nyuppsättningar",
+    "clearSpex": "Visa alla filmer"
   },
   "Video": {
     "status": {
@@ -432,7 +430,9 @@
     "revival": "Nyuppsättning",
     "unpublished": "Opublicerad",
     "seen": "Sedd",
-    "watched": "{percent} % sedd"
+    "watched": "{percent} % sedd",
+    "inSpexregisterOf": "{title} i Spexregistret",
+    "allFromSpex": "Alla filmer från {title}"
   },
   "Watch": {
     "chapters": "Kapitel",
@@ -592,5 +592,24 @@
     "delete": "Radera samlingen",
     "confirmDelete": "Radera samlingen?",
     "confirmDeleteText": "Filmerna finns kvar."
+  },
+  "SpexPicker": {
+    "spex": "Spex",
+    "none": "Inte kopplat till något spex",
+    "noneHint": "T.ex. en jubileumsföreställning eller ett kollage ur flera spex. Ange en titel.",
+    "picked": "Valda spex",
+    "main": "Huvudspex",
+    "makeMain": "Gör till huvudspex",
+    "makeMainOf": "Gör {title} till huvudspex",
+    "remove": "Ta bort",
+    "removeOf": "Ta bort {title}",
+    "search": "Sök spex på titel eller år",
+    "searchMore": "Lägg till fler spex, t.ex. för en jubileumsföreställning",
+    "hint": "Nyuppsättningar visas under sitt originalspex. Titel och år hämtas från spexet om du inte anger andra.",
+    "mainHint": "Huvudspexet står först: affischen, kategorin och förvalda titel och år hämtas från det.",
+    "searching": "Söker…",
+    "results": "Sökträffar",
+    "alreadyPicked": "vald",
+    "revival": "Nyuppsättning"
   }
 }

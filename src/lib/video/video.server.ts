@@ -17,9 +17,9 @@ const MeQuery = graphql(`
 
 const HomeQuery = graphql(`
     query Home {
-        continueWatching(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { categoryName revival } }
-        highestRated(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished myRating spex { categoryName revival } }
-        recentVideos(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { categoryName revival } }
+        continueWatching(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }
+        highestRated(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished myRating spex { id title familyId categoryName revival } }
+        recentVideos(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }
         categories { id name videoCount }
         years
     }
@@ -29,7 +29,7 @@ const VideosQuery = graphql(`
     query Videos($filter: VideoFilter) {
         videos(filter: $filter) {
             id title year kind { ...KindFields } durationMs status published progressSeconds finished
-            spex { id categoryName revival }
+            spex { id title familyId categoryName revival }
         }
         categories { id name videoCount }
         years
@@ -49,7 +49,7 @@ const VideoQuery = graphql(`
             id title year kind { ...KindFields } performance performanceDate description status failure durationMs width height
             published publishedAt trashedAt originalName originalSize originalKept hasThumbnails posterSeconds
             progressSeconds finished inWatchList myRating averageRating ratingCount createdAt lastModifiedAt
-            spex { id title year revival categoryId categoryName }
+            spex { id title year revival parentId familyId categoryId categoryName }
             renditions { height width bitrateKbps copied size }
             chapters { startSeconds title spexifyTrackId spexifyTrackTitle }
             subtitles { language label }
@@ -64,7 +64,7 @@ const CollectionsQuery = graphql(`
     query Collections {
         collections {
             id title description createdAt lastModifiedAt
-            videos { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { categoryName revival } }
+            videos { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }
         }
     }
 `);
@@ -73,7 +73,7 @@ const CollectionQuery = graphql(`
     query Collection($id: ID!) {
         collection(id: $id) {
             id title description createdAt lastModifiedAt
-            videos { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { categoryName revival } }
+            videos { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }
         }
     }
 `);
@@ -86,18 +86,18 @@ const PlaybackQuery = graphql(`
 
 const SearchQuery = graphql(`
     query Search($q: String!) {
-        search(q: $q) { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { categoryName revival } }
+        search(q: $q) { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }
     }
 `);
 
 const WatchListQuery = graphql(`
     query WatchList {
-        watchList { id title year kind { ...KindFields } durationMs progressSeconds finished spex { categoryName revival } }
+        watchList { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }
     }
 `);
 
 const SpexSearchQuery = graphql(`
-    query SpexSearch($q: String!) { spexSearch(q: $q) { id title year revival categoryName } }
+    query SpexSearch($q: String!) { spexSearch(q: $q) { id title year revival parentId categoryName } }
 `);
 
 const SpexifyTracksQuery = graphql(`

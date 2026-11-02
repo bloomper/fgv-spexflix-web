@@ -37,12 +37,18 @@ class GraphQLError extends Error {
 /** The UUID the server would give the entity numbered n here. */
 const uuidOf = n => `00000000-0000-7000-8000-${String(n).padStart(12, "0")}`;
 
-const SPEX = {id: uuidOf(1), title: "Nobel", year: 1975, revival: false, categoryId: uuidOf(1), categoryName: "Chalmersspexet"};
+const SPEX = {id: uuidOf(1), title: "Nobel", year: 1975, revival: false, parentId: null, familyId: uuidOf(1), categoryId: uuidOf(1), categoryName: "Chalmersspexet"};
+const REVIVAL = {id: uuidOf(2), title: "Nobel", year: 2026, revival: true, parentId: uuidOf(1), familyId: uuidOf(1), categoryId: uuidOf(1), categoryName: "Chalmersspexet"};
+const SPEXREGISTER = [SPEX, REVIVAL];
+/** The linked spex, as the server copies them from Spexregister. */
+const spexOf = ids => (ids ?? []).map(id => SPEXREGISTER.find(spex => spex.id === id)).filter(Boolean);
+/** Whether the video is about the spex or, when it is an original, one of its revivals. */
+const isAbout = (v, spexId) => v.spex.some(spex => spex.id === spexId || spex.parentId === spexId);
 
 function video(id, title, extra = {}) {
     return {
         id, title, year: 1975, kindId: uuidOf(901), performance: "Premiären", performanceDate: "1975-02-14",
-        description: "Inspelat 1975.", spex: SPEX, status: "READY", failure: null, durationMs: 60000, width: 1280, height: 720,
+        description: "Inspelat 1975.", spex: [SPEX], status: "READY", failure: null, durationMs: 60000, width: 1280, height: 720,
         published: true, publishedAt: "2026-10-01T10:00:00Z", trashedAt: null, originalName: "nobel.mp4", originalSize: 1000000,
         originalKept: true, hasThumbnails: false, posterSeconds: null,
         renditions: [{height: 720, width: 1280, bitrateKbps: 3000, copied: true, size: 1000}],
@@ -131,7 +137,7 @@ const nextOf = (persona, current) => {
         }
     }
 
-    const siblings = state.videos.filter(v => v.id === current.id || (listed(v) && v.spex?.id === current.spex?.id))
+    const siblings = state.videos.filter(v => v.id === current.id || (listed(v) && current.spex.length > 0 && isAbout(v, current.spex[0].familyId)))
         .sort((a, b) => kindOf(a.kindId).position - kindOf(b.kindId).position || (a.performanceDate ?? "").localeCompare(b.performanceDate ?? ""));
     const next = siblings[siblings.findIndex(v => v.id === current.id) + 1];
 
@@ -181,7 +187,8 @@ const resolvers = {
         categories, years: [1975],
     }),
     Videos: (persona, {filter}) => ({
-        videos: visible(persona).filter(v => listed(v) || filter?.includeUnpublished).filter(v => !filter?.kindId || v.kindId === filter.kindId).map(personal),
+        videos: visible(persona).filter(v => listed(v) || filter?.includeUnpublished).filter(v => !filter?.kindId || v.kindId === filter.kindId)
+            .filter(v => !filter?.spexId || isAbout(v, filter.spexId)).map(personal),
         categories, years: [1975], videoKinds: sortedKinds().map(kind => kindOf(kind.id)),
     }),
     Video: (persona, {id}) => {
@@ -270,7 +277,7 @@ const resolvers = {
         if (!state.spexregisterUp) {
             throw new GraphQLError("SPEXREGISTER_UNAVAILABLE", MESSAGES.SPEXREGISTER_UNAVAILABLE);
         }
-        return {spexSearch: [{id: SPEX.id, title: SPEX.title, year: SPEX.year, revival: false, categoryName: SPEX.categoryName}]};
+        return {spexSearch: SPEXREGISTER.map(({id, title, year, revival, parentId, categoryName}) => ({id, title, year, revival, parentId, categoryName}))};
     },
     // Empty while Spexify is down, as the server answers
     SpexifyTracks: persona => {
@@ -282,8 +289,9 @@ const resolvers = {
             throw forbidden();
         }
 
-        const created = video(uuidOf(state.nextId++), input.title || SPEX.title, {
-            published: false, status: "UPLOADING", renditions: [], chapters: [], originalName: null, durationMs: null, kindId: input.kindId ?? sortedKinds()[0].id,
+        const spex = spexOf(input.spexIds);
+        const created = video(uuidOf(state.nextId++), input.title || spex[0]?.title, {
+            spex, year: input.year ?? spex[0]?.year ?? null, published: false, status: "UPLOADING", renditions: [], chapters: [], originalName: null, durationMs: null, kindId: input.kindId ?? sortedKinds()[0].id,
         });
 
         state.videos.push(created);
@@ -307,6 +315,7 @@ const resolvers = {
 
         const found = videoById(id);
 
+        found.spex = spexOf(input.spexIds);
         Object.assign(found, {title: input.title || found.title, year: input.year ?? found.year, kindId: input.kindId ?? found.kindId,
             performance: input.performance ?? null, performanceDate: input.performanceDate ?? null, description: input.description ?? null});
         audit(persona, "UPDATE", id, `Ändrade filmen ${found.title}`);

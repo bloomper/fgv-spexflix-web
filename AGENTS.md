@@ -64,6 +64,11 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
   together with `chaptersSet`. Viewers with Spexify access (`me.spexifyUser`) get *Listen in Spexify* links.
 - **Ratings** are each user's own, 1–5 (`videoRate`, 0 removes); a video also shows everyone's average
   (`averageRating`, `ratingCount`), and the start page what the user rated highest (`highestRated`).
+- **Spex**: a video is about a list of spex, the main one first (poster, category, default title and year), or none,
+  which the editor marks explicitly (`SpexPicker` in `src/components/spex/`, the same as Spexify's). Each spex has a
+  `familyId`, its original's id for a revival; `/videos?spex=<familyId>` lists an original with its revivals, and
+  `spexSearch` returns revivals right after their original, which the picker indents. Chapters can link to the tracks
+  of every spex of the video and of their originals' revivals.
 - **Video kinds** are configured by admins (`/admin/kinds`) and come from `videoKinds`; show them with
   `kindName(kind, locale)`. The first kind is the default for new videos.
 - **Dialogs**: never `window.confirm`, `window.prompt` or `window.alert`. Ask with `useDialogs()` (`confirm` and

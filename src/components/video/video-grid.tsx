@@ -16,7 +16,8 @@ export type VideoSummary = {
     published?: boolean;
     progressSeconds?: number | null;
     finished?: boolean;
-    spex?: { categoryName?: string | null; revival?: boolean | null } | null;
+    /** The main spex first. */
+    spex?: { categoryName?: string | null; revival?: boolean | null }[];
 };
 
 /**
@@ -59,10 +60,10 @@ export function VideoGrid({videos, hrefFor, action}: {
                             <div className="mt-2 space-y-0.5">
                                 <div className="line-clamp-2 font-medium leading-tight">{video.title}</div>
                                 <div className="text-xs text-muted-foreground">
-                                    {[video.year, video.spex?.categoryName, kindName(video.kind, locale)].filter(Boolean).join(" · ")}
+                                    {[video.year, video.spex?.[0]?.categoryName, kindName(video.kind, locale)].filter(Boolean).join(" · ")}
                                 </div>
                                 <div className="flex flex-wrap gap-1 pt-0.5">
-                                    {video.spex?.revival && <Badge variant="secondary">{t("revival")}</Badge>}
+                                    {video.spex?.[0]?.revival && <Badge variant="secondary">{t("revival")}</Badge>}
                                     {video.published === false && <Badge variant="outline">{t("unpublished")}</Badge>}
                                     {video.status && video.status !== "READY" && <Badge variant={video.status === "FAILED" ? "destructive" : "secondary"}>{t(`status.${video.status}`)}</Badge>}
                                     {video.finished && <Badge variant="secondary">{t("seen")}</Badge>}
