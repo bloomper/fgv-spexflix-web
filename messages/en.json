@@ -242,6 +242,7 @@
     "auditLog": "Change log",
     "admin": "Administration",
     "adminStorage": "Storage",
+    "adminMaintenance": "Maintenance",
     "adminSettings": "Settings"
   },
   "Home": {
@@ -439,5 +440,30 @@
     "originals": "Originals",
     "renditions": "Quality levels",
     "free": "Free"
+  },
+  "AdminMaintenance": {
+    "title": "Maintenance",
+    "text": "The jobs the server runs on a schedule, in Swedish time. You can also start one now.",
+    "schedule": "Schedule",
+    "notScheduled": "Not scheduled",
+    "lastRun": "Latest run",
+    "running": "Running",
+    "neverRun": "Not since the server started",
+    "succeeded": "Succeeded {at}",
+    "failed": "Failed, started {at}",
+    "startedAt": "Started {at}",
+    "runNow": "Run now",
+    "started": "{job} has started. It runs in the background.",
+    "alreadyRunning": "{job} is already running.",
+    "jobs": {
+      "SPEX_REFRESH": {
+        "title": "Spex refresh",
+        "description": "Copies the current titles, years and categories of the spex from Spexregister to the videos."
+      },
+      "UPLOAD_CLEANUP": {
+        "title": "Upload cleanup",
+        "description": "Removes uploads that were started but never used, with their files."
+      }
+    }
   }
 }
