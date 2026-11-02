@@ -243,7 +243,8 @@
     "admin": "Administration",
     "adminStorage": "Storage",
     "adminMaintenance": "Maintenance",
-    "adminSettings": "Settings"
+    "adminSettings": "Settings",
+    "adminKinds": "Video kinds"
   },
   "Home": {
     "title": "Spexflix",
@@ -377,13 +378,6 @@
     "none": "No videos match."
   },
   "Video": {
-    "kind": {
-      "FULL_SHOW": "Show",
-      "NUMBER": "Number",
-      "TRAILER": "Trailer",
-      "BEHIND_THE_SCENES": "Behind the scenes",
-      "OTHER": "Other"
-    },
     "status": {
       "UPLOADING": "Waiting for file",
       "PROCESSING": "Processing",
@@ -465,5 +459,26 @@
         "description": "Removes uploads that were started but never used, with their files."
       }
     }
+  },
+  "AdminKinds": {
+    "title": "Video kinds",
+    "text": "The kinds a video can have, e.g. a show or a trailer. The first is preselected for new videos. A kind that any video has, also in the trash, cannot be deleted.",
+    "nameSv": "Name in Swedish",
+    "nameEn": "Name in English",
+    "videos": "{count, plural, =0 {No videos} =1 {# video} other {# videos}}",
+    "default": "Default",
+    "moveUp": "Move {name} up",
+    "moveDown": "Move {name} down",
+    "delete": "Delete",
+    "deleteKind": "Delete {name}",
+    "confirmDelete": "Delete the video kind {name}?",
+    "inUse": "Used by videos",
+    "add": "Add kind",
+    "added": "The kind was added",
+    "saved": "Saved",
+    "deleted": "The kind was deleted",
+    "save": "Save",
+    "edit": "Edit {name}",
+    "cancel": "Cancel"
   }
 }

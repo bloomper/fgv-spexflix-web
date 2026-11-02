@@ -4,6 +4,7 @@ import {getTranslations} from "next-intl/server";
 import {AppSidebar} from "@/components/app-sidebar.client";
 import {SiteHeader} from "@/components/site-header.client";
 import {SidebarInset, SidebarProvider} from "@/components/ui/sidebar";
+import {DialogsProvider} from "@/components/dialogs.client";
 import {Button} from "@/components/ui/button";
 import {Logo} from "@/components/logo";
 import {LogoHome} from "@/components/logo-home";
@@ -83,15 +84,17 @@ export default async function AppLayout({children}: { children: React.ReactNode 
 
     return (
         <div className="[--header-height:calc(--spacing(14))]">
-            <SidebarProvider className="flex flex-col">
-                <SiteHeader/>
-                <div className="flex flex-1">
-                    <AppSidebar roles={roles} accountUrl={accountUrl}/>
-                    <SidebarInset className="min-w-0">
-                        {children}
-                    </SidebarInset>
-                </div>
-            </SidebarProvider>
+            <DialogsProvider>
+                <SidebarProvider className="flex flex-col">
+                    <SiteHeader/>
+                    <div className="flex flex-1">
+                        <AppSidebar roles={roles} accountUrl={accountUrl}/>
+                        <SidebarInset className="min-w-0">
+                            {children}
+                        </SidebarInset>
+                    </div>
+                </SidebarProvider>
+            </DialogsProvider>
         </div>
     );
 }

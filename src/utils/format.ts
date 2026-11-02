@@ -21,3 +21,12 @@ export function formatInstant(value: string | Date | null | undefined): string |
 
     return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}`;
 }
+
+export type KindName = { nameSv: string; nameEn: string };
+
+/**
+ * A video kind's name in the given language: English for "en", otherwise Swedish.
+ */
+export function kindName(kind: KindName, locale: string): string {
+    return locale === "en" ? kind.nameEn : kind.nameSv;
+}

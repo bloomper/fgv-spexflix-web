@@ -2,25 +2,26 @@
 
 import * as React from "react";
 import {useEffect, useState, useTransition} from "react";
-import {useTranslations} from "next-intl";
+import {useLocale, useTranslations} from "next-intl";
 import {toast} from "sonner";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {Textarea} from "@/components/ui/textarea";
 import {NativeSelect, NativeSelectOption} from "@/components/ui/native-select";
-import type {VideoInput, VideoKind} from "@/gql/graphql";
+import type {VideoInput} from "@/gql/graphql";
 import {searchSpexAction} from "@/app/(app)/manage/actions.server";
+import {type KindName, kindName} from "@/utils/format";
 
 type Spex = { id: string; title?: string | null; year?: number | null; revival: boolean; categoryName?: string | null };
 
-const KINDS: VideoKind[] = ["FULL_SHOW", "NUMBER", "TRAILER", "BEHIND_THE_SCENES", "OTHER"];
+export type KindOption = KindName & { id: string };
 
 export type VideoFormValues = {
     spex?: Spex | null;
     title: string;
     year?: number | null;
-    kind: VideoKind;
+    kind: { id: string };
     performance?: string | null;
     performanceDate?: string | null;
     description?: string | null;
@@ -29,19 +30,22 @@ export type VideoFormValues = {
 /**
  * A video's fields. The spex is searched in Spexregister; the title and year default to the spex's.
  */
-export function VideoForm({initial, submitLabel, onSubmit}: {
+export function VideoForm({kinds, initial, submitLabel, onSubmit}: {
+    /** The video kinds in order; the first is the default. */
+    kinds: KindOption[];
     initial?: VideoFormValues;
     submitLabel: string;
     onSubmit: (input: VideoInput) => Promise<boolean>;
 }) {
     const t = useTranslations("Manage");
     const tv = useTranslations("Video");
+    const locale = useLocale();
     const [spex, setSpex] = useState<Spex | null>(initial?.spex ?? null);
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<Spex[]>([]);
     const [title, setTitle] = useState(initial?.title ?? "");
     const [year, setYear] = useState(initial?.year ? String(initial.year) : "");
-    const [kind, setKind] = useState<VideoKind>(initial?.kind ?? "FULL_SHOW");
+    const [kindId, setKindId] = useState(initial?.kind.id ?? kinds[0]?.id ?? "");
     const [performance, setPerformance] = useState(initial?.performance ?? "");
     const [performanceDate, setPerformanceDate] = useState(initial?.performanceDate ?? "");
     const [description, setDescription] = useState(initial?.description ?? "");
@@ -73,7 +77,7 @@ export function VideoForm({initial, submitLabel, onSubmit}: {
                 spexId: spex?.id ?? null,
                 title: title.trim() || null,
                 year: year ? Number(year) : null,
-                kind,
+                kindId: kindId || null,
                 performance: performance.trim() || null,
                 performanceDate: performanceDate.trim() || null,
                 description: description.trim() || null,
@@ -127,8 +131,8 @@ export function VideoForm({initial, submitLabel, onSubmit}: {
                 </div>
                 <div className="space-y-1.5">
                     <Label htmlFor="kind">{t("kind")}</Label>
-                    <NativeSelect id="kind" value={kind} onChange={event => setKind(event.target.value as VideoKind)}>
-                        {KINDS.map(value => <NativeSelectOption key={value} value={value}>{tv(`kind.${value}`)}</NativeSelectOption>)}
+                    <NativeSelect id="kind" value={kindId} onChange={event => setKindId(event.target.value)}>
+                        {kinds.map(kind => <NativeSelectOption key={kind.id} value={kind.id}>{kindName(kind, locale)}</NativeSelectOption>)}
                     </NativeSelect>
                 </div>
             </div>

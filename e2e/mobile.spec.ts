@@ -19,7 +19,7 @@ test.describe("Phone width: no page scrolls sideways", () => {
         await page.setViewportSize({width: WIDTH, height: 812});
         await loginAs("admin");
 
-        for (const path of ["/manage/videos", `/manage/videos/${uuidOf(1)}`, "/manage/queue", "/manage/trash", "/manage/audit", "/admin/storage", "/admin/settings"]) {
+        for (const path of ["/manage/videos", `/manage/videos/${uuidOf(1)}`, "/manage/queue", "/manage/trash", "/manage/audit", "/admin/storage", "/admin/kinds", "/admin/settings"]) {
             await page.goto(path);
             await page.getByRole("heading", {level: 1}).first().waitFor();
             expect(await page.evaluate(() => document.documentElement.scrollWidth), path).toBeLessThanOrEqual(WIDTH);

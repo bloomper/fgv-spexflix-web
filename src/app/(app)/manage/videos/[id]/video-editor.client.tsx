@@ -12,7 +12,7 @@ import {Switch} from "@/components/ui/switch";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {NativeSelect, NativeSelectOption} from "@/components/ui/native-select";
-import {VideoForm, type VideoFormValues} from "@/components/video/video-form.client";
+import {type KindOption, VideoForm, type VideoFormValues} from "@/components/video/video-form.client";
 import {type PlayerHandle, VideoPlayer} from "@/components/video/video-player.client";
 import {PosterImage} from "@/components/video/poster-image.client";
 import {uploadFile} from "@/components/upload/tus.client";
@@ -30,6 +30,7 @@ import {
     updateVideoAction
 } from "@/app/(app)/manage/actions.server";
 import {track} from "@/utils/umami";
+import {useDialogs} from "@/components/dialogs.client";
 
 export type EditorVideo = VideoFormValues & {
     id: string;
@@ -82,8 +83,14 @@ function megabytes(bytes: number) {
  * Editing a video: its file (uploaded resumably and processed by the worker), fields, publishing, poster, chapters
  * linked to Spexify's tracks, and subtitles.
  */
-export function VideoEditor({video, playback, admin}: { video: EditorVideo; playback: Playback | null; admin: boolean }) {
+export function VideoEditor({video, playback, admin, kinds}: {
+    video: EditorVideo;
+    playback: Playback | null;
+    admin: boolean;
+    kinds: KindOption[];
+}) {
     const t = useTranslations("Manage");
+    const {confirm} = useDialogs();
     const tv = useTranslations("Video");
     const {pending, run, router} = useRun();
     const player = useRef<PlayerHandle>(null);
@@ -226,7 +233,7 @@ export function VideoEditor({video, playback, admin}: { video: EditorVideo; play
 
             <section className="space-y-3">
                 <h2 className="text-lg font-semibold">{t("details")}</h2>
-                <VideoForm submitLabel={t("save")} initial={video} onSubmit={async input => {
+                <VideoForm kinds={kinds} submitLabel={t("save")} initial={video} onSubmit={async input => {
                     const result = await updateVideoAction(video.id, input);
 
                     if (result.ok) {
@@ -357,8 +364,8 @@ export function VideoEditor({video, playback, admin}: { video: EditorVideo; play
             <section className="space-y-2 rounded-lg border border-destructive/40 p-4">
                 <h2 className="font-semibold">{t("trashVideo")}</h2>
                 <p className="text-sm text-muted-foreground">{t("trashVideoText")}</p>
-                <Button variant="destructive" disabled={pending} onClick={() => {
-                    if (window.confirm(t("confirmTrash", {title: video.title}))) {
+                <Button variant="destructive" disabled={pending} onClick={async () => {
+                    if (await confirm({title: t("confirmTrash", {title: video.title}), confirmLabel: t("toTrash"), destructive: true})) {
                         run(async () => {
                             const result = await trashVideoAction(video.id, true);
 

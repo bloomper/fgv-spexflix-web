@@ -41,7 +41,7 @@ const SPEX = {id: uuidOf(1), title: "Nobel", year: 1975, revival: false, categor
 
 function video(id, title, extra = {}) {
     return {
-        id, title, year: 1975, kind: "FULL_SHOW", performance: "Premiären", performanceDate: "1975-02-14",
+        id, title, year: 1975, kindId: uuidOf(901), performance: "Premiären", performanceDate: "1975-02-14",
         description: "Inspelat 1975.", spex: SPEX, status: "READY", failure: null, durationMs: 60000, width: 1280, height: 720,
         published: true, publishedAt: "2026-10-01T10:00:00Z", trashedAt: null, originalName: "nobel.mp4", originalSize: 1000000,
         originalKept: true, hasThumbnails: false, posterSeconds: null,
@@ -61,9 +61,16 @@ function resetState() {
             {job: "SPEX_REFRESH", schedule: "0 15 3 * * *", running: false, lastStartedAt: null, lastFinishedAt: null, lastSucceeded: null},
             {job: "UPLOAD_CLEANUP", schedule: "0 5 * * * *", running: true, lastStartedAt: "2026-11-01T10:05:00Z", lastFinishedAt: null, lastSucceeded: null},
         ],
+        kinds: [
+            {id: uuidOf(901), nameSv: "Föreställning", nameEn: "Show", position: 1},
+            {id: uuidOf(902), nameSv: "Nummer", nameEn: "Number", position: 2},
+            {id: uuidOf(903), nameSv: "Trailer", nameEn: "Trailer", position: 3},
+            {id: uuidOf(904), nameSv: "Bakom kulisserna", nameEn: "Behind the scenes", position: 4},
+            {id: uuidOf(905), nameSv: "Övrigt", nameEn: "Other", position: 5},
+        ],
         videos: [
             video(uuidOf(1), "Nobel"),
-            video(uuidOf(2), "Opublicerad film", {published: false, kind: "TRAILER"}),
+            video(uuidOf(2), "Opublicerad film", {published: false, kindId: uuidOf(903)}),
             video(uuidOf(3), "Bearbetas", {published: false, status: "PROCESSING", renditions: []}),
         ],
         progress: {},
@@ -94,7 +101,9 @@ function requireUser(persona) {
 
 const listed = v => v.published && v.status === "READY" && !v.trashedAt;
 const visible = persona => state.videos.filter(v => !v.trashedAt && (listed(v) || isEditor(persona)));
-const personal = v => ({...v, progressSeconds: state.progress[v.id] ?? null, finished: false, inWatchList: state.watchList.has(v.id)});
+const sortedKinds = () => [...state.kinds].sort((a, b) => a.position - b.position);
+const kindOf = kindId => ({...state.kinds.find(kind => kind.id === kindId), isDefault: sortedKinds()[0]?.id === kindId});
+const personal = v => ({...v, kind: kindOf(v.kindId), progressSeconds: state.progress[v.id] ?? null, finished: false, inWatchList: state.watchList.has(v.id)});
 const isAdmin = persona => persona.roles.includes("ADMIN");
 
 function requireEditor(persona) {
@@ -138,7 +147,8 @@ const resolvers = {
         categories, years: [1975],
     }),
     Videos: (persona, {filter}) => ({
-        videos: visible(persona).filter(v => listed(v) || filter?.includeUnpublished).map(personal), categories, years: [1975],
+        videos: visible(persona).filter(v => listed(v) || filter?.includeUnpublished).filter(v => !filter?.kindId || v.kindId === filter.kindId).map(personal),
+        categories, years: [1975], videoKinds: sortedKinds().map(kind => kindOf(kind.id)),
     }),
     Video: (persona, {id}) => ({video: visible(persona).filter(v => v.id === id).map(personal)[0] ?? null}),
     Playback: (persona, {videoId}) => {
@@ -183,7 +193,7 @@ const resolvers = {
         }
 
         const created = video(uuidOf(state.nextId++), input.title || SPEX.title, {
-            published: false, status: "UPLOADING", renditions: [], chapters: [], originalName: null, durationMs: null, kind: input.kind,
+            published: false, status: "UPLOADING", renditions: [], chapters: [], originalName: null, durationMs: null, kindId: input.kindId ?? sortedKinds()[0].id,
         });
 
         state.videos.push(created);
@@ -207,7 +217,7 @@ const resolvers = {
 
         const found = videoById(id);
 
-        Object.assign(found, {title: input.title || found.title, year: input.year ?? found.year, kind: input.kind,
+        Object.assign(found, {title: input.title || found.title, year: input.year ?? found.year, kindId: input.kindId ?? found.kindId,
             performance: input.performance ?? null, performanceDate: input.performanceDate ?? null, description: input.description ?? null});
         audit(persona, "UPDATE", id, `Ändrade filmen ${found.title}`);
         return {videoUpdate: {id}};
@@ -273,6 +283,41 @@ const resolvers = {
         requireAdmin(persona);
         state.videos = state.videos.filter(v => !v.trashedAt);
         return {trashEmpty: null};
+    },
+    VideoKinds: persona => {
+        if (!persona) {
+            throw new GraphQLError("UNAUTHORIZED", "Du är inte inloggad.");
+        }
+        return {videoKinds: sortedKinds().map(kind => ({...kindOf(kind.id), videoCount: state.videos.filter(v => v.kindId === kind.id).length}))};
+    },
+    VideoKindCreate: (persona, {input}) => {
+        requireAdmin(persona);
+
+        const kind = {id: uuidOf(state.nextId++), nameSv: input.nameSv, nameEn: input.nameEn, position: state.kinds.length + 1};
+
+        state.kinds.push(kind);
+        return {videoKindCreate: {id: kind.id}};
+    },
+    VideoKindUpdate: (persona, {id, input}) => {
+        requireAdmin(persona);
+        Object.assign(state.kinds.find(kind => kind.id === id), {nameSv: input.nameSv, nameEn: input.nameEn});
+        return {videoKindUpdate: {id}};
+    },
+    VideoKindsReorder: (persona, {ids}) => {
+        requireAdmin(persona);
+        ids.forEach((id, i) => state.kinds.find(kind => kind.id === id).position = i + 1);
+        return {videoKindsReorder: ids.map(id => ({id}))};
+    },
+    VideoKindDelete: (persona, {id}) => {
+        requireAdmin(persona);
+
+        const count = state.videos.filter(v => v.kindId === id).length;
+
+        if (count > 0) {
+            throw new GraphQLError("CONFLICT", `Filmsorten används av ${count} filmer och kan inte raderas.`);
+        }
+        state.kinds = state.kinds.filter(kind => kind.id !== id);
+        return {videoKindDelete: null};
     },
     Trash: persona => {
         requireEditor(persona);
@@ -576,7 +621,7 @@ async function handle(req, res, chunks) {
             res.writeHead(204).end();
         } else if (req.method === "GET" && path === "/__state") {
             res.writeHead(200, {"content-type": "application/json"}).end(JSON.stringify({
-                uploads: state.uploads.size, progress: state.progress,
+                uploads: state.uploads.size, progress: state.progress, kinds: state.kinds,
                 videos: state.videos.map(({id, title, status, published, trashedAt, posterSeconds, chapters, subtitles, job}) =>
                     ({id, title, status, published, trashedAt, posterSeconds, chapters, subtitles, jobStatus: job?.status ?? null})),
             }));
