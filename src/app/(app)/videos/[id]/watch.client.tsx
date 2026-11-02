@@ -12,6 +12,7 @@ import {type PlayerHandle, VideoPlayer} from "@/components/video/video-player.cl
 import {setWatchedAction, watchListAction} from "@/components/video/actions.server";
 import {formatDuration} from "@/utils/duration";
 import {cn} from "@/utils/utils";
+import {useServerState} from "@/hooks/use-server-state.client";
 import {track} from "@/utils/umami";
 
 type Chapter = { startSeconds: number; title: string; spexifyTrackId?: string | null; spexifyTrackTitle?: string | null };
@@ -48,8 +49,8 @@ export function Watch({videoId, playback, chapters, durationSeconds, startAt, in
     const t = useTranslations("Watch");
     const router = useRouter();
     const player = useRef<PlayerHandle>(null);
-    const [listed, setListed] = useState(inWatchList);
-    const [watched, setWatched] = useState(finished);
+    const [listed, setListed] = useServerState(inWatchList);
+    const [watched, setWatched] = useServerState(finished);
     const [pending, startTransition] = useTransition();
     const [time, setTime] = useState(startAt ?? 0);
     const [autoplayNext, setAutoplayNext] = useState(() => typeof window === "undefined" ? true : readAutoplay());
@@ -87,7 +88,7 @@ export function Watch({videoId, playback, chapters, durationSeconds, startAt, in
         if (next && autoplayNext) {
             setCountdown(COUNTDOWN);
         }
-    }, [autoplayNext, next]);
+    }, [autoplayNext, next, setWatched]);
 
     const onTime = useCallback((seconds: number) => {
         setTime(seconds);

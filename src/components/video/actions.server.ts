@@ -43,6 +43,11 @@ export async function setWatchedAction(videoId: string, watched: boolean): Promi
     });
 }
 
+/**
+ * Revalidating a path here also makes Next fetch every page visited before again when it is next shown, which
+ * `useServerState` needs. Never revalidate the video page being watched for a watch list or a rating: each render signs
+ * a new playback address, and the player would start over.
+ */
 export async function watchListAction(videoId: string, add: boolean): Promise<boolean> {
     if (!ID.test(videoId)) {
         return false;

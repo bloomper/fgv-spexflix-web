@@ -1,12 +1,13 @@
 "use client";
 
 import * as React from "react";
-import {useState, useTransition} from "react";
+import {useTransition} from "react";
 import {useLocale, useTranslations} from "next-intl";
 import {toast} from "sonner";
 import {RatingInput} from "@/components/rating.client";
 import {rateVideoAction} from "@/components/video/actions.server";
 import {track} from "@/utils/umami";
+import {useServerState} from "@/hooks/use-server-state.client";
 
 /**
  * The user's rating of a video, changed at once and taken back when it cannot be saved, and everyone's average.
@@ -20,7 +21,7 @@ export function VideoRating({videoId, rating: initialRating, averageRating, rati
     const t = useTranslations("Watch");
     const locale = useLocale();
     const decimal = new Intl.NumberFormat(locale === "en" ? "en" : "sv", {minimumFractionDigits: 1, maximumFractionDigits: 1});
-    const [rating, setRating] = useState(initialRating);
+    const [rating, setRating] = useServerState(initialRating);
     const [, startTransition] = useTransition();
 
     const rate = (next: number) => {
