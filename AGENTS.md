@@ -52,6 +52,8 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
   multipart forms through `/api/poster-upload/[id]` and `/api/subtitle-upload/[id]`.
 - **Chapters** are edited as rows (start in m:ss, title, optional Spexify track from `spexifyTracks`) and saved
   together with `chaptersSet`. Viewers with Spexify access (`me.spexifyUser`) get *Listen in Spexify* links.
+- **Ratings** are each user's own, 1–5 (`videoRate`, 0 removes); a video also shows everyone's average
+  (`averageRating`, `ratingCount`), and the start page what the user rated highest (`highestRated`).
 - **Video kinds** are configured by admins (`/admin/kinds`) and come from `videoKinds`; show them with
   `kindName(kind, locale)`. The first kind is the default for new videos.
 - **Dialogs**: never `window.confirm`, `window.prompt` or `window.alert`. Ask with `useDialogs()` (`confirm` and
@@ -78,7 +80,7 @@ drops query strings.
 
 Custom events go through `track()` (`src/utils/umami.ts`; import it as `trackEvent` where `track` is a variable), a
 no-op when the tracker isn't loaded. Event data is enum values, counts and booleans only — never names, emails, ids or
-typed text. Events: `video-create` (`defaultKind`), `video-upload` (`replaced`), `video-publish` (`published`), `video-play` (once per page),
+typed text. Events: `video-create` (`defaultKind`), `video-rate` (`rating`), `video-upload` (`replaced`), `video-publish` (`published`), `video-play` (once per page),
 `watch-list` (`listed`), `language-change` and `theme-change`.
 
 ## Testing

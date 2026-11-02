@@ -79,3 +79,22 @@ test.describe("Continue watching", () => {
         await expect(page.getByText("Din lista är tom. Lägg till filmer från deras sidor.")).toBeVisible();
     });
 });
+
+test.describe("Ratings", () => {
+    test("rates a video, sees everyone's average, and finds it as highest rated", async ({page, loginAs, mock}) => {
+        await loginAs("viewer");
+        await page.goto(`/videos/${uuidOf(1)}`);
+
+        await expect(page.getByText("5,0 av 5 i snitt (1 betyg)")).toBeVisible();
+        await page.getByRole("radiogroup", {name: "Ditt betyg för filmen"}).getByRole("radio", {name: "4 stjärnor"}).click();
+        await expect.poll(async () => (await mock.state()).ratings[uuidOf(1)]).toBe(4);
+
+        await page.goto(`/videos/${uuidOf(1)}`);
+        await expect(page.getByText("4,5 av 5 i snitt (2 betyg)")).toBeVisible();
+        await expect(page.getByRole("radiogroup", {name: "Ditt betyg för filmen"}).getByRole("radio", {name: "4 stjärnor"}))
+            .toHaveAttribute("aria-checked", "true");
+
+        await page.goto("/");
+        await expect(page.getByRole("region", {name: "Högst betyg av dig"}).getByRole("link", {name: /Nobel/})).toBeVisible();
+    });
+});

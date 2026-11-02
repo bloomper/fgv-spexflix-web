@@ -69,6 +69,8 @@ export const test = base.extend<{ resetBackend: void; noNativeDialogs: void; log
 type MockState = {
     uploads: number;
     kinds: { id: string; nameSv: string; nameEn: string; position: number }[];
+    /** The viewer's ratings by video id. */
+    ratings: Record<string, number>;
     progress: Record<string, number>;
     videos: {
         id: string; title: string; status: string; published: boolean; trashedAt: string | null; posterSeconds: number | null;

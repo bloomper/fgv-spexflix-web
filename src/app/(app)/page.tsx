@@ -29,6 +29,13 @@ export default async function HomePage() {
                     </section>
                 )}
 
+                {home && home.highestRated.length > 0 && (
+                    <section className="space-y-3" aria-labelledby="highest-rated">
+                        <h2 id="highest-rated" className="text-lg font-semibold">{t("highestRated")}</h2>
+                        <VideoGrid videos={home.highestRated.slice(0, 6)}/>
+                    </section>
+                )}
+
                 <section className="space-y-3" aria-labelledby="recent">
                     <div className="flex items-baseline justify-between">
                         <h2 id="recent" className="text-lg font-semibold">{t("recent")}</h2>

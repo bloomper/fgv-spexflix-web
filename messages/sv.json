@@ -255,7 +255,8 @@
     "recent": "Senast publicerat",
     "allVideos": "Alla filmer",
     "empty": "Inga filmer är publicerade ännu.",
-    "browse": "Bläddra"
+    "browse": "Bläddra",
+    "highestRated": "Högst betyg av dig"
   },
   "Search": {
     "title": "Sök",
@@ -400,7 +401,11 @@
     "failed": "Filmen kunde inte bearbetas.",
     "moreFromSpex": "Mer från spexet",
     "inSpexregister": "Spexet i Spexregistret",
-    "edit": "Redigera"
+    "edit": "Redigera",
+    "rate": "Ditt betyg för filmen",
+    "rateFailed": "Betyget kunde inte sparas.",
+    "average": "{average} av 5 i snitt ({count, plural, =1 {# betyg} other {# betyg}})",
+    "noRatings": "Inga betyg ännu"
   },
   "Player": {
     "timeline": "Tidslinje",
@@ -480,5 +485,9 @@
     "save": "Spara",
     "edit": "Ändra {name}",
     "cancel": "Avbryt"
+  },
+  "Rating": {
+    "stars": "{count, plural, =1 {# stjärna} other {# stjärnor}}",
+    "rated": "{count, plural, =1 {Betyg: # stjärna} other {Betyg: # stjärnor}}"
   }
 }

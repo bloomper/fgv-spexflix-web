@@ -18,6 +18,7 @@ const MeQuery = graphql(`
 const HomeQuery = graphql(`
     query Home {
         continueWatching(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { categoryName revival } }
+        highestRated(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished myRating spex { categoryName revival } }
         recentVideos(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { categoryName revival } }
         categories { id name videoCount }
         years
@@ -47,7 +48,7 @@ const VideoQuery = graphql(`
         video(id: $id) {
             id title year kind { ...KindFields } performance performanceDate description status failure durationMs width height
             published publishedAt trashedAt originalName originalSize originalKept hasThumbnails posterSeconds
-            progressSeconds finished inWatchList createdAt lastModifiedAt
+            progressSeconds finished inWatchList myRating averageRating ratingCount createdAt lastModifiedAt
             spex { id title year revival categoryId categoryName }
             renditions { height width bitrateKbps copied size }
             chapters { startSeconds title spexifyTrackId spexifyTrackTitle }
@@ -99,6 +100,7 @@ const VideoReprocessMutation = graphql(`mutation VideoReprocess($id: ID!) { vide
 const ChaptersSetMutation = graphql(`mutation ChaptersSet($videoId: ID!, $chapters: [ChapterInput!]!) { chaptersSet(videoId: $videoId, chapters: $chapters) { id } }`);
 const SubtitleRemoveMutation = graphql(`mutation SubtitleRemove($videoId: ID!, $language: String!) { subtitleRemove(videoId: $videoId, language: $language) { id } }`);
 const ProgressSaveMutation = graphql(`mutation ProgressSave($videoId: ID!, $positionSeconds: Int!) { progressSave(videoId: $videoId, positionSeconds: $positionSeconds) }`);
+const VideoRateMutation = graphql(`mutation VideoRate($videoId: ID!, $rating: Int!) { videoRate(videoId: $videoId, rating: $rating) }`);
 const WatchListAddMutation = graphql(`mutation WatchListAdd($videoId: ID!) { watchListAdd(videoId: $videoId) }`);
 const WatchListRemoveMutation = graphql(`mutation WatchListRemove($videoId: ID!) { watchListRemove(videoId: $videoId) }`);
 
@@ -129,6 +131,7 @@ export const videoReprocess = (id: string) => runMutation(VideoReprocessMutation
 export const chaptersSet = (videoId: string, chapters: ChapterInput[]) => runMutation(ChaptersSetMutation, {videoId, chapters});
 export const subtitleRemove = (videoId: string, language: string) => runMutation(SubtitleRemoveMutation, {videoId, language});
 export const progressSave = (videoId: string, positionSeconds: number) => runMutation(ProgressSaveMutation, {videoId, positionSeconds});
+export const videoRate = (videoId: string, rating: number) => runMutation(VideoRateMutation, {videoId, rating});
 export const watchListAdd = (videoId: string) => runMutation(WatchListAddMutation, {videoId});
 export const watchListRemove = (videoId: string) => runMutation(WatchListRemoveMutation, {videoId});
 

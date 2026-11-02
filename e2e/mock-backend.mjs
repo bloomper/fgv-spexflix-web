@@ -74,6 +74,9 @@ function resetState() {
             video(uuidOf(3), "Bearbetas", {published: false, status: "PROCESSING", renditions: []}),
         ],
         progress: {},
+        // The viewer's ratings by video id, and everyone else's
+        ratings: {},
+        otherRatings: {[uuidOf(1)]: [5]},
         watchList: new Set(),
         settings: {welcomeSv: null, welcomeEn: null, maxUploadGb: 50, keepOriginals: true},
         audit: [],
@@ -103,7 +106,10 @@ const listed = v => v.published && v.status === "READY" && !v.trashedAt;
 const visible = persona => state.videos.filter(v => !v.trashedAt && (listed(v) || isEditor(persona)));
 const sortedKinds = () => [...state.kinds].sort((a, b) => a.position - b.position);
 const kindOf = kindId => ({...state.kinds.find(kind => kind.id === kindId), isDefault: sortedKinds()[0]?.id === kindId});
-const personal = v => ({...v, kind: kindOf(v.kindId), progressSeconds: state.progress[v.id] ?? null, finished: false, inWatchList: state.watchList.has(v.id)});
+const ratingsOf = id => [...(state.otherRatings[id] ?? []), ...(state.ratings[id] ? [state.ratings[id]] : [])];
+const personal = v => ({...v, kind: kindOf(v.kindId), myRating: state.ratings[v.id] ?? 0,
+    averageRating: ratingsOf(v.id).length ? ratingsOf(v.id).reduce((a, b) => a + b, 0) / ratingsOf(v.id).length : null,
+    ratingCount: ratingsOf(v.id).length, progressSeconds: state.progress[v.id] ?? null, finished: false, inWatchList: state.watchList.has(v.id)});
 const isAdmin = persona => persona.roles.includes("ADMIN");
 
 function requireEditor(persona) {
@@ -143,6 +149,7 @@ const resolvers = {
     Me: persona => ({me: {username: persona.email, displayName: persona.name, roles: persona.roles, spexifyUser: true}, settings: state.settings}),
     Home: () => ({
         continueWatching: state.videos.filter(v => listed(v) && state.progress[v.id]).map(personal),
+        highestRated: state.videos.filter(v => listed(v) && state.ratings[v.id]).sort((a, b) => state.ratings[b.id] - state.ratings[a.id]).map(personal),
         recentVideos: state.videos.filter(listed).map(personal),
         categories, years: [1975],
     }),
@@ -163,6 +170,14 @@ const resolvers = {
     },
     Search: (persona, {q}) => ({search: visible(persona).filter(v => v.title.toLowerCase().includes(q.toLowerCase())).map(personal)}),
     WatchList: () => ({watchList: state.videos.filter(v => state.watchList.has(v.id)).map(personal)}),
+    VideoRate: (persona, {videoId, rating}) => {
+        if (rating === 0) {
+            delete state.ratings[videoId];
+        } else {
+            state.ratings[videoId] = rating;
+        }
+        return {videoRate: null};
+    },
     WatchListAdd: (persona, {videoId}) => {
         state.watchList.add(videoId);
         return {watchListAdd: null};
@@ -621,7 +636,7 @@ async function handle(req, res, chunks) {
             res.writeHead(204).end();
         } else if (req.method === "GET" && path === "/__state") {
             res.writeHead(200, {"content-type": "application/json"}).end(JSON.stringify({
-                uploads: state.uploads.size, progress: state.progress, kinds: state.kinds,
+                uploads: state.uploads.size, progress: state.progress, kinds: state.kinds, ratings: state.ratings,
                 videos: state.videos.map(({id, title, status, published, trashedAt, posterSeconds, chapters, subtitles, job}) =>
                     ({id, title, status, published, trashedAt, posterSeconds, chapters, subtitles, jobStatus: job?.status ?? null})),
             }));

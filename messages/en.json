@@ -255,7 +255,8 @@
     "recent": "Recently published",
     "allVideos": "All videos",
     "empty": "No videos are published yet.",
-    "browse": "Browse"
+    "browse": "Browse",
+    "highestRated": "Highest rated by you"
   },
   "Search": {
     "title": "Search",
@@ -400,7 +401,11 @@
     "failed": "The video could not be processed.",
     "moreFromSpex": "More from the spex",
     "inSpexregister": "The spex in Spexregister",
-    "edit": "Edit"
+    "edit": "Edit",
+    "rate": "Your rating of the video",
+    "rateFailed": "The rating could not be saved.",
+    "average": "{average} of 5 on average ({count, plural, =1 {# rating} other {# ratings}})",
+    "noRatings": "No ratings yet"
   },
   "Player": {
     "timeline": "Timeline",
@@ -480,5 +485,9 @@
     "save": "Save",
     "edit": "Edit {name}",
     "cancel": "Cancel"
+  },
+  "Rating": {
+    "stars": "{count, plural, =1 {# star} other {# stars}}",
+    "rated": "{count, plural, =1 {Rated # star} other {Rated # stars}}"
   }
 }
