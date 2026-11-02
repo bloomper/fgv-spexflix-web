@@ -84,6 +84,7 @@ export function AppSidebar({roles, accountUrl, ...props}: AppSidebarProps) {
                 isActive: pathname.startsWith("/admin/"),
                 items: [
                     {title: t("Nav.adminStorage"), url: "/admin/storage"},
+                    {title: t("Nav.adminKinds"), url: "/admin/kinds"},
                     {title: t("Nav.adminMaintenance"), url: "/admin/maintenance"},
                     {title: t("Nav.adminSettings"), url: "/admin/settings"},
                 ],

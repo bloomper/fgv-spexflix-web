@@ -1,11 +1,13 @@
 import Link from "next/link";
 import {notFound} from "next/navigation";
-import {getTranslations} from "next-intl/server";
+import {getLocale, getTranslations} from "next-intl/server";
 import {Pencil} from "lucide-react";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {PosterImage} from "@/components/video/poster-image.client";
 import {getMe, getPlayback, getVideo, spexifyUrl} from "@/lib/video/video.server";
+import {kindName} from "@/utils/format";
+import {VideoRating} from "@/components/video/video-rating.client";
 import {formatDuration, parsePosition} from "@/utils/duration";
 import {Policies} from "@/utils/policy.server";
 import {withPolicyPage} from "@/utils/route.server";
@@ -24,6 +26,7 @@ export default async function VideoPage({params, searchParams}: { params: Promis
 
         const t = await getTranslations("Watch");
         const tv = await getTranslations("Video");
+        const locale = await getLocale();
         const [video, me] = await Promise.all([getVideo(id), getMe()]);
 
         if (!video) {
@@ -49,7 +52,7 @@ export default async function VideoPage({params, searchParams}: { params: Promis
                 )}
                 <div className="max-w-3xl space-y-3">
                     <div className="flex flex-wrap gap-1.5">
-                        <Badge variant="secondary">{tv(`kind.${video.kind}`)}</Badge>
+                        <Badge variant="secondary">{kindName(video.kind, locale)}</Badge>
                         {video.spex?.revival && <Badge variant="secondary">{tv("revival")}</Badge>}
                         {!video.published && <Badge variant="outline">{tv("unpublished")}</Badge>}
                     </div>
@@ -58,6 +61,9 @@ export default async function VideoPage({params, searchParams}: { params: Promis
                         {[video.year, video.spex?.categoryName, video.performance, video.performanceDate,
                             video.durationMs ? formatDuration(video.durationMs / 1000) : null].filter(Boolean).join(" · ")}
                     </p>
+                    {video.published && (
+                        <VideoRating videoId={video.id} rating={video.myRating} averageRating={video.averageRating} ratingCount={video.ratingCount}/>
+                    )}
                     {video.description && <p className="whitespace-pre-line text-sm">{video.description}</p>}
                     <div className="flex flex-wrap gap-3 text-sm">
                         {video.spex && <Link href={`/videos?category=${video.spex.categoryId ?? ""}&year=${video.year ?? ""}`}

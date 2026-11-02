@@ -1,10 +1,11 @@
 import Link from "next/link";
-import {getTranslations} from "next-intl/server";
+import {getLocale, getTranslations} from "next-intl/server";
 import {Plus} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {getVideos} from "@/lib/video/video.server";
+import {kindName} from "@/utils/format";
 import {formatDuration} from "@/utils/duration";
 import {Policies} from "@/utils/policy.server";
 import {withPolicyPage} from "@/utils/route.server";
@@ -13,6 +14,7 @@ export default async function ManageVideosPage() {
     return withPolicyPage(Policies.editor.requireEditor, async () => {
         const t = await getTranslations("Manage");
         const tv = await getTranslations("Video");
+        const locale = await getLocale();
         const data = await getVideos({includeUnpublished: true});
 
         return (
@@ -37,7 +39,7 @@ export default async function ManageVideosPage() {
                                 <TableRow key={video.id}>
                                     <TableCell className="whitespace-normal"><Link href={`/manage/videos/${video.id}`} className="font-medium hover:underline">{video.title}</Link></TableCell>
                                     <TableCell className="tabular-nums">{video.year}</TableCell>
-                                    <TableCell className="hidden sm:table-cell">{tv(`kind.${video.kind}`)}</TableCell>
+                                    <TableCell className="hidden sm:table-cell">{kindName(video.kind, locale)}</TableCell>
                                     <TableCell className="hidden tabular-nums sm:table-cell">{video.durationMs ? formatDuration(video.durationMs / 1000) : ""}</TableCell>
                                     <TableCell className="whitespace-normal">
                                         <div className="flex flex-wrap gap-1">

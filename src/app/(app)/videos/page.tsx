@@ -1,24 +1,23 @@
 import Link from "next/link";
-import {getTranslations} from "next-intl/server";
+import {getLocale, getTranslations} from "next-intl/server";
 import {VideoGrid} from "@/components/video/video-grid";
 import {getVideos} from "@/lib/video/video.server";
-import type {VideoKind} from "@/gql/graphql";
 import {Policies} from "@/utils/policy.server";
 import {withPolicyPage} from "@/utils/route.server";
 import {cn} from "@/utils/utils";
+import {kindName} from "@/utils/format";
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const KINDS: VideoKind[] = ["FULL_SHOW", "NUMBER", "TRAILER", "BEHIND_THE_SCENES", "OTHER"];
 
 export default async function VideosPage({searchParams}: { searchParams: Promise<{ category?: string; year?: string; kind?: string }> }) {
     return withPolicyPage(Policies.app.requireAccess, async () => {
         const t = await getTranslations("Videos");
-        const tv = await getTranslations("Video");
+        const locale = await getLocale();
         const {category, year, kind} = await searchParams;
         const categoryId = category && ID.test(category) ? category : null;
         const yearNumber = year && /^\d{4}$/.test(year) ? Number(year) : null;
-        const kindValue = KINDS.find(value => value === kind) ?? null;
-        const data = await getVideos({categoryId, year: yearNumber, kind: kindValue});
+        const kindValue = kind && ID.test(kind) ? kind : null;
+        const data = await getVideos({categoryId, year: yearNumber, kindId: kindValue});
         const link = (params: { category?: string | null; year?: number | null; kind?: string | null }) => {
             const query = new URLSearchParams();
 
@@ -40,9 +39,9 @@ export default async function VideosPage({searchParams}: { searchParams: Promise
                 </nav>
                 <nav aria-label={t("kinds")} className="flex flex-wrap gap-2">
                     <Link href={link({...current, kind: null})} className={chip(!kindValue)}>{t("allKinds")}</Link>
-                    {KINDS.map(item => (
-                        <Link key={item} href={link({...current, kind: item})} className={chip(kindValue === item)}
-                              aria-current={kindValue === item ? "page" : undefined}>{tv(`kind.${item}`)}</Link>
+                    {data?.videoKinds.map(item => (
+                        <Link key={item.id} href={link({...current, kind: item.id})} className={chip(kindValue === item.id)}
+                              aria-current={kindValue === item.id ? "page" : undefined}>{kindName(item, locale)}</Link>
                     ))}
                 </nav>
                 <nav aria-label={t("years")} className="flex flex-wrap gap-1.5">

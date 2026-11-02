@@ -11,10 +11,21 @@ function nextClientIp() {
     return `192.0.2.${logins}`;
 }
 
-export const test = base.extend<{ resetBackend: void; loginAs: (persona: Persona) => Promise<void>; mock: Mock }>({
+export const test = base.extend<{ resetBackend: void; noNativeDialogs: void; loginAs: (persona: Persona) => Promise<void>; mock: Mock }>({
     resetBackend: [async ({request}, provide) => {
         await request.post(`${MOCK_URL}/__reset`);
         await provide();
+    }, {auto: true}],
+    // The application asks in its own dialogs; a native confirm or prompt fails the test
+    noNativeDialogs: [async ({page}, provide) => {
+        const native: string[] = [];
+
+        page.on("dialog", dialog => {
+            native.push(`${dialog.type()}: ${dialog.message()}`);
+            void dialog.dismiss();
+        });
+        await provide();
+        expect(native, "native dialogs").toEqual([]);
     }, {auto: true}],
     loginAs: async ({page, request}, provide) => {
         await provide(async (persona: Persona) => {
@@ -57,6 +68,9 @@ export const test = base.extend<{ resetBackend: void; loginAs: (persona: Persona
 
 type MockState = {
     uploads: number;
+    kinds: { id: string; nameSv: string; nameEn: string; position: number }[];
+    /** The viewer's ratings by video id. */
+    ratings: Record<string, number>;
     progress: Record<string, number>;
     videos: {
         id: string; title: string; status: string; published: boolean; trashedAt: string | null; posterSeconds: number | null;
@@ -99,6 +113,16 @@ export async function hydrated(page: Page, selector: string) {
 
         return element !== null && Object.keys(element).some(key => key.startsWith("__reactProps"));
     }, selector);
+}
+
+/**
+ * Answers the application's own confirm dialog by clicking its button.
+ */
+export async function answerDialog(page: Page, button: string) {
+    const dialog = page.getByRole("dialog");
+
+    await dialog.getByRole("button", {name: button, exact: true}).click();
+    await expect(dialog).toBeHidden();
 }
 
 export {expect} from "@playwright/test";

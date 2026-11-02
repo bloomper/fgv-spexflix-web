@@ -243,7 +243,8 @@
     "admin": "Administration",
     "adminStorage": "Lagring",
     "adminMaintenance": "Underhåll",
-    "adminSettings": "Inställningar"
+    "adminSettings": "Inställningar",
+    "adminKinds": "Filmsorter"
   },
   "Home": {
     "title": "Spexflix",
@@ -254,7 +255,8 @@
     "recent": "Senast publicerat",
     "allVideos": "Alla filmer",
     "empty": "Inga filmer är publicerade ännu.",
-    "browse": "Bläddra"
+    "browse": "Bläddra",
+    "highestRated": "Högst betyg av dig"
   },
   "Search": {
     "title": "Sök",
@@ -377,13 +379,6 @@
     "none": "Inga filmer matchar."
   },
   "Video": {
-    "kind": {
-      "FULL_SHOW": "Föreställning",
-      "NUMBER": "Nummer",
-      "TRAILER": "Trailer",
-      "BEHIND_THE_SCENES": "Bakom kulisserna",
-      "OTHER": "Övrigt"
-    },
     "status": {
       "UPLOADING": "Väntar på fil",
       "PROCESSING": "Bearbetas",
@@ -406,7 +401,11 @@
     "failed": "Filmen kunde inte bearbetas.",
     "moreFromSpex": "Mer från spexet",
     "inSpexregister": "Spexet i Spexregistret",
-    "edit": "Redigera"
+    "edit": "Redigera",
+    "rate": "Ditt betyg för filmen",
+    "rateFailed": "Betyget kunde inte sparas.",
+    "average": "{average} av 5 i snitt ({count, plural, =1 {# betyg} other {# betyg}})",
+    "noRatings": "Inga betyg ännu"
   },
   "Player": {
     "timeline": "Tidslinje",
@@ -465,5 +464,30 @@
         "description": "Tar bort uppladdningar som påbörjats men aldrig använts, med sina filer."
       }
     }
+  },
+  "AdminKinds": {
+    "title": "Filmsorter",
+    "text": "Sorterna som en film kan ha, t.ex. föreställning eller trailer. Den första är förvald för nya filmer. En sort som någon film har, även i papperskorgen, kan inte raderas.",
+    "nameSv": "Namn på svenska",
+    "nameEn": "Namn på engelska",
+    "videos": "{count, plural, =0 {Inga filmer} =1 {# film} other {# filmer}}",
+    "default": "Förvald",
+    "moveUp": "Flytta upp {name}",
+    "moveDown": "Flytta ner {name}",
+    "delete": "Radera",
+    "deleteKind": "Radera {name}",
+    "confirmDelete": "Radera filmsorten {name}?",
+    "inUse": "Används av filmer",
+    "add": "Lägg till sort",
+    "added": "Sorten är tillagd",
+    "saved": "Sparat",
+    "deleted": "Sorten är raderad",
+    "save": "Spara",
+    "edit": "Ändra {name}",
+    "cancel": "Avbryt"
+  },
+  "Rating": {
+    "stars": "{count, plural, =1 {# stjärna} other {# stjärnor}}",
+    "rated": "{count, plural, =1 {Betyg: # stjärna} other {Betyg: # stjärnor}}"
   }
 }

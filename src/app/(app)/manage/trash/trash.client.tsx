@@ -7,6 +7,7 @@ import {toast} from "sonner";
 import {Button} from "@/components/ui/button";
 import {formatInstant} from "@/utils/format";
 import {deleteVideoAction, emptyTrashAction, trashVideoAction} from "@/app/(app)/manage/actions.server";
+import {useDialogs} from "@/components/dialogs.client";
 
 type Item = { id: string; title: string; year?: number | null; trashedAt?: string | null };
 
@@ -15,6 +16,7 @@ type Item = { id: string; title: string; year?: number | null; trashedAt?: strin
  */
 export function TrashList({videos, admin}: { videos: Item[]; admin: boolean }) {
     const t = useTranslations("Trash");
+    const {confirm} = useDialogs();
     const router = useRouter();
     const [pending, startTransition] = useTransition();
     const run = (work: () => Promise<{ ok: boolean; message?: string }>) => startTransition(async () => {
@@ -33,7 +35,7 @@ export function TrashList({videos, admin}: { videos: Item[]; admin: boolean }) {
     return (
         <div className="space-y-4">
             {admin && (
-                <Button variant="destructive" disabled={pending} onClick={() => window.confirm(t("confirmEmpty")) && run(emptyTrashAction)}>
+                <Button variant="destructive" disabled={pending} onClick={async () => await confirm({title: t("confirmEmpty"), confirmLabel: t("emptyTrash"), destructive: true}) && run(emptyTrashAction)}>
                     {t("emptyTrash")}
                 </Button>
             )}
@@ -49,7 +51,8 @@ export function TrashList({videos, admin}: { videos: Item[]; admin: boolean }) {
                         <Button variant="outline" size="sm" disabled={pending} onClick={() => run(() => trashVideoAction(video.id, false))}>{t("restore")}</Button>
                         {admin && (
                             <Button variant="destructive" size="sm" disabled={pending}
-                                    onClick={() => window.confirm(t("confirmDelete", {title: video.title})) && run(() => deleteVideoAction(video.id))}>
+                                    onClick={async () => await confirm({title: t("confirmDelete", {title: video.title}), confirmLabel: t("delete"), destructive: true})
+                                        && run(() => deleteVideoAction(video.id))}>
                                 {t("delete")}
                             </Button>
                         )}

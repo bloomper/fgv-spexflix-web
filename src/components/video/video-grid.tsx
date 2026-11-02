@@ -1,14 +1,15 @@
 import Link from "next/link";
-import {useTranslations} from "next-intl";
+import {useLocale, useTranslations} from "next-intl";
 import {Badge} from "@/components/ui/badge";
 import {PosterImage} from "@/components/video/poster-image.client";
 import {formatDuration} from "@/utils/duration";
+import {type KindName, kindName} from "@/utils/format";
 
 export type VideoSummary = {
     id: string;
     title: string;
     year?: number | null;
-    kind: string;
+    kind: KindName;
     durationMs?: number | null;
     status?: string;
     published?: boolean;
@@ -22,6 +23,7 @@ export type VideoSummary = {
  */
 export function VideoGrid({videos, hrefFor}: { videos: VideoSummary[]; hrefFor?: (id: string) => string }) {
     const t = useTranslations("Video");
+    const locale = useLocale();
 
     return (
         <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
@@ -50,7 +52,7 @@ export function VideoGrid({videos, hrefFor}: { videos: VideoSummary[]; hrefFor?:
                             <div className="mt-2 space-y-0.5">
                                 <div className="line-clamp-2 font-medium leading-tight">{video.title}</div>
                                 <div className="text-xs text-muted-foreground">
-                                    {[video.year, video.spex?.categoryName, t(`kind.${video.kind}`)].filter(Boolean).join(" · ")}
+                                    {[video.year, video.spex?.categoryName, kindName(video.kind, locale)].filter(Boolean).join(" · ")}
                                 </div>
                                 <div className="flex flex-wrap gap-1 pt-0.5">
                                     {video.spex?.revival && <Badge variant="secondary">{t("revival")}</Badge>}

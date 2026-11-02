@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {notFound} from "next/navigation";
 import {getTranslations} from "next-intl/server";
-import {getPlayback, getVideo} from "@/lib/video/video.server";
+import {getPlayback, getVideo, getVideoKinds} from "@/lib/video/video.server";
 import {Policies} from "@/utils/policy.server";
 import {withPolicyPage} from "@/utils/route.server";
 import {isAdmin} from "@/utils/auth";
@@ -18,7 +18,7 @@ export default async function EditVideoPage({params}: { params: Promise<{ id: st
         }
 
         const t = await getTranslations("Manage");
-        const video = await getVideo(id);
+        const [video, kinds] = await Promise.all([getVideo(id), getVideoKinds()]);
 
         if (!video || video.trashedAt) {
             notFound();
@@ -33,7 +33,7 @@ export default async function EditVideoPage({params}: { params: Promise<{ id: st
                     <Link href={`/videos/${video.id}`} className="text-sm text-primary hover:underline">{t("viewAsViewer")}</Link>
                 </div>
                 <VideoEditor video={{...video, spex: video.spex ? {...video.spex, revival: video.spex.revival === true} : null}}
-                             playback={playback} admin={isAdmin(authz.roles)}/>
+                             playback={playback} admin={isAdmin(authz.roles)} kinds={kinds}/>
             </div>
         );
     });

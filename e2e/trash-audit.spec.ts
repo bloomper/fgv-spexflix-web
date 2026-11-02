@@ -1,12 +1,12 @@
 import {uuidOf} from "./constants";
-import {expect, test} from "./fixtures";
+import {answerDialog, expect, test} from "./fixtures";
 
 test.describe("The trash", () => {
     test("an editor trashes a video and restores it, but cannot delete", async ({page, loginAs, mock}) => {
         await loginAs("editor");
         await page.goto(`/manage/videos/${uuidOf(1)}`);
-        page.once("dialog", dialog => dialog.accept());
         await page.getByRole("button", {name: "Lägg i papperskorgen"}).click();
+        await answerDialog(page, "Lägg i papperskorgen");
         await expect(page).toHaveURL(/\/manage\/videos$/);
 
         await page.goto("/manage/trash");
@@ -19,17 +19,19 @@ test.describe("The trash", () => {
 
     test("an admin deletes from the trash and empties it", async ({page, loginAs, mock}) => {
         await loginAs("admin");
-        page.on("dialog", dialog => dialog.accept());
         for (const id of [uuidOf(1), uuidOf(2)]) {
             await page.goto(`/manage/videos/${id}`);
             await page.getByRole("button", {name: "Lägg i papperskorgen"}).click();
+            await answerDialog(page, "Lägg i papperskorgen");
             await expect(page).toHaveURL(/\/manage\/videos$/);
         }
 
         await page.goto("/manage/trash");
         await page.getByRole("listitem").filter({hasText: "Opublicerad film"}).getByRole("button", {name: "Radera"}).click();
+        await answerDialog(page, "Radera");
         await expect(page.getByText("Opublicerad film")).toHaveCount(0);
         await page.getByRole("button", {name: "Töm papperskorgen"}).click();
+        await answerDialog(page, "Töm papperskorgen");
         await expect(page.getByText("Papperskorgen är tom.")).toBeVisible();
         expect((await mock.state()).videos.map(v => v.title)).toEqual(["Bearbetas"]);
     });
