@@ -45,9 +45,15 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
 ## How Spexflix works in the web
 
 - **Playing**: `VideoPlayer` (`src/components/video/video-player.client.tsx`) gets the signed master playlist from
-  `playback(videoId)` and plays it natively in Safari, through hls.js elsewhere. The browser's controls do play, volume,
-  subtitles (`<track>`, `crossOrigin="anonymous"`), speed, full screen and picture-in-picture; a timeline below shows
-  chapters and the thumbnail sprites from the WebVTT index (`parseThumbnails`). Progress is saved every 15 seconds and
+  `playback(videoId)` and plays it natively in Safari, through hls.js elsewhere. It has controls of its own, in the
+  page's language (the browser's follow the browser's language): play, ±10 s, volume (remembered in `localStorage`
+  `spexflix.player`), a timeline with the chapters and the thumbnail sprites from the WebVTT index (`parseThumbnails`),
+  subtitles (`<track>`, `crossOrigin="anonymous"`), a settings menu (speed, quality, shortcuts), AirPlay,
+  picture-in-picture and full screen of the player's own box (so the controls stay; iPhone falls back to the video's
+  own full screen). The controls hide after 3 s of playing without movement. Menus in the player portal into its box
+  (`DropdownMenuContent container`) so they work in full screen. The timeline's hover box is kept inside the player, and
+  the page grid uses `minmax(0,1fr)`, so the page never scrolls sideways. `endAt` stops a clip where its chapter ends
+  and reports it as ended. Progress is saved every 15 seconds and
   on pause (`saveProgressAction`), and a page opened with `?t=` (seconds or m:ss) starts there, with `?autoplay=1` at
   once. With hls.js the viewer can pick a quality level (`-1` hands the choice back to hls.js); Safari shows an AirPlay
   button when a receiver is near. Keyboard shortcuts (`src/components/video/shortcuts.client.tsx`) work anywhere on the
@@ -66,8 +72,21 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
   multipart forms through `/api/poster-upload/[id]` and `/api/subtitle-upload/[id]`.
 - **Chapters** are edited as rows (start in m:ss, title, optional Spexify track from `spexifyTracks`) and saved
   together with `chaptersSet`. Viewers with Spexify access (`me.spexifyUser`) get *Listen in Spexify* links.
-- **Ratings** are each user's own, 1–5 (`videoRate`, 0 removes); a video also shows everyone's average
-  (`averageRating`, `ratingCount`), and the start page what the user rated highest (`highestRated`).
+- **Ratings** are each user's own, 1–5 (`videoRate`, 0 removes); every video card and the video page show everyone's
+  average as stars (`AverageRating` in `src/components/rating.client.tsx`, shared with Spexify), and the start page
+  what the user rated highest (`highestRated`). Show ratings as stars, never as text.
+- **Likes** (a heart, "Gilla"/"Gillad", `videoLike`; `/liked` "Gillat") are separate from **Se senare** (the watch
+  list, `/watchlist`), which is for watching later. Likes are never revalidated on the video page being watched.
+- **Top list** (`/top`, Topplistan): `topVideos(by)` by `RATED` (weighted average), `LIKED` or `WATCHED`, per category
+  and decade. `/videos` takes `category`, `kind`, `decade` or `year`, `liked=1`, `unwatched=1` and `sort` (`SortSelect`).
+- **Playlists** (`/playlists`) are each user's own lists of whole videos and clips (a chapter, added with
+  `AddToPlaylistMenu` beside each chapter, or the whole video from the button below the player). Others' public ones
+  are played, not changed. A playlist plays through the video page with `?playlist=<id>&item=<itemId>`: the page finds
+  the item, starts a clip at its chapter and stops it at `endSeconds`, shows the playlist beside the player, and the
+  next item (not `Video.next`) follows after the countdown. Clips do not mark the video as watched.
+- **The start page** has the same order as Spexify's: greeting, browsing (categories, the top list, decades),
+  continue watching, the top list, recently published, liked, highest rated by the user (`HomeSection`). Long texts
+  wrap with `text-pretty` up to `max-w-4xl`, not `max-w-prose`.
 - **Spex**: a video is about a list of spex, the main one first (poster, category, default title and year), or none,
   which the editor marks explicitly (`SpexPicker` in `src/components/spex/`, the same as Spexify's). Each spex has a
   `familyId`, its original's id for a revival; `/videos?spex=<familyId>` lists an original with its revivals, and
@@ -103,7 +122,7 @@ drops query strings.
 Custom events go through `track()` (`src/utils/umami.ts`; import it as `trackEvent` where `track` is a variable), a
 no-op when the tracker isn't loaded. Event data is enum values, counts and booleans only — never names, emails, ids or
 typed text. Events: `video-create` (`defaultKind`), `video-rate` (`rating`), `video-upload` (`replaced`), `video-publish` (`published`), `video-play` (once per page),
-`watch-list` (`listed`), `video-next` (`automatic`), `video-watched` (`watched`), `continue-forget`, `collection-create`
+`watch-list` (`listed`), `video-like` (`liked`), `playlist-create`, `playlist-add` (`clip`, `created`), `video-next` (`automatic`, `playlist`), `video-watched` (`watched`), `continue-forget`, `collection-create`
 (`videos`), `language-change` and `theme-change`.
 
 ## Testing
@@ -114,5 +133,7 @@ typed text. Events: `video-create` (`defaultKind`), `video-rate` (`rating`), `vi
 - Call `hydrated(page, selector)` before `setInputFiles`: a file chosen before React hydrates the input is lost.
 - Unit tests in `__tests__/` beside the code. E2E specs in `e2e/`, one per area, with personas `admin`, `editor`,
   `viewer` and `noaccess` in the mock backend. All test data is fictitious.
-- Use `{exact: true}` for names that are part of others ("I min lista" in "Lägg till i min lista", "Namn" in
-  "Användarnamn").
+- Use `{exact: true}` for names that are part of others ("Se senare" in "Sparad i Se senare", "Gilla" in "Gillad",
+  "Namn" in "Användarnamn").
+- The mock media server answers without CORS headers, so videos never play in e2e and the player shows its error box,
+  which covers the controls: test the controls' menus in the unit tests.

@@ -88,6 +88,12 @@ function resetState() {
         ratings: {},
         otherRatings: {[uuidOf(1)]: [5]},
         watchList: new Set(),
+        // The viewer's likes, most recent last, and how many others like each video
+        liked: [],
+        otherLikes: {[uuidOf(4)]: 2},
+        // Everyone's playlists: the viewer's own (owner "viewer") and others' public ones
+        playlists: [{id: uuidOf(600), name: "Annas favoriter", description: null, isPublic: true, owner: "Anna Annan",
+            items: [{id: uuidOf(601), videoId: uuidOf(1), startSeconds: null, endSeconds: null, title: null}]}],
         settings: {welcomeSv: null, welcomeEn: null, maxUploadGb: 50, keepOriginals: true},
         audit: [],
         uploads: new Map(),
@@ -120,7 +126,28 @@ const ratingsOf = id => [...(state.otherRatings[id] ?? []), ...(state.ratings[id
 const personal = v => ({...v, kind: kindOf(v.kindId), myRating: state.ratings[v.id] ?? 0,
     averageRating: ratingsOf(v.id).length ? ratingsOf(v.id).reduce((a, b) => a + b, 0) / ratingsOf(v.id).length : null,
     ratingCount: ratingsOf(v.id).length, progressSeconds: state.progress[v.id] ?? null, finished: state.finished.has(v.id),
-    inWatchList: state.watchList.has(v.id)});
+    inWatchList: state.watchList.has(v.id), liked: state.liked.includes(v.id),
+    likeCount: (state.otherLikes[v.id] ?? 0) + (state.liked.includes(v.id) ? 1 : 0)});
+const playlistOut = (persona, playlist) => {
+    const items = playlist.items.filter(item => listed(videoById(item.videoId))).map(item => {
+        const video = personal(videoById(item.videoId));
+        const length = (video.durationMs ?? 0) / 1000;
+
+        return {...item, video, durationSeconds: item.startSeconds === null ? length : (item.endSeconds ?? length) - item.startSeconds};
+    });
+
+    return {id: playlist.id, name: playlist.name, description: playlist.description, isPublic: playlist.isPublic,
+        owned: playlist.owner === null, ownerName: playlist.owner ?? persona.name, items, itemCount: items.length,
+        durationSeconds: items.reduce((sum, item) => sum + item.durationSeconds, 0), createdAt: "2026-11-01T10:00:00Z", updatedAt: "2026-11-01T10:00:00Z"};
+};
+const ownPlaylist = id => {
+    const found = state.playlists.find(playlist => playlist.id === id && playlist.owner === null);
+
+    if (!found) {
+        throw new GraphQLError("NOT_FOUND", "Spellistan finns inte.");
+    }
+    return found;
+};
 const collectionsOf = (persona, videoId) => state.collections
     .filter(collection => collection.videoIds.includes(videoId))
     .map(collection => ({id: collection.id, title: collection.title}));
@@ -184,11 +211,83 @@ const resolvers = {
         continueWatching: state.videos.filter(v => listed(v) && state.progress[v.id]).map(personal),
         highestRated: state.videos.filter(v => listed(v) && state.ratings[v.id]).sort((a, b) => state.ratings[b.id] - state.ratings[a.id]).map(personal),
         recentVideos: state.videos.filter(listed).map(personal),
+        topVideos: state.videos.filter(v => listed(v) && ratingsOf(v.id).length).map(personal)
+            .sort((a, b) => b.averageRating - a.averageRating),
+        likedVideos: [...state.liked].reverse().map(id => personal(videoById(id))),
         categories, years: [1975],
     }),
+    Liked: () => ({likedVideos: [...state.liked].reverse().map(id => personal(videoById(id)))}),
+    Top: (persona, {by}) => {
+        const score = v => by === "LIKED" ? v.likeCount : by === "WATCHED" ? (state.finished.has(v.id) ? 1 : 0) : v.averageRating ?? 0;
+
+        return {topVideos: state.videos.filter(listed).map(personal).filter(v => score(v) > 0).sort((a, b) => score(b) - score(a)), categories, years: [1975]};
+    },
+    VideoLike: (persona, {videoId, liked}) => {
+        state.liked = state.liked.filter(id => id !== videoId);
+        if (liked) {
+            state.liked.push(videoId);
+        }
+        return {videoLike: null};
+    },
+    Playlists: persona => ({playlists: state.playlists.filter(playlist => playlist.owner === null || playlist.isPublic).map(playlist => playlistOut(persona, playlist))}),
+    Playlist: (persona, {id}) => {
+        const found = state.playlists.find(playlist => playlist.id === id && (playlist.owner === null || playlist.isPublic));
+
+        return {playlist: found ? playlistOut(persona, found) : null};
+    },
+    PlaylistCreate: (persona, {input}) => {
+        const playlist = {id: uuidOf(state.nextId++), name: input.name, description: input.description ?? null, isPublic: Boolean(input.isPublic),
+            owner: null, items: []};
+
+        state.playlists.push(playlist);
+        return {playlistCreate: playlistOut(persona, playlist)};
+    },
+    PlaylistUpdate: (persona, {id, input}) => {
+        const playlist = ownPlaylist(id);
+
+        Object.assign(playlist, {name: input.name, description: input.description ?? null, isPublic: Boolean(input.isPublic)});
+        return {playlistUpdate: playlistOut(persona, playlist)};
+    },
+    PlaylistDelete: (persona, {id}) => {
+        ownPlaylist(id);
+        state.playlists = state.playlists.filter(playlist => playlist.id !== id);
+        return {playlistDelete: null};
+    },
+    PlaylistAddItem: (persona, {playlistId, videoId, startSeconds}) => {
+        const playlist = ownPlaylist(playlistId);
+        const video = videoById(videoId);
+        let clip = {startSeconds: null, endSeconds: null, title: null};
+
+        if (startSeconds !== null && startSeconds !== undefined) {
+            const chapters = [...video.chapters].sort((a, b) => a.startSeconds - b.startSeconds);
+            const index = chapters.findIndex(chapter => chapter.startSeconds === startSeconds);
+
+            if (index < 0) {
+                throw new GraphQLError("BAD_REQUEST", "Filmen har inget kapitel som börjar där.");
+            }
+            clip = {startSeconds, endSeconds: chapters[index + 1]?.startSeconds ?? Math.floor((video.durationMs ?? 0) / 1000), title: chapters[index].title};
+        }
+        playlist.items.push({id: uuidOf(state.nextId++), videoId, ...clip});
+        return {playlistAddItem: playlistOut(persona, playlist)};
+    },
+    PlaylistRemoveItem: (persona, {playlistId, itemId}) => {
+        const playlist = ownPlaylist(playlistId);
+
+        playlist.items = playlist.items.filter(item => item.id !== itemId);
+        return {playlistRemoveItem: playlistOut(persona, playlist)};
+    },
+    PlaylistReorder: (persona, {playlistId, itemIds}) => {
+        const playlist = ownPlaylist(playlistId);
+
+        playlist.items = [...itemIds.map(id => playlist.items.find(item => item.id === id)), ...playlist.items.filter(item => !itemIds.includes(item.id))];
+        return {playlistReorder: playlistOut(persona, playlist)};
+    },
     Videos: (persona, {filter}) => ({
         videos: visible(persona).filter(v => listed(v) || filter?.includeUnpublished).filter(v => !filter?.kindId || v.kindId === filter.kindId)
-            .filter(v => !filter?.spexId || isAbout(v, filter.spexId)).map(personal),
+            .filter(v => !filter?.spexId || isAbout(v, filter.spexId))
+            .filter(v => !filter?.liked || state.liked.includes(v.id)).filter(v => !filter?.unwatched || !state.finished.has(v.id))
+            .map(personal)
+            .sort((a, b) => filter?.sort === "TITLE" ? a.title.localeCompare(b.title, "sv") : filter?.sort === "LIKES" ? b.likeCount - a.likeCount : 0),
         categories, years: [1975], videoKinds: sortedKinds().map(kind => kindOf(kind.id)),
     }),
     Video: (persona, {id}) => {
@@ -734,7 +833,7 @@ async function handle(req, res, chunks) {
         } else if (req.method === "GET" && path === "/__state") {
             res.writeHead(200, {"content-type": "application/json"}).end(JSON.stringify({
                 uploads: state.uploads.size, progress: state.progress, kinds: state.kinds, ratings: state.ratings,
-                finished: [...state.finished], collections: state.collections,
+                liked: state.liked, playlists: state.playlists, finished: [...state.finished], collections: state.collections,
                 videos: state.videos.map(({id, title, status, published, trashedAt, posterSeconds, chapters, subtitles, job}) =>
                     ({id, title, status, published, trashedAt, posterSeconds, chapters, subtitles, jobStatus: job?.status ?? null})),
             }));

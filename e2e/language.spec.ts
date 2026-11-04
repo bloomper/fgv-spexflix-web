@@ -8,11 +8,11 @@ test.describe("Language", () => {
         await page.getByRole("menuitem", {name: "English"}).click();
 
         await page.goto(`/videos/${uuidOf(1)}`);
-        await expect(page.getByRole("button", {name: "Add to my list"})).toBeVisible();
+        await expect(page.getByRole("button", {name: "Watch later", exact: true})).toBeVisible();
 
         await page.getByRole("button", {name: "Change language"}).click();
         await page.getByRole("menuitem", {name: "Svenska"}).click();
-        await expect(page.getByRole("button", {name: "Lägg till i min lista"})).toBeVisible();
+        await expect(page.getByRole("button", {name: "Se senare", exact: true})).toBeVisible();
     });
 });
 

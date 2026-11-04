@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import {useMemo} from "react";
-import {Bookmark, Clapperboard, Drama, House, Layers, type LucideIcon, Pencil, Settings, Wrench} from "lucide-react";
+import {Clapperboard, Clock, Drama, Heart, House, Layers, ListVideo, type LucideIcon, Pencil, Settings, Trophy, Wrench} from "lucide-react";
 
 import {NavMain} from "@/components/nav-main.client";
 import {NavSecondary} from "@/components/nav-secondary.client";
@@ -58,8 +58,11 @@ export function AppSidebar({roles, accountUrl, ...props}: AppSidebarProps) {
         const mainItems: NavItem[] = [
             {title: t("Nav.home"), url: "/", icon: House, isActive: pathname === "/"},
             {title: t("Nav.videos"), url: "/videos", icon: Clapperboard, isActive: pathname.startsWith("/videos")},
+            {title: t("Nav.top"), url: "/top", icon: Trophy, isActive: pathname.startsWith("/top")},
             {title: t("Nav.collections"), url: "/collections", icon: Layers, isActive: pathname.startsWith("/collections")},
-            {title: t("Nav.watchList"), url: "/watchlist", icon: Bookmark, isActive: pathname.startsWith("/watchlist")},
+            {title: t("Nav.liked"), url: "/liked", icon: Heart, isActive: pathname.startsWith("/liked")},
+            {title: t("Nav.watchList"), url: "/watchlist", icon: Clock, isActive: pathname.startsWith("/watchlist")},
+            {title: t("Nav.playlists"), url: "/playlists", icon: ListVideo, isActive: pathname.startsWith("/playlists")},
         ];
 
         if (isEditor(roles)) {

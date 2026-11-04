@@ -8,7 +8,7 @@ test.describe("Phone width: no page scrolls sideways", () => {
         await page.setViewportSize({width: WIDTH, height: 812});
         await loginAs("viewer");
 
-        for (const path of ["/", "/videos", `/videos/${uuidOf(1)}`, "/watchlist", "/search?q=nob"]) {
+        for (const path of ["/", "/videos", `/videos/${uuidOf(1)}`, "/watchlist", "/liked", "/top", "/playlists", `/playlists/${uuidOf(600)}`, "/search?q=nob"]) {
             await page.goto(path);
             await page.getByRole("heading", {level: 1}).first().waitFor();
             expect(await page.evaluate(() => document.documentElement.scrollWidth), path).toBeLessThanOrEqual(WIDTH);

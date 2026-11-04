@@ -44,8 +44,11 @@ test.describe("Watching more", () => {
     test("shows the keyboard shortcuts", async ({page}) => {
         await page.goto(`/videos/${uuidOf(1)}`);
         await hydrated(page, "video");
-        await page.keyboard.press("?");
-        await expect(page.getByRole("dialog", {name: "Kortkommandon"})).toBeVisible();
+        // The shortcuts listen once the player's effects have run, a moment after hydration
+        await expect(async () => {
+            await page.keyboard.press("?");
+            await expect(page.getByRole("dialog", {name: "Kortkommandon"})).toBeVisible({timeout: 500});
+        }).toPass();
     });
 });
 

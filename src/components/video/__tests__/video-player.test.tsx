@@ -188,13 +188,13 @@ describe("VideoPlayer", () => {
 
         playTo(element, 65);
         expect(timeline()).toHaveAttribute("aria-valuenow", "65");
-        expect(screen.getByText("1:05 · Första akten")).toBeInTheDocument();
-        expect(screen.getByText("2:00")).toBeInTheDocument();
+        expect(screen.getByText(/1:05 \/ 2:00/)).toBeInTheDocument();
+        expect(screen.getByText(/· Första akten/)).toBeInTheDocument();
 
         fireEvent.keyDown(timeline(), {key: "ArrowRight"});
         expect(element.currentTime).toBe(75);
         fireEvent.keyDown(timeline(), {key: "ArrowLeft"});
-        expect(element.currentTime).toBe(55);
+        expect(element.currentTime).toBe(65);
 
         fireEvent.click(timeline(), {clientX: 50});
         expect(element.currentTime).toBe(30);
@@ -225,7 +225,7 @@ describe("VideoPlayer", () => {
 
         Object.defineProperty(element, "duration", {value: 180, configurable: true});
         fireEvent.durationChange(element);
-        expect(screen.getByText("3:00")).toBeInTheDocument();
+        expect(screen.getByText(/\/ 3:00/)).toBeInTheDocument();
         expect(timeline()).toHaveAttribute("aria-valuemax", "180");
     });
 
@@ -245,11 +245,11 @@ describe("VideoPlayer", () => {
         await waitFor(() => expect(hls.instances).toHaveLength(1));
         act(() => hls.instances[0].emitManifest([{height: 360, bitrate: 800_000}, {height: 720, bitrate: 2_500_000}]));
 
-        const quality = screen.getByRole("combobox");
-
-        fireEvent.change(quality, {target: {value: "1"}});
+        fireEvent.click(screen.getByRole("button", {name: "settings"}));
+        fireEvent.click(await screen.findByRole("menuitem", {name: "720p"}));
         expect(hls.instances[0].currentLevel).toBe(1);
-        fireEvent.change(quality, {target: {value: "-1"}});
+        fireEvent.click(screen.getByRole("button", {name: "settings"}));
+        fireEvent.click(await screen.findByRole("menuitem", {name: "auto"}));
         expect(hls.instances[0].currentLevel).toBe(-1);
         expect(media(container)).toHaveAttribute("x-webkit-airplay", "allow");
     });
@@ -285,5 +285,62 @@ describe("VideoPlayer", () => {
         expect(element.muted).toBe(true);
         fireEvent.keyDown(document.body, {key: "?"});
         expect(await screen.findByRole("dialog", {name: "title"})).toBeInTheDocument();
+    });
+
+    it("has controls of its own in the page's language, not the browser's", async () => {
+        const {container} = show();
+        const element = media(container);
+        const play = vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
+        const pause = vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => undefined);
+
+        expect(element).not.toHaveAttribute("controls");
+        fireEvent.click(screen.getAllByRole("button", {name: "play"})[0]);
+        expect(play).toHaveBeenCalled();
+        act(() => {
+            fireEvent.play(element);
+        });
+        Object.defineProperty(element, "paused", {value: false, configurable: true});
+        fireEvent.click(screen.getByRole("button", {name: "pause"}));
+        expect(pause).toHaveBeenCalled();
+        expect(screen.getByRole("button", {name: "fullscreen"})).toBeInTheDocument();
+        expect(screen.getByRole("slider", {name: "volume"})).toBeInTheDocument();
+    });
+
+    it("turns subtitles on and off from its menu", async () => {
+        const {container} = show();
+        const track = {language: "sv", mode: "disabled"};
+
+        Object.defineProperty(media(container), "textTracks", {value: Object.assign([track], {addEventListener: vi.fn(), removeEventListener: vi.fn()}), configurable: true});
+        fireEvent.click(screen.getByRole("button", {name: "subtitles"}));
+        fireEvent.click(await screen.findByRole("menuitem", {name: "Svenska"}));
+        expect(track.mode).toBe("showing");
+        fireEvent.click(screen.getByRole("button", {name: "subtitles"}));
+        fireEvent.click(await screen.findByRole("menuitem", {name: "subtitlesOff"}));
+        expect(track.mode).toBe("disabled");
+    });
+
+    it("stops a clip where its chapter ends and tells that it ended, once", async () => {
+        const onEnded = vi.fn();
+        const pause = vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => undefined);
+        const {container} = show({startAt: 60, endAt: 90, onEnded});
+        const element = media(container);
+
+        playTo(element, 75);
+        expect(onEnded).not.toHaveBeenCalled();
+        playTo(element, 90);
+        playTo(element, 91);
+        expect(pause).toHaveBeenCalled();
+        expect(onEnded).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps the hover box inside the player, so that the page never scrolls sideways", () => {
+        const {container} = show({thumbnailsUrl: THUMBS});
+
+        fireEvent.mouseMove(timeline(), {clientX: 199});
+        const box = container.querySelector(".pointer-events-none.absolute.bottom-6") as HTMLElement;
+
+        expect(parseFloat(box.style.left) + parseFloat(box.style.width)).toBeLessThanOrEqual(200);
+        fireEvent.mouseMove(timeline(), {clientX: 1});
+        expect(parseFloat((container.querySelector(".pointer-events-none.absolute.bottom-6") as HTMLElement).style.left)).toBeGreaterThanOrEqual(0);
     });
 });

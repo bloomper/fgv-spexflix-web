@@ -234,7 +234,7 @@
   "Nav": {
     "home": "Home",
     "videos": "Videos",
-    "watchList": "My list",
+    "watchList": "Watch later",
     "manage": "Edit",
     "manageVideos": "Videos",
     "queue": "Processing",
@@ -246,7 +246,10 @@
     "adminSettings": "Settings",
     "adminKinds": "Video kinds",
     "collections": "Collections",
-    "manageCollections": "Collections"
+    "manageCollections": "Collections",
+    "liked": "Liked",
+    "playlists": "Playlists",
+    "top": "Top list"
   },
   "Home": {
     "title": "Spexflix",
@@ -260,7 +263,13 @@
     "browse": "Browse",
     "highestRated": "Highest rated by you",
     "forget": "Remove {title} from Continue watching",
-    "forgetFailed": "The video could not be removed. Try again."
+    "forgetFailed": "The video could not be removed. Try again.",
+    "topList": "Top list",
+    "decade": "{decade}s",
+    "topRated": "Top list: highest rated",
+    "wholeTopList": "The whole top list",
+    "liked": "Liked by you",
+    "allLiked": "Everything you like"
   },
   "Search": {
     "title": "Search",
@@ -418,7 +427,19 @@
     "allYears": "All years",
     "none": "No videos match.",
     "spexFilter": "Videos of {title}, revivals included",
-    "clearSpex": "Show all videos"
+    "clearSpex": "Show all videos",
+    "onlyLiked": "Liked",
+    "onlyUnwatched": "Unwatched",
+    "sortLabel": "Order",
+    "decade": "{decade}s",
+    "sort": {
+      "YEAR_DESC": "Newest first",
+      "YEAR_ASC": "Oldest first",
+      "TITLE": "Title",
+      "PUBLISHED": "Recently published",
+      "RATING": "Highest rated",
+      "LIKES": "Most liked"
+    }
   },
   "Video": {
     "status": {
@@ -432,15 +453,16 @@
     "seen": "Watched",
     "watched": "{percent} % watched",
     "inSpexregisterOf": "{title} in Spexregister",
-    "allFromSpex": "All videos of {title}"
+    "allFromSpex": "All videos of {title}",
+    "liked": "Liked by you"
   },
   "Watch": {
     "chapters": "Chapters",
     "listen": "Listen",
     "listenInSpexify": "Listen to {title} in Spexify",
-    "addToWatchList": "Add to my list",
-    "inWatchList": "In my list",
-    "watchListFailed": "The list could not be changed.",
+    "addToWatchList": "Watch later",
+    "inWatchList": "Saved to Watch later",
+    "watchListFailed": "Watch later could not be changed.",
     "processing": "The video is being processed and can be watched soon.",
     "failed": "The video could not be processed.",
     "moreFromSpex": "More from the spex",
@@ -460,7 +482,13 @@
     "markedWatched": "The video is marked as watched.",
     "markedUnwatched": "The video is marked as unwatched.",
     "watchedFailed": "It could not be saved. Try again.",
-    "partOf": "Part of"
+    "partOf": "Part of",
+    "like": "Like",
+    "unlike": "Liked",
+    "likeFailed": "The like could not be saved.",
+    "thisVideo": "the video",
+    "position": "{index} of {count}",
+    "likes": "{count, plural, =1 {# like} other {# likes}}"
   },
   "Player": {
     "timeline": "Timeline",
@@ -470,11 +498,26 @@
     "quality": "Quality",
     "auto": "Automatic",
     "airPlay": "AirPlay",
-    "shortcuts": "Keyboard shortcuts"
+    "shortcuts": "Keyboard shortcuts",
+    "play": "Play",
+    "pause": "Pause",
+    "back": "10 seconds back",
+    "forward": "10 seconds forward",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "volume": "Volume",
+    "subtitles": "Subtitles",
+    "subtitlesOff": "Off",
+    "settings": "Settings",
+    "speed": "Speed",
+    "normalSpeed": "Normal",
+    "pictureInPicture": "Picture in picture",
+    "fullscreen": "Full screen",
+    "exitFullscreen": "Exit full screen"
   },
   "WatchList": {
-    "title": "My list",
-    "none": "Your list is empty. Add videos from their pages."
+    "title": "Watch later",
+    "none": "Nothing saved to watch later. Save videos from their pages."
   },
   "Queue": {
     "title": "Processing",
@@ -547,7 +590,8 @@
   },
   "Rating": {
     "stars": "{count, plural, =1 {# star} other {# stars}}",
-    "rated": "{count, plural, =1 {Rated # star} other {Rated # stars}}"
+    "rated": "{count, plural, =1 {Rated # star} other {Rated # stars}}",
+    "average": "Average {average} out of 5 from {count, plural, =1 {# rating} other {# ratings}}"
   },
   "Shortcuts": {
     "title": "Keyboard shortcuts",
@@ -611,5 +655,66 @@
     "results": "Search results",
     "alreadyPicked": "chosen",
     "revival": "Revival"
+  },
+  "Liked": {
+    "title": "Liked",
+    "text": "The videos you like, most recently liked first. Save what you want to watch later under Watch later.",
+    "none": "You have not liked any videos yet."
+  },
+  "Top": {
+    "title": "Top list",
+    "by": "Rank by",
+    "filters": "Selection",
+    "byLabel": {
+      "RATED": "Highest rated",
+      "LIKED": "Most liked",
+      "WATCHED": "Most watched"
+    },
+    "text": {
+      "RATED": "Everyone's ratings. Few ratings are weighed against the average of all ratings, so that a single five-star rating does not end up on top.",
+      "LIKED": "What most people like.",
+      "WATCHED": "What most people have watched to the end."
+    },
+    "allCategories": "All",
+    "allYears": "All years",
+    "decade": "{decade}s",
+    "none": "Nothing has been rated, liked or watched here yet.",
+    "likes": "{count, plural, =1 {# like} other {# likes}}"
+  },
+  "Playlists": {
+    "title": "Playlists",
+    "text": "Your own lists of whole videos and clips – a clip is a chapter of a video. Everyone can play public lists.",
+    "mine": "Your playlists",
+    "others": "Others' public playlists",
+    "none": "You have no playlists yet. Add videos or chapters from the videos' pages.",
+    "items": "{count, plural, =1 {# video or clip} other {# videos and clips}}",
+    "by": "by {name}",
+    "public": "Public",
+    "empty": "The playlist is empty.",
+    "play": "Play",
+    "newPlaylist": "New playlist…",
+    "newTitle": "New playlist",
+    "name": "Name",
+    "description": "Description",
+    "create": "Create",
+    "addToPlaylist": "Add to playlist",
+    "addVideoTo": "Add the video to",
+    "addClipTo": "Add the chapter to",
+    "addClip": "Add {title} to a playlist",
+    "videoAdded": "The video was added to the playlist.",
+    "clipAdded": "The clip was added to the playlist.",
+    "clip": "Clip from {title}",
+    "remove": "Remove {title} from the playlist",
+    "moveUp": "Move {title} up",
+    "moveDown": "Move {title} down",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "makePublic": "Public – everyone can play it",
+    "delete": "Delete the playlist",
+    "deleteTitle": "Delete {name}?",
+    "deleteText": "The playlist is deleted. The videos stay.",
+    "deleted": "The playlist was deleted.",
+    "saved": "The playlist was saved."
   }
 }

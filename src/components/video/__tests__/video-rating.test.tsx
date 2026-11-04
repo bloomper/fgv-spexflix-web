@@ -18,7 +18,7 @@ describe("VideoRating", () => {
     it("rates the video and shows everyone's average", async () => {
         render(<VideoRating videoId="v-1" rating={0} averageRating={3.5} ratingCount={2}/>);
 
-        expect(screen.getByText(/average:.*"average":"3,5".*"count":2/)).toBeInTheDocument();
+        expect(screen.getByRole("img", {name: /average:.*"average":"3,5".*"count":2/})).toBeInTheDocument();
         await userEvent.click(screen.getByRole("radio", {name: /"count":4/}));
 
         expect(rateVideoAction).toHaveBeenCalledWith("v-1", 4);

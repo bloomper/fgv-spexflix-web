@@ -17,11 +17,11 @@ test.describe("When something is unavailable", () => {
         await mock.failNext("WatchListAdd", "INTERNAL_ERROR");
         await loginAs("viewer");
         await page.goto(`/videos/${uuidOf(1)}`);
-        await page.getByRole("button", {name: "Lägg till i min lista"}).click();
+        await page.getByRole("button", {name: "Se senare", exact: true}).click();
 
-        await expect(page.getByText("Listan kunde inte ändras.")).toBeVisible();
-        await page.getByRole("button", {name: "Lägg till i min lista"}).click();
-        await expect(page.getByRole("button", {name: "I min lista", exact: true})).toBeVisible();
+        await expect(page.getByText("Se senare kunde inte ändras.")).toBeVisible();
+        await page.getByRole("button", {name: "Se senare", exact: true}).click();
+        await expect(page.getByRole("button", {name: "Sparad i Se senare"})).toBeVisible();
     });
 
     test("a video being processed says so instead of playing", async ({page, loginAs}) => {

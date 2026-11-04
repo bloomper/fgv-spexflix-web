@@ -2,7 +2,9 @@ import type {ReactNode} from "react";
 import Link from "next/link";
 import {useLocale, useTranslations} from "next-intl";
 import {Badge} from "@/components/ui/badge";
+import {Heart} from "lucide-react";
 import {PosterImage} from "@/components/video/poster-image.client";
+import {AverageRating} from "@/components/rating.client";
 import {formatDuration} from "@/utils/duration";
 import {type KindName, kindName} from "@/utils/format";
 
@@ -16,18 +18,25 @@ export type VideoSummary = {
     published?: boolean;
     progressSeconds?: number | null;
     finished?: boolean;
+    /** Everyone's average rating, or null when nobody rated it. */
+    averageRating?: number | null;
+    ratingCount?: number;
+    /** Whether the user likes it. */
+    liked?: boolean;
     /** The main spex first. */
     spex?: { categoryName?: string | null; revival?: boolean | null }[];
 };
 
 /**
- * Videos as poster cards, with how far the user has come.
+ * Videos as poster cards, with how far the user has come, everyone's average rating and whether the user likes them.
  */
-export function VideoGrid({videos, hrefFor, action}: {
+export function VideoGrid({videos, hrefFor, action, label}: {
     videos: VideoSummary[];
     hrefFor?: (id: string) => string;
     /** Something to do with a video, shown on its card's corner, e.g. taking it off "continue watching". */
     action?: (video: VideoSummary) => ReactNode;
+    /** An extra line per video, e.g. how many like it. */
+    label?: (video: VideoSummary) => ReactNode;
 }) {
     const t = useTranslations("Video");
     const locale = useLocale();
@@ -62,6 +71,11 @@ export function VideoGrid({videos, hrefFor, action}: {
                                 <div className="text-xs text-muted-foreground">
                                     {[video.year, video.spex?.[0]?.categoryName, kindName(video.kind, locale)].filter(Boolean).join(" · ")}
                                 </div>
+                                <div className="flex items-center gap-2">
+                                    <AverageRating average={video.averageRating} count={video.ratingCount}/>
+                                    {video.liked && <Heart className="size-3 fill-current text-rose-500" role="img" aria-label={t("liked")}/>}
+                                </div>
+                                {label?.(video) && <div className="text-xs text-muted-foreground">{label(video)}</div>}
                                 <div className="flex flex-wrap gap-1 pt-0.5">
                                     {video.spex?.[0]?.revival && <Badge variant="secondary">{t("revival")}</Badge>}
                                     {video.published === false && <Badge variant="outline">{t("unpublished")}</Badge>}

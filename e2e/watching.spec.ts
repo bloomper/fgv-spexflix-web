@@ -8,7 +8,7 @@ test.describe("Watching", () => {
 
         await expect(page.getByRole("heading", {level: 1, name: "Nobel"})).toBeVisible();
         await expect(page.getByRole("heading", {name: "Kapitel"})).toBeVisible();
-        await expect(page.getByRole("button", {name: /Kärleksduetten/})).toBeVisible();
+        await expect(page.getByRole("button", {name: /Kärleksduetten$/})).toBeVisible();
         await expect(page.getByRole("link", {name: "Lyssna på Kärleksduetten i Spexify"})).toHaveAttribute("href", /localhost:3002\/search/);
         await expect(page.getByRole("slider", {name: "Tidslinje"})).toBeVisible();
     });
@@ -16,8 +16,8 @@ test.describe("Watching", () => {
     test("adds a video to the watch list", async ({page, loginAs}) => {
         await loginAs("viewer");
         await page.goto(`/videos/${uuidOf(1)}`);
-        await page.getByRole("button", {name: "Lägg till i min lista"}).click();
-        await expect(page.getByRole("button", {name: "I min lista", exact: true})).toBeVisible();
+        await page.getByRole("button", {name: "Se senare", exact: true}).click();
+        await expect(page.getByRole("button", {name: "Sparad i Se senare"})).toBeVisible();
 
         await page.goto("/watchlist");
         await expect(page.getByRole("link", {name: /Nobel/})).toBeVisible();
@@ -110,12 +110,12 @@ test.describe("Continue watching", () => {
     test("removes a video from the watch list", async ({page, loginAs}) => {
         await loginAs("viewer");
         await page.goto(`/videos/${uuidOf(1)}`);
-        await page.getByRole("button", {name: "Lägg till i min lista"}).click();
-        await page.getByRole("button", {name: "I min lista", exact: true}).click();
-        await expect(page.getByRole("button", {name: "Lägg till i min lista"})).toBeVisible();
+        await page.getByRole("button", {name: "Se senare", exact: true}).click();
+        await page.getByRole("button", {name: "Sparad i Se senare"}).click();
+        await expect(page.getByRole("button", {name: "Se senare", exact: true})).toBeVisible();
 
         await page.goto("/watchlist");
-        await expect(page.getByText("Din lista är tom. Lägg till filmer från deras sidor.")).toBeVisible();
+        await expect(page.getByText("Inget sparat att se senare. Spara filmer från deras sidor.")).toBeVisible();
     });
 });
 
@@ -124,12 +124,12 @@ test.describe("Ratings", () => {
         await loginAs("viewer");
         await page.goto(`/videos/${uuidOf(1)}`);
 
-        await expect(page.getByText("5,0 av 5 i snitt (1 betyg)")).toBeVisible();
+        await expect(page.getByRole("img", {name: "Snittbetyg 5,0 av 5 från 1 betyg"}).first()).toBeVisible();
         await page.getByRole("radiogroup", {name: "Ditt betyg för filmen"}).getByRole("radio", {name: "4 stjärnor"}).click();
         await expect.poll(async () => (await mock.state()).ratings[uuidOf(1)]).toBe(4);
 
         await page.goto(`/videos/${uuidOf(1)}`);
-        await expect(page.getByText("4,5 av 5 i snitt (2 betyg)")).toBeVisible();
+        await expect(page.getByRole("img", {name: "Snittbetyg 4,5 av 5 från 2 betyg"}).first()).toBeVisible();
         await expect(page.getByRole("radiogroup", {name: "Ditt betyg för filmen"}).getByRole("radio", {name: "4 stjärnor"}))
             .toHaveAttribute("aria-checked", "true");
 

@@ -2,10 +2,17 @@ import "server-only";
 
 import {graphql} from "@/gql";
 import {runMutation, runQuery} from "@/lib/graphql.server";
-import type {ChapterInput, CollectionInput, VideoFilter, VideoInput, VideoKindInput} from "@/gql/graphql";
+import type {ChapterInput, CollectionInput, PlaylistInput, TopBy, VideoFilter, VideoInput, VideoKindInput} from "@/gql/graphql";
 
 export const KindFieldsFragment = graphql(`
     fragment KindFields on VideoKind { id nameSv nameEn isDefault }
+`);
+
+export const VideoCardFieldsFragment = graphql(`
+    fragment VideoCardFields on Video {
+        id title year kind { ...KindFields } durationMs status published progressSeconds finished averageRating ratingCount liked
+        spex { id title familyId categoryName revival }
+    }
 `);
 
 const MeQuery = graphql(`
@@ -17,9 +24,11 @@ const MeQuery = graphql(`
 
 const HomeQuery = graphql(`
     query Home {
-        continueWatching(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }
-        highestRated(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished myRating spex { id title familyId categoryName revival } }
-        recentVideos(limit: 12) { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }
+        continueWatching(limit: 12) { ...VideoCardFields }
+        highestRated(limit: 12) { ...VideoCardFields myRating }
+        recentVideos(limit: 12) { ...VideoCardFields }
+        topVideos(by: RATED, limit: 6) { ...VideoCardFields }
+        likedVideos { ...VideoCardFields }
         categories { id name videoCount }
         years
     }
@@ -28,8 +37,7 @@ const HomeQuery = graphql(`
 const VideosQuery = graphql(`
     query Videos($filter: VideoFilter) {
         videos(filter: $filter) {
-            id title year kind { ...KindFields } durationMs status published progressSeconds finished
-            spex { id title familyId categoryName revival }
+            ...VideoCardFields
         }
         categories { id name videoCount }
         years
@@ -48,7 +56,7 @@ const VideoQuery = graphql(`
         video(id: $id) {
             id title year kind { ...KindFields } performance performanceDate description status failure durationMs width height
             published publishedAt trashedAt originalName originalSize originalKept hasThumbnails posterSeconds
-            progressSeconds finished inWatchList myRating averageRating ratingCount createdAt lastModifiedAt
+            progressSeconds finished inWatchList liked likeCount myRating averageRating ratingCount createdAt lastModifiedAt
             spex { id title year revival parentId familyId categoryId categoryName }
             renditions { height width bitrateKbps copied size }
             chapters { startSeconds title spexifyTrackId spexifyTrackTitle }
@@ -64,7 +72,7 @@ const CollectionsQuery = graphql(`
     query Collections {
         collections {
             id title description createdAt lastModifiedAt
-            videos { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }
+            videos { ...VideoCardFields }
         }
     }
 `);
@@ -73,7 +81,7 @@ const CollectionQuery = graphql(`
     query Collection($id: ID!) {
         collection(id: $id) {
             id title description createdAt lastModifiedAt
-            videos { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }
+            videos { ...VideoCardFields }
         }
     }
 `);
@@ -86,16 +94,44 @@ const PlaybackQuery = graphql(`
 
 const SearchQuery = graphql(`
     query Search($q: String!) {
-        search(q: $q) { id title year kind { ...KindFields } durationMs status published progressSeconds finished spex { id title familyId categoryName revival } }
+        search(q: $q) { ...VideoCardFields }
     }
 `);
 
 const WatchListQuery = graphql(`
     query WatchList {
-        watchList { id title year kind { ...KindFields } durationMs progressSeconds finished spex { id title familyId categoryName revival } }
+        watchList { ...VideoCardFields }
     }
 `);
 
+const LikedQuery = graphql(`
+    query Liked {
+        likedVideos { ...VideoCardFields }
+    }
+`);
+const TopQuery = graphql(`
+    query Top($by: TopBy!, $filter: VideoFilter, $limit: Int) {
+        topVideos(by: $by, filter: $filter, limit: $limit) { ...VideoCardFields likeCount }
+        categories { id name videoCount }
+        years
+    }
+`);
+const PlaylistsQuery = graphql(`
+    query Playlists {
+        playlists { id name description isPublic owned ownerName itemCount durationSeconds updatedAt items { id video { id } } }
+    }
+`);
+const PlaylistQuery = graphql(`
+    query Playlist($id: ID!) {
+        playlist(id: $id) {
+            id name description isPublic owned ownerName itemCount durationSeconds createdAt updatedAt
+            items { id startSeconds endSeconds title durationSeconds video { ...VideoCardFields } }
+        }
+    }
+`);
+export const PlaylistFieldsFragment = graphql(`
+    fragment PlaylistFields on Playlist { id name itemCount }
+`);
 const SpexSearchQuery = graphql(`
     query SpexSearch($q: String!) { spexSearch(q: $q) { id title year revival parentId categoryName } }
 `);
@@ -125,6 +161,13 @@ const WatchListAddMutation = graphql(`mutation WatchListAdd($videoId: ID!) { wat
 const WatchListRemoveMutation = graphql(`mutation WatchListRemove($videoId: ID!) { watchListRemove(videoId: $videoId) }`);
 const ProgressClearMutation = graphql(`mutation ProgressClear($videoId: ID!) { progressClear(videoId: $videoId) }`);
 const VideoMarkWatchedMutation = graphql(`mutation VideoMarkWatched($videoId: ID!) { videoMarkWatched(videoId: $videoId) }`);
+const VideoLikeMutation = graphql(`mutation VideoLike($videoId: ID!, $liked: Boolean!) { videoLike(videoId: $videoId, liked: $liked) }`);
+const PlaylistCreateMutation = graphql(`mutation PlaylistCreate($input: PlaylistInput!) { playlistCreate(input: $input) { ...PlaylistFields } }`);
+const PlaylistUpdateMutation = graphql(`mutation PlaylistUpdate($id: ID!, $input: PlaylistInput!) { playlistUpdate(id: $id, input: $input) { ...PlaylistFields } }`);
+const PlaylistDeleteMutation = graphql(`mutation PlaylistDelete($id: ID!) { playlistDelete(id: $id) }`);
+const PlaylistAddItemMutation = graphql(`mutation PlaylistAddItem($playlistId: ID!, $videoId: ID!, $startSeconds: Int) { playlistAddItem(playlistId: $playlistId, videoId: $videoId, startSeconds: $startSeconds) { ...PlaylistFields } }`);
+const PlaylistRemoveItemMutation = graphql(`mutation PlaylistRemoveItem($playlistId: ID!, $itemId: ID!) { playlistRemoveItem(playlistId: $playlistId, itemId: $itemId) { ...PlaylistFields } }`);
+const PlaylistReorderMutation = graphql(`mutation PlaylistReorder($playlistId: ID!, $itemIds: [ID!]!) { playlistReorder(playlistId: $playlistId, itemIds: $itemIds) { ...PlaylistFields } }`);
 const CollectionCreateMutation = graphql(`mutation CollectionCreate($input: CollectionInput!) { collectionCreate(input: $input) { id } }`);
 const CollectionUpdateMutation = graphql(`mutation CollectionUpdate($id: ID!, $input: CollectionInput!) { collectionUpdate(id: $id, input: $input) { id } }`);
 const CollectionDeleteMutation = graphql(`mutation CollectionDelete($id: ID!) { collectionDelete(id: $id) }`);
@@ -161,6 +204,18 @@ export const watchListAdd = (videoId: string) => runMutation(WatchListAddMutatio
 export const watchListRemove = (videoId: string) => runMutation(WatchListRemoveMutation, {videoId});
 export const progressClear = (videoId: string) => runMutation(ProgressClearMutation, {videoId});
 export const videoMarkWatched = (videoId: string) => runMutation(VideoMarkWatchedMutation, {videoId});
+export const getLiked = async () => (await runQuery(LikedQuery, {}))?.likedVideos ?? [];
+export const getTop = (by: TopBy, filter: VideoFilter, limit = 50) => runQuery(TopQuery, {by, filter, limit});
+export const getPlaylists = async () => (await runQuery(PlaylistsQuery, {}))?.playlists ?? [];
+export const getPlaylist = async (id: string) => (await runQuery(PlaylistQuery, {id}))?.playlist ?? null;
+export const videoLike = (videoId: string, liked: boolean) => runMutation(VideoLikeMutation, {videoId, liked});
+export const playlistCreate = async (input: PlaylistInput) => (await runMutation(PlaylistCreateMutation, {input}))?.playlistCreate;
+export const playlistUpdate = (id: string, input: PlaylistInput) => runMutation(PlaylistUpdateMutation, {id, input});
+export const playlistDelete = (id: string) => runMutation(PlaylistDeleteMutation, {id});
+export const playlistAddItem = (playlistId: string, videoId: string, startSeconds: number | null) =>
+    runMutation(PlaylistAddItemMutation, {playlistId, videoId, startSeconds});
+export const playlistRemoveItem = (playlistId: string, itemId: string) => runMutation(PlaylistRemoveItemMutation, {playlistId, itemId});
+export const playlistReorder = (playlistId: string, itemIds: string[]) => runMutation(PlaylistReorderMutation, {playlistId, itemIds});
 export const getCollections = async () => (await runQuery(CollectionsQuery, {}))?.collections ?? [];
 export const getCollection = async (id: string) => (await runQuery(CollectionQuery, {id}))?.collection ?? null;
 export const collectionCreate = async (input: CollectionInput) => (await runMutation(CollectionCreateMutation, {input}))?.collectionCreate;

@@ -37,12 +37,13 @@ export function ownsKeys(target: EventTarget | null, key: string): boolean {
 /**
  * The player's keyboard shortcuts, anywhere on the page except where the focused element uses the key itself.
  */
-export function useVideoShortcuts(video: RefObject<HTMLVideoElement | null>, chapters: { startSeconds: number }[], showHelp: () => void) {
-    const latest = useRef({chapters, showHelp});
+export function useVideoShortcuts(video: RefObject<HTMLVideoElement | null>, chapters: { startSeconds: number }[], showHelp: () => void,
+                                  toggleFullscreen?: () => void) {
+    const latest = useRef({chapters, showHelp, toggleFullscreen});
 
     useEffect(() => {
-        latest.current = {chapters, showHelp};
-    }, [chapters, showHelp]);
+        latest.current = {chapters, showHelp, toggleFullscreen};
+    }, [chapters, showHelp, toggleFullscreen]);
 
     useEffect(() => {
         const onKey = (event: KeyboardEvent) => {
@@ -95,7 +96,9 @@ export function useVideoShortcuts(video: RefObject<HTMLVideoElement | null>, cha
                     break;
                 }
                 case "f":
-                    if (document.fullscreenElement) {
+                    if (latest.current.toggleFullscreen) {
+                        latest.current.toggleFullscreen();
+                    } else if (document.fullscreenElement) {
                         void document.exitFullscreen().catch(() => undefined);
                     } else {
                         void element.requestFullscreen?.().catch(() => undefined);

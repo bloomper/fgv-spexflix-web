@@ -1,7 +1,22 @@
 "use server";
 
 import {revalidatePath} from "next/cache";
-import {progressClear, progressSave, videoMarkWatched, videoRate, watchListAdd, watchListRemove} from "@/lib/video/video.server";
+import {
+    playlistAddItem,
+    playlistCreate,
+    playlistDelete,
+    playlistRemoveItem,
+    playlistReorder,
+    playlistUpdate,
+    progressClear,
+    progressSave,
+    videoLike,
+    videoMarkWatched,
+    videoRate,
+    watchListAdd,
+    watchListRemove
+} from "@/lib/video/video.server";
+import {type ActionResult, toActionResult} from "@/lib/graphql.server";
 import {withPolicyAction} from "@/utils/route.server";
 import {Policies} from "@/utils/policy.server";
 
@@ -79,4 +94,80 @@ export async function rateVideoAction(videoId: string, rating: number): Promise<
             return false;
         }
     });
+}
+
+/**
+ * Likes a video or takes the like back. False when it could not be saved. Like the watch list, never revalidates the
+ * video page being watched.
+ */
+export async function likeVideoAction(videoId: string, liked: boolean): Promise<boolean> {
+    if (!ID.test(videoId)) {
+        return false;
+    }
+    return withPolicyAction(Policies.app.requireAccess, async () => {
+        try {
+            await videoLike(videoId, liked);
+            revalidatePath("/liked");
+            return true;
+        } catch {
+            return false;
+        }
+    });
+}
+
+async function playlistChange<T>(work: () => Promise<T>, playlistId?: string): Promise<ActionResult<T>> {
+    return withPolicyAction(Policies.app.requireAccess, () => toActionResult(async () => {
+        const result = await work();
+
+        revalidatePath("/playlists");
+        if (playlistId) {
+            revalidatePath(`/playlists/${playlistId}`);
+        }
+        return result;
+    }));
+}
+
+const invalid = {ok: false, code: "BAD_REQUEST", message: "?"} as const;
+
+/**
+ * Creates a playlist, and with a video adds it (or, with a start, its chapter) as the first item. Gives the new id.
+ */
+export async function createPlaylistAction(name: string, item?: { videoId: string; startSeconds: number | null }): Promise<ActionResult<string | null>> {
+    if (item && !ID.test(item.videoId)) {
+        return invalid;
+    }
+    return playlistChange(async () => {
+        const created = await playlistCreate({name, isPublic: false});
+
+        if (created && item) {
+            await playlistAddItem(created.id, item.videoId, item.startSeconds);
+        }
+        return created?.id ?? null;
+    });
+}
+
+export async function updatePlaylistAction(id: string, input: { name: string; description: string | null; isPublic: boolean }): Promise<ActionResult<unknown>> {
+    return ID.test(id) ? playlistChange(() => playlistUpdate(id, input), id) : invalid;
+}
+
+export async function deletePlaylistAction(id: string): Promise<ActionResult<unknown>> {
+    return ID.test(id) ? playlistChange(() => playlistDelete(id)) : invalid;
+}
+
+/**
+ * Adds a whole video, or with a start the chapter that starts there, last in a playlist.
+ */
+export async function addToPlaylistAction(playlistId: string, videoId: string, startSeconds: number | null): Promise<ActionResult<unknown>> {
+    if (!ID.test(playlistId) || !ID.test(videoId) || (startSeconds !== null && !Number.isInteger(startSeconds))) {
+        return invalid;
+    }
+    return playlistChange(() => playlistAddItem(playlistId, videoId, startSeconds), playlistId);
+}
+
+export async function removeFromPlaylistAction(playlistId: string, itemId: string): Promise<ActionResult<unknown>> {
+    return ID.test(playlistId) && ID.test(itemId) ? playlistChange(() => playlistRemoveItem(playlistId, itemId), playlistId) : invalid;
+}
+
+export async function reorderPlaylistAction(playlistId: string, itemIds: string[]): Promise<ActionResult<unknown>> {
+    return ID.test(playlistId) && itemIds.every(id => ID.test(id)) ? playlistChange(() => playlistReorder(playlistId, itemIds), playlistId) : invalid;
 }
