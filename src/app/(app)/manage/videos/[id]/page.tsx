@@ -1,43 +1,43 @@
 import Link from "next/link";
-import {notFound} from "next/navigation";
-import {getTranslations} from "next-intl/server";
-import {getPlayback, getVideo, getVideoKinds} from "@/lib/video/video.server";
-import {Policies} from "@/utils/policy.server";
-import {withPolicyPage} from "@/utils/route.server";
-import {isAdmin} from "@/utils/auth";
-import {VideoEditor} from "./video-editor.client";
-import {RecordHistory} from "@/components/audit/change-log";
-import {auditLink} from "../../audit/links";
+import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { getPlayback, getVideo, getVideoKinds } from "@/lib/video/video.server";
+import { Policies } from "@/utils/policy.server";
+import { withPolicyPage } from "@/utils/route.server";
+import { isAdmin } from "@/utils/auth";
+import { VideoEditor } from "./video-editor.client";
+import { RecordHistory } from "@/components/audit/change-log";
+import { auditLink } from "../../audit/links";
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export default async function EditVideoPage({params}: { params: Promise<{ id: string }> }) {
-    return withPolicyPage(Policies.editor.requireEditor, async (authz) => {
-        const {id} = await params;
+export default async function EditVideoPage({ params }: { params: Promise<{ id: string }> }) {
+  return withPolicyPage(Policies.editor.requireEditor, async (authz) => {
+    const { id } = await params;
 
-        if (!ID.test(id)) {
-            notFound();
-        }
+    if (!ID.test(id)) {
+      notFound();
+    }
 
-        const t = await getTranslations("Manage");
-        const [video, kinds] = await Promise.all([getVideo(id), getVideoKinds()]);
+    const t = await getTranslations("Manage");
+    const [video, kinds] = await Promise.all([getVideo(id), getVideoKinds()]);
 
-        if (!video || video.trashedAt) {
-            notFound();
-        }
+    if (!video || video.trashedAt) {
+      notFound();
+    }
 
-        const playback = video.status === "READY" ? await getPlayback(id) : null;
+    const playback = video.status === "READY" ? await getPlayback(id) : null;
 
-        return (
-            <div className="space-y-6 p-4 sm:p-6">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h1 className="text-2xl font-semibold tracking-tight">{video.title}</h1>
-                    <Link href={`/videos/${video.id}`} className="text-sm text-primary hover:underline">{t("viewAsViewer")}</Link>
-                </div>
-                <VideoEditor video={video}
-                             playback={playback} admin={isAdmin(authz.roles)} kinds={kinds}/>
-                <RecordHistory entityId={video.id} path="/manage/audit" linkOf={auditLink}/>
-            </div>
-        );
-    });
+    return (
+      <div className="space-y-6 p-4 sm:p-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h1 className="text-2xl font-semibold tracking-tight">{video.title}</h1>
+          <Link href={`/videos/${video.id}`} className="text-sm text-primary hover:underline">{t("viewAsViewer")}</Link>
+        </div>
+        <VideoEditor video={video}
+                     playback={playback} admin={isAdmin(authz.roles)} kinds={kinds} />
+        <RecordHistory entityId={video.id} path="/manage/audit" linkOf={auditLink} />
+      </div>
+    );
+  });
 }

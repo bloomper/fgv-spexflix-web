@@ -241,7 +241,7 @@
   "Nav": {
     "home": "Hem",
     "videos": "Filmer",
-    "watchList": "Min lista",
+    "watchList": "Se senare",
     "manage": "Redigera",
     "manageVideos": "Filmer",
     "queue": "Bearbetning",
@@ -253,7 +253,10 @@
     "adminSettings": "Inställningar",
     "adminKinds": "Filmsorter",
     "collections": "Samlingar",
-    "manageCollections": "Samlingar"
+    "manageCollections": "Samlingar",
+    "liked": "Gillat",
+    "playlists": "Spellistor",
+    "top": "Topplistan"
   },
   "Home": {
     "title": "Spexflix",
@@ -267,7 +270,13 @@
     "browse": "Bläddra",
     "highestRated": "Högst betyg av dig",
     "forget": "Ta bort {title} från Fortsätt titta",
-    "forgetFailed": "Det gick inte att ta bort filmen. Försök igen."
+    "forgetFailed": "Det gick inte att ta bort filmen. Försök igen.",
+    "topList": "Topplistan",
+    "decade": "{decade}-talet",
+    "topRated": "Topplistan: högst betyg",
+    "wholeTopList": "Hela topplistan",
+    "liked": "Gillat av dig",
+    "allLiked": "Allt du gillat"
   },
   "Search": {
     "title": "Sök",
@@ -425,7 +434,19 @@
     "allYears": "Alla år",
     "none": "Inga filmer matchar.",
     "spexFilter": "Filmer från {title}, med nyuppsättningar",
-    "clearSpex": "Visa alla filmer"
+    "clearSpex": "Visa alla filmer",
+    "onlyLiked": "Gillade",
+    "onlyUnwatched": "Osedda",
+    "sortLabel": "Ordning",
+    "decade": "{decade}-talet",
+    "sort": {
+      "YEAR_DESC": "Nyast först",
+      "YEAR_ASC": "Äldst först",
+      "TITLE": "Titel",
+      "PUBLISHED": "Senast publicerat",
+      "RATING": "Högst betyg",
+      "LIKES": "Mest gillat"
+    }
   },
   "Video": {
     "status": {
@@ -439,15 +460,16 @@
     "seen": "Sedd",
     "watched": "{percent} % sedd",
     "inSpexregisterOf": "{title} i Spexregistret",
-    "allFromSpex": "Alla filmer från {title}"
+    "allFromSpex": "Alla filmer från {title}",
+    "liked": "Gillad av dig"
   },
   "Watch": {
     "chapters": "Kapitel",
     "listen": "Lyssna",
     "listenInSpexify": "Lyssna på {title} i Spexify",
-    "addToWatchList": "Lägg till i min lista",
-    "inWatchList": "I min lista",
-    "watchListFailed": "Listan kunde inte ändras.",
+    "addToWatchList": "Se senare",
+    "inWatchList": "Sparad i Se senare",
+    "watchListFailed": "Se senare kunde inte ändras.",
     "processing": "Filmen bearbetas och kan ses snart.",
     "failed": "Filmen kunde inte bearbetas.",
     "moreFromSpex": "Mer från spexet",
@@ -467,7 +489,13 @@
     "markedWatched": "Filmen är markerad som sedd.",
     "markedUnwatched": "Filmen är markerad som osedd.",
     "watchedFailed": "Det gick inte att spara. Försök igen.",
-    "partOf": "Ingår i"
+    "partOf": "Ingår i",
+    "like": "Gilla",
+    "unlike": "Gillad",
+    "likeFailed": "Gillningen kunde inte sparas.",
+    "thisVideo": "filmen",
+    "position": "{index} av {count}",
+    "likes": "{count, plural, =1 {# gillar} other {# gillar}}"
   },
   "Player": {
     "timeline": "Tidslinje",
@@ -477,11 +505,26 @@
     "quality": "Kvalitet",
     "auto": "Automatisk",
     "airPlay": "AirPlay",
-    "shortcuts": "Kortkommandon"
+    "shortcuts": "Kortkommandon",
+    "play": "Spela",
+    "pause": "Pausa",
+    "back": "10 sekunder bakåt",
+    "forward": "10 sekunder framåt",
+    "mute": "Stäng av ljudet",
+    "unmute": "Slå på ljudet",
+    "volume": "Volym",
+    "subtitles": "Undertexter",
+    "subtitlesOff": "Av",
+    "settings": "Inställningar",
+    "speed": "Hastighet",
+    "normalSpeed": "Normal",
+    "pictureInPicture": "Bild-i-bild",
+    "fullscreen": "Helskärm",
+    "exitFullscreen": "Lämna helskärm"
   },
   "WatchList": {
-    "title": "Min lista",
-    "none": "Din lista är tom. Lägg till filmer från deras sidor."
+    "title": "Se senare",
+    "none": "Inget sparat att se senare. Spara filmer från deras sidor."
   },
   "Queue": {
     "title": "Bearbetning",
@@ -554,7 +597,8 @@
   },
   "Rating": {
     "stars": "{count, plural, =1 {# stjärna} other {# stjärnor}}",
-    "rated": "{count, plural, =1 {Betyg: # stjärna} other {Betyg: # stjärnor}}"
+    "rated": "{count, plural, =1 {Betyg: # stjärna} other {Betyg: # stjärnor}}",
+    "average": "Snittbetyg {average} av 5 från {count, plural, =1 {# betyg} other {# betyg}}"
   },
   "Shortcuts": {
     "title": "Kortkommandon",
@@ -618,5 +662,66 @@
     "results": "Sökträffar",
     "alreadyPicked": "vald",
     "revival": "Nyuppsättning"
+  },
+  "Liked": {
+    "title": "Gillat",
+    "text": "Filmerna du gillar, senast gillad först. Spara det du vill se senare under Se senare.",
+    "none": "Du har inte gillat några filmer ännu."
+  },
+  "Top": {
+    "title": "Topplistan",
+    "by": "Rangordna efter",
+    "filters": "Urval",
+    "byLabel": {
+      "RATED": "Högst betyg",
+      "LIKED": "Mest gillat",
+      "WATCHED": "Mest sett"
+    },
+    "text": {
+      "RATED": "Allas betyg. Få betyg vägs mot snittet av alla betyg, så att ett enda femstjärnigt inte hamnar överst.",
+      "LIKED": "Det som flest gillar.",
+      "WATCHED": "Det som flest har sett till slutet."
+    },
+    "allCategories": "Alla",
+    "allYears": "Alla år",
+    "decade": "{decade}-talet",
+    "none": "Inget har fått betyg, gillats eller setts här ännu.",
+    "likes": "{count, plural, =1 {# gillar} other {# gillar}}"
+  },
+  "Playlists": {
+    "title": "Spellistor",
+    "text": "Dina egna listor med hela filmer och klipp – ett klipp är ett kapitel ur en film. Offentliga listor kan alla spela.",
+    "mine": "Dina spellistor",
+    "others": "Andras offentliga spellistor",
+    "none": "Du har inga spellistor ännu. Lägg till filmer eller kapitel från filmernas sidor.",
+    "items": "{count, plural, =1 {# film eller klipp} other {# filmer och klipp}}",
+    "by": "av {name}",
+    "public": "Offentlig",
+    "empty": "Spellistan är tom.",
+    "play": "Spela",
+    "newPlaylist": "Ny spellista…",
+    "newTitle": "Ny spellista",
+    "name": "Namn",
+    "description": "Beskrivning",
+    "create": "Skapa",
+    "addToPlaylist": "Lägg till i spellista",
+    "addVideoTo": "Lägg till filmen i",
+    "addClipTo": "Lägg till kapitlet i",
+    "addClip": "Lägg till {title} i en spellista",
+    "videoAdded": "Filmen är tillagd i spellistan.",
+    "clipAdded": "Klippet är tillagt i spellistan.",
+    "clip": "Klipp ur {title}",
+    "remove": "Ta bort {title} ur spellistan",
+    "moveUp": "Flytta {title} upp",
+    "moveDown": "Flytta {title} ned",
+    "edit": "Ändra",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "makePublic": "Offentlig – alla kan spela den",
+    "delete": "Ta bort spellistan",
+    "deleteTitle": "Ta bort {name}?",
+    "deleteText": "Spellistan tas bort. Filmerna finns kvar.",
+    "deleted": "Spellistan är borttagen.",
+    "saved": "Spellistan är sparad."
   }
 }
