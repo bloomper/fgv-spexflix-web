@@ -59,7 +59,7 @@ The look (logo, favicon and colours) is FGV's, shared with Spexregister and Nyup
    `INFRA_DEPLOY` if it is checked out elsewhere.
 
    | Variable                         | Purpose                                                                   |
-   |----------------------------------|---------------------------------------------------------------------------|
+      |----------------------------------|---------------------------------------------------------------------------|
    | `API_GRAPHQL_ENDPOINT`           | Spexflix Server's GraphQL endpoint; its other endpoints share the origin     |
    | `MEDIA_ORIGIN`                   | The media server's origin, allowed by the pages' Content Security Policy; `http://localhost:8084` when Spexflix Server runs with `bootRun` |
    | `SPEXIFY_WEB_URL`                | Spexify, for *Listen in Spexify* on chapters; without it there are none   |
@@ -111,7 +111,8 @@ already on Docker Hub.
 
 The image contains no environment-specific values. All configuration is read at runtime: `BETTER_AUTH_URL`,
 `AUTH_SECRET`, `KEYCLOAK_CLIENT_ID`, `KEYCLOAK_CLIENT_SECRET`, `KEYCLOAK_ISSUER`, `API_GRAPHQL_ENDPOINT`,
-`MEDIA_ORIGIN`, `SPEXIFY_WEB_URL`, `SPEXREGISTER_WEB_URL`, `SUPPORT_EMAIL`, `FEEDBACK_EMAIL`, `SUPPORTED_LOCALES`, `DEFAULT_LOCALE`, `UMAMI_URL` and
+`MEDIA_ORIGIN`, `SPEXIFY_WEB_URL`, `SPEXREGISTER_WEB_URL`, `SUPPORT_EMAIL`, `FEEDBACK_EMAIL`, `SUPPORTED_LOCALES`,
+`DEFAULT_LOCALE`, `UMAMI_URL` and
 `UMAMI_WEBSITE_ID`. Visitor statistics go to Umami only when both Umami variables are set.
 [fgv-spexflix-deploy][8] runs it.
 

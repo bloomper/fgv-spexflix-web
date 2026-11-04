@@ -2,9 +2,13 @@
 
 ## This is NOT the Next.js you know
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read
+the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next`
+package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+This block is written and re-added by `next dev` — verify at
+`node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted
+change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
 
@@ -78,7 +82,8 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
 - **Likes** (a heart, "Gilla"/"Gillad", `videoLike`; `/liked` "Gillat") are separate from **Se senare** (the watch
   list, `/watchlist`), which is for watching later. Likes are never revalidated on the video page being watched.
 - **Top list** (`/top`, Topplistan): `topVideos(by)` by `RATED` (weighted average), `LIKED` or `WATCHED`, per category
-  and decade. `/videos` takes `category`, `kind`, `decade` or `year`, `liked=1`, `unwatched=1` and `sort` (`SortSelect`).
+  and decade. `/videos` takes `category`, `kind`, `decade` or `year`, `liked=1`, `unwatched=1` and `sort`
+  (`SortSelect`).
 - **Playlists** (`/playlists`) are each user's own lists of whole videos and clips (a chapter, added with
   `AddToPlaylistMenu` beside each chapter, or the whole video from the button below the player). Others' public ones
   are played, not changed. A playlist plays through the video page with `?playlist=<id>&item=<itemId>`: the page finds
@@ -100,7 +105,8 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
 - **The change log** (`ChangeLog` in `src/components/audit/change-log.tsx`) filters by kind, event, person (ADMIN),
   period and text through the address, links each change to its record, and `RecordHistory` shows a record's latest
   changes on its edit page. Record kinds and their pages are in `src/app/(app)/manage/audit/links.ts`.
-- **Editors** work under `/manage` (videos, collections, the processing queue, the trash, the change log), **admins** under
+- **Editors** work under `/manage` (videos, collections, the processing queue, the trash, the change log), **admins**
+  under
   `/admin` (storage, settings). Only `READY` videos can be published.
 
 ## Look
@@ -121,14 +127,18 @@ drops query strings.
 
 Custom events go through `track()` (`src/utils/umami.ts`; import it as `trackEvent` where `track` is a variable), a
 no-op when the tracker isn't loaded. Event data is enum values, counts and booleans only — never names, emails, ids or
-typed text. Events: `video-create` (`defaultKind`), `video-rate` (`rating`), `video-upload` (`replaced`), `video-publish` (`published`), `video-play` (once per page),
-`watch-list` (`listed`), `video-like` (`liked`), `playlist-create`, `playlist-add` (`clip`, `created`), `video-next` (`automatic`, `playlist`), `video-watched` (`watched`), `continue-forget`, `collection-create`
+typed text. Events: `video-create` (`defaultKind`), `video-rate` (`rating`), `video-upload` (`replaced`),
+`video-publish` (`published`), `video-play` (once per page),
+`watch-list` (`listed`), `video-like` (`liked`), `playlist-create`, `playlist-add` (`clip`, `created`), `video-next`
+(`automatic`, `playlist`), `video-watched` (`watched`), `continue-forget`, `collection-create`
 (`videos`), `language-change` and `theme-change`.
 
 ## Testing
 
 - E2E specs per area (listening/watching, editing, uploads, trash and change log, admin, errors, language). The mock
-  backend keeps state per test (reset automatically) and implements tus; the `mock` fixture switches it: `spexregister(up)`, `spexify(up)`, `failNext(operation, classification)`, `process(failure?)` (the worker finishes or fails the queued jobs), `progress(videoId, seconds)` and `state()`.
+  backend keeps state per test (reset automatically) and implements tus; the `mock` fixture switches it:
+  `spexregister(up)`, `spexify(up)`, `failNext(operation, classification)`, `process(failure?)` (the worker finishes or
+  fails the queued jobs), `progress(videoId, seconds)` and `state()`.
   `state()` lets a spec check what the web sent.
 - Call `hydrated(page, selector)` before `setInputFiles`: a file chosen before React hydrates the input is lost.
 - Unit tests in `__tests__/` beside the code. E2E specs in `e2e/`, one per area, with personas `admin`, `editor`,

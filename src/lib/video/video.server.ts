@@ -1,8 +1,16 @@
 import "server-only";
 
-import {graphql} from "@/gql";
-import {runMutation, runQuery} from "@/lib/graphql.server";
-import type {ChapterInput, CollectionInput, PlaylistInput, TopBy, VideoFilter, VideoInput, VideoKindInput} from "@/gql/graphql";
+import { graphql } from "@/gql";
+import { runMutation, runQuery } from "@/lib/graphql.server";
+import type {
+  ChapterInput,
+  CollectionInput,
+  PlaylistInput,
+  TopBy,
+  VideoFilter,
+  VideoInput,
+  VideoKindInput,
+} from "@/gql/graphql";
 
 export const KindFieldsFragment = graphql(`
     fragment KindFields on VideoKind { id nameSv nameEn isDefault }
@@ -174,57 +182,78 @@ const CollectionDeleteMutation = graphql(`mutation CollectionDelete($id: ID!) { 
 
 export const getMe = () => runQuery(MeQuery, {});
 export const getHome = () => runQuery(HomeQuery, {});
-export const getVideos = (filter: VideoFilter) => runQuery(VideosQuery, {filter});
-export const getVideo = async (id: string) => (await runQuery(VideoQuery, {id}))?.video ?? null;
-export const getPlayback = async (videoId: string) => (await runQuery(PlaybackQuery, {videoId}))?.playback ?? null;
-export const search = async (q: string) => (await runQuery(SearchQuery, {q}))?.search ?? [];
+export const getVideos = (filter: VideoFilter) => runQuery(VideosQuery, { filter });
+export const getVideo = async (id: string) => (await runQuery(VideoQuery, { id }))?.video ?? null;
+export const getPlayback = async (videoId: string) => (await runQuery(PlaybackQuery, { videoId }))?.playback ?? null;
+export const search = async (q: string) => (await runQuery(SearchQuery, { q }))?.search ?? [];
 export const getWatchList = async () => (await runQuery(WatchListQuery, {}))?.watchList ?? [];
 export const getVideoKinds = async () => (await runQuery(VideoKindsQuery, {}))?.videoKinds ?? [];
-export const searchSpex = async (q: string) => (await runQuery(SpexSearchQuery, {q}))?.spexSearch ?? [];
-export const getSpexifyTracks = async (videoId: string) => (await runQuery(SpexifyTracksQuery, {videoId}))?.spexifyTracks ?? [];
+export const searchSpex = async (q: string) => (await runQuery(SpexSearchQuery, { q }))?.spexSearch ?? [];
+export const getSpexifyTracks = async (videoId: string) => (await runQuery(SpexifyTracksQuery, { videoId }))?.spexifyTracks ?? [];
 
-export const videoKindCreate = (input: VideoKindInput) => runMutation(VideoKindCreateMutation, {input});
-export const videoKindUpdate = (id: string, input: VideoKindInput) => runMutation(VideoKindUpdateMutation, {id, input});
-export const videoKindsReorder = (ids: string[]) => runMutation(VideoKindsReorderMutation, {ids});
-export const videoKindDelete = (id: string) => runMutation(VideoKindDeleteMutation, {id});
-export const videoCreate = async (input: VideoInput) => (await runMutation(VideoCreateMutation, {input}))?.videoCreate;
-export const videoUpdate = (id: string, input: VideoInput) => runMutation(VideoUpdateMutation, {id, input});
-export const videoSetFile = (id: string, uploadId: string) => runMutation(VideoSetFileMutation, {id, uploadId});
-export const videoPublish = (id: string, published: boolean) => runMutation(VideoPublishMutation, {id, published});
-export const videoTrash = (id: string) => runMutation(VideoTrashMutation, {id});
-export const videoRestore = (id: string) => runMutation(VideoRestoreMutation, {id});
-export const videoDelete = (id: string) => runMutation(VideoDeleteMutation, {id});
-export const videoPosterFrame = (id: string, seconds: number) => runMutation(VideoPosterFrameMutation, {id, seconds});
-export const videoReprocess = (id: string) => runMutation(VideoReprocessMutation, {id});
-export const chaptersSet = (videoId: string, chapters: ChapterInput[]) => runMutation(ChaptersSetMutation, {videoId, chapters});
-export const subtitleRemove = (videoId: string, language: string) => runMutation(SubtitleRemoveMutation, {videoId, language});
-export const progressSave = (videoId: string, positionSeconds: number) => runMutation(ProgressSaveMutation, {videoId, positionSeconds});
-export const videoRate = (videoId: string, rating: number) => runMutation(VideoRateMutation, {videoId, rating});
-export const watchListAdd = (videoId: string) => runMutation(WatchListAddMutation, {videoId});
-export const watchListRemove = (videoId: string) => runMutation(WatchListRemoveMutation, {videoId});
-export const progressClear = (videoId: string) => runMutation(ProgressClearMutation, {videoId});
-export const videoMarkWatched = (videoId: string) => runMutation(VideoMarkWatchedMutation, {videoId});
+export const videoKindCreate = (input: VideoKindInput) => runMutation(VideoKindCreateMutation, { input });
+export const videoKindUpdate = (id: string, input: VideoKindInput) => runMutation(VideoKindUpdateMutation, {
+  id,
+  input,
+});
+export const videoKindsReorder = (ids: string[]) => runMutation(VideoKindsReorderMutation, { ids });
+export const videoKindDelete = (id: string) => runMutation(VideoKindDeleteMutation, { id });
+export const videoCreate = async (input: VideoInput) => (await runMutation(VideoCreateMutation, { input }))?.videoCreate;
+export const videoUpdate = (id: string, input: VideoInput) => runMutation(VideoUpdateMutation, { id, input });
+export const videoSetFile = (id: string, uploadId: string) => runMutation(VideoSetFileMutation, { id, uploadId });
+export const videoPublish = (id: string, published: boolean) => runMutation(VideoPublishMutation, { id, published });
+export const videoTrash = (id: string) => runMutation(VideoTrashMutation, { id });
+export const videoRestore = (id: string) => runMutation(VideoRestoreMutation, { id });
+export const videoDelete = (id: string) => runMutation(VideoDeleteMutation, { id });
+export const videoPosterFrame = (id: string, seconds: number) => runMutation(VideoPosterFrameMutation, { id, seconds });
+export const videoReprocess = (id: string) => runMutation(VideoReprocessMutation, { id });
+export const chaptersSet = (videoId: string, chapters: ChapterInput[]) => runMutation(ChaptersSetMutation, {
+  videoId,
+  chapters,
+});
+export const subtitleRemove = (videoId: string, language: string) => runMutation(SubtitleRemoveMutation, {
+  videoId,
+  language,
+});
+export const progressSave = (videoId: string, positionSeconds: number) => runMutation(ProgressSaveMutation, {
+  videoId,
+  positionSeconds,
+});
+export const videoRate = (videoId: string, rating: number) => runMutation(VideoRateMutation, { videoId, rating });
+export const watchListAdd = (videoId: string) => runMutation(WatchListAddMutation, { videoId });
+export const watchListRemove = (videoId: string) => runMutation(WatchListRemoveMutation, { videoId });
+export const progressClear = (videoId: string) => runMutation(ProgressClearMutation, { videoId });
+export const videoMarkWatched = (videoId: string) => runMutation(VideoMarkWatchedMutation, { videoId });
 export const getLiked = async () => (await runQuery(LikedQuery, {}))?.likedVideos ?? [];
-export const getTop = (by: TopBy, filter: VideoFilter, limit = 50) => runQuery(TopQuery, {by, filter, limit});
+export const getTop = (by: TopBy, filter: VideoFilter, limit = 50) => runQuery(TopQuery, { by, filter, limit });
 export const getPlaylists = async () => (await runQuery(PlaylistsQuery, {}))?.playlists ?? [];
-export const getPlaylist = async (id: string) => (await runQuery(PlaylistQuery, {id}))?.playlist ?? null;
-export const videoLike = (videoId: string, liked: boolean) => runMutation(VideoLikeMutation, {videoId, liked});
-export const playlistCreate = async (input: PlaylistInput) => (await runMutation(PlaylistCreateMutation, {input}))?.playlistCreate;
-export const playlistUpdate = (id: string, input: PlaylistInput) => runMutation(PlaylistUpdateMutation, {id, input});
-export const playlistDelete = (id: string) => runMutation(PlaylistDeleteMutation, {id});
+export const getPlaylist = async (id: string) => (await runQuery(PlaylistQuery, { id }))?.playlist ?? null;
+export const videoLike = (videoId: string, liked: boolean) => runMutation(VideoLikeMutation, { videoId, liked });
+export const playlistCreate = async (input: PlaylistInput) => (await runMutation(PlaylistCreateMutation, { input }))?.playlistCreate;
+export const playlistUpdate = (id: string, input: PlaylistInput) => runMutation(PlaylistUpdateMutation, { id, input });
+export const playlistDelete = (id: string) => runMutation(PlaylistDeleteMutation, { id });
 export const playlistAddItem = (playlistId: string, videoId: string, startSeconds: number | null) =>
-    runMutation(PlaylistAddItemMutation, {playlistId, videoId, startSeconds});
-export const playlistRemoveItem = (playlistId: string, itemId: string) => runMutation(PlaylistRemoveItemMutation, {playlistId, itemId});
-export const playlistReorder = (playlistId: string, itemIds: string[]) => runMutation(PlaylistReorderMutation, {playlistId, itemIds});
+  runMutation(PlaylistAddItemMutation, { playlistId, videoId, startSeconds });
+export const playlistRemoveItem = (playlistId: string, itemId: string) => runMutation(PlaylistRemoveItemMutation, {
+  playlistId,
+  itemId,
+});
+export const playlistReorder = (playlistId: string, itemIds: string[]) => runMutation(PlaylistReorderMutation, {
+  playlistId,
+  itemIds,
+});
 export const getCollections = async () => (await runQuery(CollectionsQuery, {}))?.collections ?? [];
-export const getCollection = async (id: string) => (await runQuery(CollectionQuery, {id}))?.collection ?? null;
-export const collectionCreate = async (input: CollectionInput) => (await runMutation(CollectionCreateMutation, {input}))?.collectionCreate;
-export const collectionUpdate = (id: string, input: CollectionInput) => runMutation(CollectionUpdateMutation, {id, input});
-export const collectionDelete = (id: string) => runMutation(CollectionDeleteMutation, {id});
+export const getCollection = async (id: string) => (await runQuery(CollectionQuery, { id }))?.collection ?? null;
+export const collectionCreate = async (input: CollectionInput) => (await runMutation(CollectionCreateMutation, { input }))?.collectionCreate;
+export const collectionUpdate = (id: string, input: CollectionInput) => runMutation(CollectionUpdateMutation, {
+  id,
+  input,
+});
+export const collectionDelete = (id: string) => runMutation(CollectionDeleteMutation, { id });
 
 /**
  * Spexify's address, for links from chapters to tracks; null when it is not configured.
  */
 export function spexifyUrl(): string | null {
-    return process.env.SPEXIFY_WEB_URL?.replace(/\/$/, "") || null;
+  return process.env.SPEXIFY_WEB_URL?.replace(/\/$/, "") || null;
 }
