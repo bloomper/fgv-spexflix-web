@@ -5,7 +5,7 @@ import { getPlayback, getVideo, getVideoKinds } from "@/lib/video/video.server";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
 import { isAdmin } from "@/utils/auth";
-import { VideoEditor } from "./video-editor.client";
+import { TrashVideo, VideoEditor } from "./video-editor.client";
 import { CreditsEditor } from "@/components/video/credits-editor.client";
 import { RecordHistory } from "@/components/audit/change-log";
 import { auditLink } from "../../audit/links";
@@ -41,6 +41,7 @@ export default async function EditVideoPage({ params }: { params: Promise<{ id: 
         <div className="pt-4">
           <CreditsEditor key={JSON.stringify(video.credits)} videoId={video.id} credits={video.credits} />
         </div>
+        <TrashVideo video={video} />
         <RecordHistory entityId={video.id} path="/manage/audit" linkOf={auditLink} />
       </div>
     );

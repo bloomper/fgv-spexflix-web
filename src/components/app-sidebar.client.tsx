@@ -74,10 +74,10 @@ export function AppSidebar({ roles, accountUrl, ...props }: AppSidebarProps) {
       { title: t("Nav.videos"), url: "/videos", icon: Clapperboard, isActive: pathname.startsWith("/videos") },
       { title: t("Nav.top"), url: "/top", icon: Trophy, isActive: pathname.startsWith("/top") },
       { title: t("Nav.collections"), url: "/collections", icon: Layers, isActive: pathname.startsWith("/collections") },
-      { title: t("Nav.credits"), url: "/credits", icon: Users, isActive: pathname.startsWith("/credits") },
-      { title: t("Nav.liked"), url: "/liked", icon: Heart, isActive: pathname.startsWith("/liked") },
       { title: t("Nav.watchList"), url: "/watchlist", icon: Clock, isActive: pathname.startsWith("/watchlist") },
+      { title: t("Nav.liked"), url: "/liked", icon: Heart, isActive: pathname.startsWith("/liked") },
       { title: t("Nav.playlists"), url: "/playlists", icon: ListVideo, isActive: pathname.startsWith("/playlists") },
+      { title: t("Nav.credits"), url: "/credits", icon: Users, isActive: pathname.startsWith("/credits") },
     ];
 
     if (isEditor(roles)) {
