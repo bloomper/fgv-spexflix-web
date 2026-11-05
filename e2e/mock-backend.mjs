@@ -197,6 +197,8 @@ const personal = v => ({
   inWatchList: state.watchList.has(v.id),
   liked: state.liked.includes(v.id),
   likeCount: (state.otherLikes[v.id] ?? 0) + (state.liked.includes(v.id) ? 1 : 0),
+  watchCount: state.finished.has(v.id) ? 1 : 0,
+  credits: v.credits ?? [],
 });
 const playlistOut = (persona, playlist) => {
   const items = playlist.items.filter(item => listed(videoById(item.videoId))).map(item => {
@@ -613,6 +615,34 @@ const resolvers = {
     requireEditor(persona);
     videoById(id).posterSeconds = seconds;
     return { videoPosterFrame: { id } };
+  },
+  Credits: persona => {
+    const counts = new Map();
+
+    visible(persona).filter(v => isEditor(persona) || listed(v)).forEach(v => (v.credits ?? []).forEach(credit => {
+      const key = credit.name.toLowerCase();
+      const entry = counts.get(key) ?? { name: credit.name, videos: new Set() };
+
+      entry.videos.add(v.id);
+      counts.set(key, entry);
+    }));
+    return {
+      credits: [...counts.values()].map(entry => ({ name: entry.name, videoCount: entry.videos.size }))
+        .sort((a, b) => a.name.localeCompare(b.name, "sv")),
+    };
+  },
+  CreditVideos: (persona, { name }) => ({
+    creditVideos: visible(persona).filter(v => isEditor(persona) || listed(v)).flatMap(v => {
+      const credit = (v.credits ?? []).find(candidate => candidate.name.toLowerCase() === name.trim().toLowerCase());
+
+      return credit ? [{ role: credit.role ?? null, video: personal(v) }] : [];
+    }),
+  }),
+  CreditsSet: (persona, { videoId, credits }) => {
+    requireEditor(persona);
+    videoById(videoId).credits = credits.filter(credit => credit.name.trim())
+      .map(credit => ({ name: credit.name.trim(), role: credit.role ?? null }));
+    return { creditsSet: { id: videoId } };
   },
   ChaptersSet: (persona, { videoId, chapters }) => {
     requireEditor(persona);

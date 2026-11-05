@@ -69,6 +69,11 @@ type Props = {
   onTime?: (seconds: number) => void;
   /** Called when the video has played to its end, or to the end of the clip. */
   onEnded?: () => void;
+  /**
+   * Signs the addresses anew and passes the new ones in, true when it did. Called once when loading fails, before the
+   * error is shown, and when trying again. Without it, trying again refreshes the page.
+   */
+  onRenew?: () => Promise<boolean>;
   ref?: React.Ref<PlayerHandle>;
 };
 
@@ -100,8 +105,9 @@ function readSettings(): { volume: number; muted: boolean } {
  * ({@code localStorage} {@code spexflix.player}).
  *
  * When the video cannot be loaded (the media server cannot be reached, the signed address has expired, the file is
- * broken), a message replaces the endless loading. Trying again refreshes the page's data, which signs new addresses,
- * and continues from where playing stopped.
+ * broken), the addresses are signed anew once, through {@code onRenew}, and playing continues where it stopped; when that
+ * does not help, a message replaces the endless loading. Trying again signs anew and continues from where playing
+ * stopped.
  */
 export function VideoPlayer({
                               videoId,
@@ -116,6 +122,7 @@ export function VideoPlayer({
                               autoPlay = false,
                               onTime,
                               onEnded,
+                              onRenew,
                               ref,
                             }: Props) {
   const t = useTranslations("Player");
@@ -136,6 +143,9 @@ export function VideoPlayer({
   const [hover, setHover] = useState<{ x: number; width: number; time: number } | null>(null);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  // Set when the addresses were renewed after a failure, until playing gets going again, so a broken file does not
+  // renew forever
+  const renewed = useRef(false);
   const router = useRouter();
   const lastSaved = useRef(0);
   const played = useRef(false);
@@ -243,8 +253,25 @@ export function VideoPlayer({
       }
     };
     const fail = () => {
-      if (!cancelled) {
-        setFailed(true);
+      if (cancelled) {
+        return;
+      }
+      // Most likely the signed addresses ran out: sign anew once per address and carry on where it stopped
+      if (onRenew && !renewed.current) {
+        renewed.current = true;
+        resumeAt.current = element.currentTime || resumeAt.current;
+        void onRenew().then(renewed => {
+          if (!renewed && !cancelled) {
+            setFailed(true);
+          }
+        });
+        return;
+      }
+      setFailed(true);
+    };
+    const progressed = () => {
+      if (element.currentTime > position + 5) {
+        renewed.current = false;
       }
     };
     const playNatively = () => {
@@ -254,6 +281,7 @@ export function VideoPlayer({
     };
 
     setFailed(false);
+    element.addEventListener("timeupdate", progressed);
     if (element.canPlayType("application/vnd.apple.mpegurl")) {
       playNatively();
     } else {
@@ -297,6 +325,7 @@ export function VideoPlayer({
     }
     return () => {
       cancelled = true;
+      element.removeEventListener("timeupdate", progressed);
       element.removeEventListener("error", fail);
       element.removeEventListener("loadedmetadata", start);
       hls?.destroy();
@@ -365,8 +394,12 @@ export function VideoPlayer({
 
   const retry = () => {
     resumeAt.current = video.current?.currentTime || resumeAt.current;
-    router.refresh();
-    setAttempt(value => value + 1);
+    if (onRenew) {
+      void onRenew().then(() => setAttempt(value => value + 1));
+    } else {
+      router.refresh();
+      setAttempt(value => value + 1);
+    }
   };
 
   useEffect(() => {

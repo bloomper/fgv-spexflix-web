@@ -30,26 +30,33 @@ export type VideoSummary = {
 /**
  * Videos as poster cards, with how far the user has come, everyone's average rating and whether the user likes them.
  */
-export function VideoGrid({ videos, hrefFor, action, label }: {
+export function VideoGrid({ videos, hrefFor, action, label, ranked = false }: {
   videos: VideoSummary[];
   hrefFor?: (id: string) => string;
   /** Something to do with a video, shown on its card's corner, e.g. taking it off "continue watching". */
   action?: (video: VideoSummary) => ReactNode;
   /** An extra line per video, e.g. how many like it. */
   label?: (video: VideoSummary) => ReactNode;
+  /** Numbers the posters 1, 2, 3…, for a top list. */
+  ranked?: boolean;
 }) {
   const t = useTranslations("Video");
   const locale = useLocale();
 
   return (
     <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-      {videos.map(video => {
+      {videos.map((video, i) => {
         const duration = (video.durationMs ?? 0) / 1000;
         const watched = video.finished ? 1 : duration > 0 && video.progressSeconds ? Math.min(1, video.progressSeconds / duration) : 0;
 
         return (
           <li key={video.id} className="relative">
             {action && <div className="absolute top-2 right-2 z-10">{action(video)}</div>}
+            {ranked && (
+              <span className="pointer-events-none absolute top-2 left-2 z-10 flex size-7 items-center justify-center rounded-full bg-background/90 text-sm font-semibold tabular-nums shadow">
+                {i + 1}
+              </span>
+            )}
             <Link href={hrefFor ? hrefFor(video.id) : `/videos/${video.id}`}
                   className="group block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <div className="relative overflow-hidden rounded-lg shadow-sm">

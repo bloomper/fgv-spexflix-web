@@ -44,7 +44,8 @@
     "lastPage": "Sista sidan",
     "clearSearch": "Rensa sökningen",
     "datePlaceholder": "ÅÅÅÅ-MM-DD",
-    "pickDate": "Välj datum"
+    "pickDate": "Välj datum",
+    "noMatches": "Inget matchar"
   },
   "Header": {
     "toggleLanguage": "Byt språk",
@@ -253,6 +254,7 @@
     "adminSettings": "Inställningar",
     "adminKinds": "Filmsorter",
     "collections": "Samlingar",
+    "credits": "Medverkande",
     "manageCollections": "Samlingar",
     "liked": "Gillat",
     "playlists": "Spellistor",
@@ -276,7 +278,9 @@
     "topRated": "Topplistan: högst betyg",
     "wholeTopList": "Hela topplistan",
     "liked": "Gillat av dig",
-    "allLiked": "Allt du gillat"
+    "allLiked": "Allt du gillat",
+    "random": "Slumpa en film",
+    "randomNone": "Det finns ingen film att spela."
   },
   "Search": {
     "title": "Sök",
@@ -459,7 +463,6 @@
     "unpublished": "Opublicerad",
     "seen": "Sedd",
     "watched": "{percent} % sedd",
-    "inSpexregisterOf": "{title} i Spexregistret",
     "allFromSpex": "Alla filmer från {title}",
     "liked": "Gillad av dig"
   },
@@ -473,7 +476,6 @@
     "processing": "Filmen bearbetas och kan ses snart.",
     "failed": "Filmen kunde inte bearbetas.",
     "moreFromSpex": "Mer från spexet",
-    "inSpexregister": "Spexet i Spexregistret",
     "edit": "Redigera",
     "rate": "Ditt betyg för filmen",
     "rateFailed": "Betyget kunde inte sparas.",
@@ -686,7 +688,8 @@
     "allYears": "Alla år",
     "decade": "{decade}-talet",
     "none": "Inget har fått betyg, gillats eller setts här ännu.",
-    "likes": "{count, plural, =1 {# gillar} other {# gillar}}"
+    "likes": "{count, plural, =1 {# gillar} other {# gillar}}",
+    "watches": "{count, plural, =1 {Sedd till slut en gång} other {Sedd till slut # gånger}}"
   },
   "Playlists": {
     "title": "Spellistor",
@@ -722,6 +725,25 @@
     "deleteTitle": "Ta bort {name}?",
     "deleteText": "Spellistan tas bort. Filmerna finns kvar.",
     "deleted": "Spellistan är borttagen.",
-    "saved": "Spellistan är sparad."
+    "saved": "Spellistan är sparad.",
+    "morePlaylists": "Fler spellistor…"
+  },
+  "Credits": {
+    "title": "Medverkande",
+    "text": "Alla som är med i filmerna: på scen, i orkestern och bakom kulisserna.",
+    "none": "Ingen medverkande är angiven ännu.",
+    "videos": "{count, plural, one {# film} other {# filmer}}",
+    "all": "Alla medverkande",
+    "nothing": "Namnet finns inte i någon film.",
+    "editText": "Namn och vad var och en gör eller spelar, i den ordning de visas på filmens sida.",
+    "name": "Namn",
+    "role": "Roll eller uppgift",
+    "rolePlaceholder": "t.ex. Kleopatra eller Regi",
+    "moveUp": "Flytta upp {name}",
+    "moveDown": "Flytta ner {name}",
+    "remove": "Ta bort {name}",
+    "add": "Lägg till medverkande",
+    "save": "Spara medverkande",
+    "saved": "De medverkande är sparade."
   }
 }

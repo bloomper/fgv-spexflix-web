@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import {
   chaptersSet,
+  creditsSet,
   collectionCreate,
   collectionDelete,
   collectionUpdate,
@@ -21,7 +22,7 @@ import {
 } from "@/lib/video/video.server";
 import { trashEmpty } from "@/lib/admin/admin.server";
 import { type ActionResult, toActionResult } from "@/lib/graphql.server";
-import type { ChapterInput, CollectionInput, VideoInput } from "@/gql/graphql";
+import type { ChapterInput, CollectionInput, CreditInput, VideoInput } from "@/gql/graphql";
 import { withPolicyAction } from "@/utils/route.server";
 import { Policies } from "@/utils/policy.server";
 
@@ -136,6 +137,16 @@ export async function reprocessAction(id: string): Promise<ActionResult<null>> {
   return admin(async () => {
     await videoReprocess(id);
     changed(id);
+    return null;
+  });
+}
+
+export async function setCreditsAction(id: string, credits: CreditInput[]): Promise<ActionResult<null>> {
+  requireId(id);
+  return editor(async () => {
+    await creditsSet(id, credits.map(credit => ({ name: credit.name.trim(), role: credit.role?.trim() || null })));
+    changed(id);
+    revalidatePath("/credits", "layout");
     return null;
   });
 }

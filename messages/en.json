@@ -44,7 +44,8 @@
     "lastPage": "Last page",
     "clearSearch": "Clear search",
     "datePlaceholder": "YYYY-MM-DD",
-    "pickDate": "Pick a date"
+    "pickDate": "Pick a date",
+    "noMatches": "Nothing matches"
   },
   "Header": {
     "toggleLanguage": "Change language",
@@ -253,6 +254,7 @@
     "adminSettings": "Settings",
     "adminKinds": "Video kinds",
     "collections": "Collections",
+    "credits": "Credits",
     "manageCollections": "Collections",
     "liked": "Liked",
     "playlists": "Playlists",
@@ -276,7 +278,9 @@
     "topRated": "Top list: highest rated",
     "wholeTopList": "The whole top list",
     "liked": "Liked by you",
-    "allLiked": "Everything you like"
+    "allLiked": "Everything you like",
+    "random": "Random video",
+    "randomNone": "There is no video to play."
   },
   "Search": {
     "title": "Search",
@@ -459,7 +463,6 @@
     "unpublished": "Unpublished",
     "seen": "Watched",
     "watched": "{percent} % watched",
-    "inSpexregisterOf": "{title} in Spexregister",
     "allFromSpex": "All videos of {title}",
     "liked": "Liked by you"
   },
@@ -473,7 +476,6 @@
     "processing": "The video is being processed and can be watched soon.",
     "failed": "The video could not be processed.",
     "moreFromSpex": "More from the spex",
-    "inSpexregister": "The spex in Spexregister",
     "edit": "Edit",
     "rate": "Your rating of the video",
     "rateFailed": "The rating could not be saved.",
@@ -686,7 +688,8 @@
     "allYears": "All years",
     "decade": "{decade}s",
     "none": "Nothing has been rated, liked or watched here yet.",
-    "likes": "{count, plural, =1 {# like} other {# likes}}"
+    "likes": "{count, plural, =1 {# like} other {# likes}}",
+    "watches": "{count, plural, =1 {Watched to the end once} other {Watched to the end # times}}"
   },
   "Playlists": {
     "title": "Playlists",
@@ -722,6 +725,25 @@
     "deleteTitle": "Delete {name}?",
     "deleteText": "The playlist is deleted. The videos stay.",
     "deleted": "The playlist was deleted.",
-    "saved": "The playlist was saved."
+    "saved": "The playlist was saved.",
+    "morePlaylists": "More playlists…"
+  },
+  "Credits": {
+    "title": "Credits",
+    "text": "Everyone in the videos: on stage, in the orchestra and behind the scenes.",
+    "none": "Nobody is credited yet.",
+    "videos": "{count, plural, one {# video} other {# videos}}",
+    "all": "Everyone credited",
+    "nothing": "The name is in no video.",
+    "editText": "Names and what each does or plays, in the order shown on the video's page.",
+    "name": "Name",
+    "role": "Role or task",
+    "rolePlaceholder": "e.g. Cleopatra or Director",
+    "moveUp": "Move {name} up",
+    "moveDown": "Move {name} down",
+    "remove": "Remove {name}",
+    "add": "Add a credit",
+    "save": "Save credits",
+    "saved": "The credits were saved."
   }
 }

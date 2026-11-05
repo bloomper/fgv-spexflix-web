@@ -121,6 +121,28 @@ describe("VideoPlayer", () => {
     expect(hls.instances[1].options).toEqual({ startPosition: 50 });
   });
 
+  it("signs anew once when loading fails, and carries on from where playing stopped", async () => {
+    const onRenew = vi.fn().mockResolvedValue(true);
+    const { container, rerender } = show({ onRenew });
+
+    await waitFor(() => expect(hls.instances).toHaveLength(1));
+    playTo(media(container), 40);
+    act(() => hls.instances[0].emit({ fatal: true, type: "networkError" }));
+    expect(onRenew).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+
+    // The page passes the new addresses in
+    rerender(<VideoPlayer videoId="v1" masterUrl={`${MASTER}?renewed`} subtitles={[]} chapters={CHAPTERS}
+                          durationSeconds={120} onRenew={onRenew} />);
+    await waitFor(() => expect(hls.instances).toHaveLength(2));
+    expect(hls.instances[1].options).toEqual({ startPosition: 40 });
+
+    // A second failure of the same address is shown, not renewed forever
+    act(() => hls.instances[1].emit({ fatal: true, type: "networkError" }));
+    expect(onRenew).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("alert")).toHaveTextContent("error");
+  });
+
   it("recovers once from a media error before giving up", async () => {
     show();
 

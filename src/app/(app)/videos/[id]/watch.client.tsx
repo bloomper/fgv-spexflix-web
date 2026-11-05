@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { type PlayerHandle, VideoPlayer } from "@/components/video/video-player.client";
-import { likeVideoAction, setWatchedAction, watchListAction } from "@/components/video/actions.server";
+import { likeVideoAction, playbackAction, setWatchedAction, watchListAction } from "@/components/video/actions.server";
 import { AddToPlaylistMenu, type OwnPlaylist } from "@/components/video/add-to-playlist.client";
 import { formatDuration } from "@/utils/duration";
 import { cn } from "@/utils/utils";
@@ -36,6 +36,16 @@ export type PlaylistContext = {
 
 const AUTOPLAY_KEY = "spexflix.autoplay";
 const COUNTDOWN = 10;
+/** How long before the signed addresses run out they are renewed when the page is looked at again. */
+const RENEW_BEFORE_MS = 30 * 60 * 1000;
+
+type Playback = {
+  masterUrl: string;
+  thumbnailsUrl?: string | null;
+  /** When the signed addresses stop working, as an ISO date and time. */
+  expiresAt?: string | null;
+  subtitles: { language: string; label: string; url: string }[];
+};
 
 function readAutoplay(): boolean {
   try {
@@ -69,11 +79,7 @@ export function Watch({
                         playlist,
                       }: {
   videoId: string;
-  playback: {
-    masterUrl: string;
-    thumbnailsUrl?: string | null;
-    subtitles: { language: string; label: string; url: string }[]
-  };
+  playback: Playback;
   chapters: Chapter[];
   durationSeconds: number;
   startAt: number | null;
@@ -91,6 +97,8 @@ export function Watch({
   const t = useTranslations("Watch");
   const router = useRouter();
   const player = useRef<PlayerHandle>(null);
+  // The signed addresses, renewed here when they run out on a page left open
+  const [current, setCurrent] = useServerState(playback, value => value.masterUrl);
   const [listed, setListed] = useServerState(inWatchList);
   const [liked, setLiked] = useServerState(initialLiked);
   const [watched, setWatched] = useServerState(finished);
@@ -133,6 +141,29 @@ export function Watch({
     }
   }, [autoplayNext, endAt, next, setWatched]);
 
+  const renew = useCallback(async () => {
+    const fresh = await playbackAction(videoId);
+
+    if (fresh) {
+      setCurrent(fresh);
+    }
+    return Boolean(fresh);
+  }, [setCurrent, videoId]);
+
+  // Coming back to a page that has been open, or kept alive, for hours: sign anew before the old addresses fail
+  useEffect(() => {
+    const check = () => {
+      if (document.visibilityState === "visible" && current.expiresAt
+        && Date.parse(current.expiresAt) - Date.now() < RENEW_BEFORE_MS) {
+        void renew();
+      }
+    };
+
+    check();
+    document.addEventListener("visibilitychange", check);
+    return () => document.removeEventListener("visibilitychange", check);
+  }, [current.expiresAt, renew]);
+
   const onTime = useCallback((seconds: number) => {
     setTime(seconds);
     setCountdown(current => current !== null && seconds < (endAt ?? durationSeconds) - 1 ? null : current);
@@ -142,9 +173,9 @@ export function Watch({
     <div className={cn("grid gap-6", (playlist || chapters.length > 0) && "xl:grid-cols-[minmax(0,1fr)_20rem]")}>
       <div className="min-w-0 space-y-3">
         <div className="relative">
-          <VideoPlayer ref={player} videoId={videoId} masterUrl={playback.masterUrl}
-                       thumbnailsUrl={playback.thumbnailsUrl}
-                       subtitles={playback.subtitles} chapters={chapters} durationSeconds={durationSeconds}
+          <VideoPlayer ref={player} videoId={videoId} masterUrl={current.masterUrl}
+                       thumbnailsUrl={current.thumbnailsUrl}
+                       subtitles={current.subtitles} onRenew={renew} chapters={chapters} durationSeconds={durationSeconds}
                        startAt={startAt}
                        endAt={endAt} recordProgress={recordProgress} autoPlay={autoPlay} onTime={onTime}
                        onEnded={onEnded} />
