@@ -5,6 +5,7 @@ import { Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PosterImage } from "@/components/video/poster-image.client";
+import { creditHref } from "@/lib/credits";
 import { getMe, getPlayback, getPlaylist, getPlaylists, getVideo, spexifyUrl } from "@/lib/video/video.server";
 import { kindName } from "@/utils/format";
 import { VideoRating } from "@/components/video/video-rating.client";
@@ -29,6 +30,7 @@ export default async function VideoPage({ params, searchParams }: {
 
     const t = await getTranslations("Watch");
     const tv = await getTranslations("Video");
+    const tc = await getTranslations("Credits");
     const locale = await getLocale();
     const query = await searchParams;
     const playlistId = query.playlist && ID.test(query.playlist) ? query.playlist : null;
@@ -52,7 +54,6 @@ export default async function VideoPage({ params, searchParams }: {
     const next = item
       ? following ? { href: itemHref(following, true), title: following.title ?? following.video.title } : null
       : video.next ? { href: `/videos/${video.next.id}?autoplay=1`, title: video.next.title } : null;
-    const register = process.env.SPEXREGISTER_WEB_URL?.replace(/\/$/, "");
     const main = video.spex[0];
 
     return (
@@ -65,7 +66,10 @@ export default async function VideoPage({ params, searchParams }: {
                  inWatchList={video.inWatchList} liked={video.liked} finished={video.finished}
                  spexifyUrl={me?.me.spexifyUser ? spexifyUrl() : null} recordProgress={video.published}
                  next={next} autoPlay={query.autoplay === "1"}
-                 playlists={playlists.filter(candidate => candidate.owned).map(candidate => ({
+                 playlists={playlists.filter(candidate => candidate.owned)
+                   // The ones changed most recently first: the menu shows only the first few
+                   .sort((a, b) => String(b.updatedAt ?? "").localeCompare(String(a.updatedAt ?? "")))
+                   .map(candidate => ({
                    id: candidate.id,
                    name: candidate.name,
                  }))}
@@ -103,6 +107,21 @@ export default async function VideoPage({ params, searchParams }: {
                          likeCount={video.likeCount} />
           )}
           <CollectionLinks collections={video.collections} />
+          {video.credits.length > 0 && (
+            <details className="group text-sm" open={video.credits.length <= 8}>
+              <summary className="cursor-pointer font-medium marker:text-muted-foreground">
+                {tc("title")} <span className="font-normal text-muted-foreground">({video.credits.length})</span>
+              </summary>
+              <ul className="mt-1 grid gap-x-6 gap-y-0.5 sm:grid-cols-2">
+                {video.credits.map((credit, i) => (
+                  <li key={`${credit.name}-${i}`} className="flex min-w-0 gap-2">
+                    <Link href={creditHref(credit.name)} className="truncate text-primary hover:underline">{credit.name}</Link>
+                    {credit.role && <span className="truncate text-muted-foreground">{credit.role}</span>}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
           {video.description && <p className="whitespace-pre-line text-sm">{video.description}</p>}
           {video.spex.length > 0 && (
             <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
@@ -114,12 +133,6 @@ export default async function VideoPage({ params, searchParams }: {
                     <Link href={`/videos?spex=${spex.familyId}`} className="text-primary hover:underline">
                       {video.spex.length > 1 ? tv("allFromSpex", { title: spex.title ?? name }) : t("moreFromSpex")}
                     </Link>
-                    {register && (
-                      <a href={`${register}/spex?open=${spex.id}`} target="_blank" rel="noopener noreferrer"
-                         className="text-muted-foreground hover:underline">
-                        {video.spex.length > 1 || spex.revival ? tv("inSpexregisterOf", { title: name }) : t("inSpexregister")}
-                      </a>
-                    )}
                   </li>
                 );
               })}

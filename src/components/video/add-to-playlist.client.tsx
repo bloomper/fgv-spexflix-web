@@ -21,9 +21,12 @@ import { track } from "@/utils/umami";
 
 export type OwnPlaylist = { id: string; name: string };
 
+/** How many playlists the menu lists; the rest are chosen in a dialog that can be searched. */
+const MENU_PLAYLISTS = 5;
+
 /**
  * A menu that adds a whole video, or with a start the chapter that starts there (a clip), to one of the user's playlists
- * or to a new one.
+ * or to a new one. The playlists come most recently changed first; beyond the first few they are chosen in a dialog.
  */
 export function AddToPlaylistMenu({ videoId, startSeconds = null, playlists, label, compact = false }: {
   videoId: string;
@@ -35,7 +38,7 @@ export function AddToPlaylistMenu({ videoId, startSeconds = null, playlists, lab
   compact?: boolean;
 }) {
   const t = useTranslations("Playlists");
-  const { prompt } = useDialogs();
+  const { prompt, choose } = useDialogs();
   const [pending, startTransition] = useTransition();
   const clip = startSeconds !== null;
 
@@ -49,6 +52,20 @@ export function AddToPlaylistMenu({ videoId, startSeconds = null, playlists, lab
       toast.error(result.message);
     }
   });
+
+  const chooseAndAdd = async () => {
+    const playlistId = await choose({
+      title: clip ? t("addClipTo") : t("addVideoTo"),
+      items: playlists.map(playlist => ({ id: playlist.id, label: playlist.name })),
+      createLabel: t("newPlaylist"),
+    });
+
+    if (playlistId) {
+      add(playlistId);
+    } else if (playlistId === "") {
+      await create();
+    }
+  };
 
   const create = async () => {
     const name = await prompt({ title: t("newTitle"), label: t("name"), confirmLabel: t("create"), maxLength: 255 });
@@ -78,11 +95,16 @@ export function AddToPlaylistMenu({ videoId, startSeconds = null, playlists, lab
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>
           <DropdownMenuLabel>{clip ? t("addClipTo") : t("addVideoTo")}</DropdownMenuLabel>
-          {playlists.map(playlist => (
+          {playlists.slice(0, MENU_PLAYLISTS).map(playlist => (
             <DropdownMenuItem key={playlist.id} onClick={() => add(playlist.id)}>
               <ListPlus />{playlist.name}
             </DropdownMenuItem>
           ))}
+          {playlists.length > MENU_PLAYLISTS && (
+            <DropdownMenuItem onClick={() => void chooseAndAdd()}>
+              <ListPlus />{t("morePlaylists")}
+            </DropdownMenuItem>
+          )}
         </DropdownMenuGroup>
         {playlists.length > 0 && <DropdownMenuSeparator />}
         <DropdownMenuItem onClick={() => void create()}>

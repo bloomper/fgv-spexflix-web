@@ -6,6 +6,7 @@ import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
 import { isAdmin } from "@/utils/auth";
 import { VideoEditor } from "./video-editor.client";
+import { CreditsEditor } from "@/components/video/credits-editor.client";
 import { RecordHistory } from "@/components/audit/change-log";
 import { auditLink } from "../../audit/links";
 
@@ -36,6 +37,10 @@ export default async function EditVideoPage({ params }: { params: Promise<{ id: 
         </div>
         <VideoEditor video={video}
                      playback={playback} admin={isAdmin(authz.roles)} kinds={kinds} />
+        {/* Keyed by the saved credits: the page stays mounted, and the rows start over from what was saved */}
+        <div className="pt-4">
+          <CreditsEditor key={JSON.stringify(video.credits)} videoId={video.id} credits={video.credits} />
+        </div>
         <RecordHistory entityId={video.id} path="/manage/audit" linkOf={auditLink} />
       </div>
     );

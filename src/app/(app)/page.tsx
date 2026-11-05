@@ -4,6 +4,7 @@ import { HomeSection } from "@/components/home-section";
 import { RatingStars } from "@/components/rating.client";
 import { VideoGrid } from "@/components/video/video-grid";
 import { ForgetProgressButton } from "@/components/video/forget-progress.client";
+import { RandomVideoButton } from "@/components/video/random-video.client";
 import { getHome, getMe } from "@/lib/video/video.server";
 import { decadesOf } from "@/utils/decades";
 import { Policies } from "@/utils/policy.server";
@@ -22,9 +23,12 @@ export default async function HomePage() {
     return (
       <div className="space-y-8 p-4 sm:p-6">
         <section className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            {t("greeting", { name: me?.me.displayName ?? me?.me.username ?? "" })}
-          </h1>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+              {t("greeting", { name: me?.me.displayName ?? me?.me.username ?? "" })}
+            </h1>
+            <RandomVideoButton />
+          </div>
           <p className="max-w-4xl whitespace-pre-line text-pretty text-muted-foreground">{welcome || t("intro")}</p>
         </section>
 

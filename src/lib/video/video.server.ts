@@ -5,6 +5,7 @@ import { runMutation, runQuery } from "@/lib/graphql.server";
 import type {
   ChapterInput,
   CollectionInput,
+  CreditInput,
   PlaylistInput,
   TopBy,
   VideoFilter,
@@ -68,6 +69,7 @@ const VideoQuery = graphql(`
             spex { id title year revival parentId familyId categoryId categoryName }
             renditions { height width bitrateKbps copied size }
             chapters { startSeconds title spexifyTrackId spexifyTrackTitle }
+            credits { name role }
             subtitles { language label }
             job { id status progress attempts error createdAt startedAt finishedAt }
             collections { id title }
@@ -119,7 +121,7 @@ const LikedQuery = graphql(`
 `);
 const TopQuery = graphql(`
     query Top($by: TopBy!, $filter: VideoFilter, $limit: Int) {
-        topVideos(by: $by, filter: $filter, limit: $limit) { ...VideoCardFields likeCount }
+        topVideos(by: $by, filter: $filter, limit: $limit) { ...VideoCardFields likeCount watchCount }
         categories { id name videoCount }
         years
     }
@@ -161,6 +163,17 @@ const VideoRestoreMutation = graphql(`mutation VideoRestore($id: ID!) { videoRes
 const VideoDeleteMutation = graphql(`mutation VideoDelete($id: ID!) { videoDelete(id: $id) }`);
 const VideoPosterFrameMutation = graphql(`mutation VideoPosterFrame($id: ID!, $seconds: Float!) { videoPosterFrame(id: $id, seconds: $seconds) { id } }`);
 const VideoReprocessMutation = graphql(`mutation VideoReprocess($id: ID!) { videoReprocess(id: $id) { id } }`);
+const CreditsQuery = graphql(`
+    query Credits {
+        credits { name videoCount }
+    }
+`);
+const CreditVideosQuery = graphql(`
+    query CreditVideos($name: String!) {
+        creditVideos(name: $name) { role video { ...VideoCardFields } }
+    }
+`);
+const CreditsSetMutation = graphql(`mutation CreditsSet($videoId: ID!, $credits: [CreditInput!]!) { creditsSet(videoId: $videoId, credits: $credits) { id } }`);
 const ChaptersSetMutation = graphql(`mutation ChaptersSet($videoId: ID!, $chapters: [ChapterInput!]!) { chaptersSet(videoId: $videoId, chapters: $chapters) { id } }`);
 const SubtitleRemoveMutation = graphql(`mutation SubtitleRemove($videoId: ID!, $language: String!) { subtitleRemove(videoId: $videoId, language: $language) { id } }`);
 const ProgressSaveMutation = graphql(`mutation ProgressSave($videoId: ID!, $positionSeconds: Int!) { progressSave(videoId: $videoId, positionSeconds: $positionSeconds) }`);
@@ -207,6 +220,9 @@ export const videoRestore = (id: string) => runMutation(VideoRestoreMutation, { 
 export const videoDelete = (id: string) => runMutation(VideoDeleteMutation, { id });
 export const videoPosterFrame = (id: string, seconds: number) => runMutation(VideoPosterFrameMutation, { id, seconds });
 export const videoReprocess = (id: string) => runMutation(VideoReprocessMutation, { id });
+export const getCredits = async () => (await runQuery(CreditsQuery, {}))?.credits ?? [];
+export const getCreditVideos = async (name: string) => (await runQuery(CreditVideosQuery, { name }))?.creditVideos ?? [];
+export const creditsSet = (videoId: string, credits: CreditInput[]) => runMutation(CreditsSetMutation, { videoId, credits });
 export const chaptersSet = (videoId: string, chapters: ChapterInput[]) => runMutation(ChaptersSetMutation, {
   videoId,
   chapters,

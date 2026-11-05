@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import {
+  getPlayback,
+  getVideos,
   playlistAddItem,
   playlistCreate,
   playlistDelete,
@@ -21,6 +23,41 @@ import { withPolicyAction } from "@/utils/route.server";
 import { Policies } from "@/utils/policy.server";
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Newly signed addresses of a video's renditions, thumbnails and subtitles, for a page kept open, or kept alive by
+ * Next, longer than the old ones last. The page itself is not revalidated: that would sign new addresses and restart the
+ * player. Null when the video cannot be played.
+ */
+export async function playbackAction(videoId: string) {
+  if (!ID.test(videoId)) {
+    return null;
+  }
+  return withPolicyAction(Policies.app.requireAccess, async () => {
+    try {
+      return await getPlayback(videoId);
+    } catch {
+      return null;
+    }
+  });
+}
+
+/**
+ * A listed video that can be played, at random; the ones the user has not watched to the end are twice as likely. Null
+ * when there is none.
+ */
+export async function randomVideoAction(): Promise<string | null> {
+  return withPolicyAction(Policies.app.requireAccess, async () => {
+    try {
+      const videos = ((await getVideos({}))?.videos ?? []).filter(video => video.status === "READY" && video.published);
+      const weighted = videos.flatMap(video => video.finished ? [video] : [video, video]);
+
+      return weighted.length === 0 ? null : weighted[Math.floor(Math.random() * weighted.length)].id;
+    } catch {
+      return null;
+    }
+  });
+}
 
 /**
  * Saves where the user is in a video. Failures are ignored: watching does not depend on it.

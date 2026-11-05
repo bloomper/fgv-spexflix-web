@@ -69,6 +69,14 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
   which also takes it off "continue watching", where each card has a button for it).
 - **Collections** (`/collections`, edited under `/manage/collections`) are videos in an order of their own; listeners
   see only listed videos. EDITOR creates and changes them, ADMIN deletes them.
+- **Credits** (Medverkande): editors list names with what each does or plays (`CreditsEditor` on the edit page,
+  `creditsSet`); the video page lists them, `/credits` everyone and `/credits/[name]` (`creditHref`) a name's videos.
+- **Signed playback addresses** run out (the video's length plus four hours from when the page was rendered), and Next
+  keeps visited pages alive. `Watch` therefore renews them with `playbackAction` when a page whose addresses are about
+  to run out is looked at again, and `VideoPlayer` renews once (`onRenew`) when loading fails, before showing the
+  error. Never revalidate the video page for this: it would restart the player.
+- **Random video**: the start page's button (top right) opens a listed video at random (`randomVideoAction`), ones not
+  watched to the end twice as likely.
 - **Posters** come from `/api/poster/[id]` (uploaded, a frame, or the spex poster; 404 and `PosterImage`'s
   placeholder). Never `next/image`.
 - **Uploads** use tus through `/api/uploads/[[...path]]`; `videoSetFile` queues the upload for the worker. The editor
@@ -81,8 +89,10 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
   what the user rated highest (`highestRated`). Show ratings as stars, never as text.
 - **Likes** (a heart, "Gilla"/"Gillad", `videoLike`; `/liked` "Gillat") are separate from **Se senare** (the watch
   list, `/watchlist`), which is for watching later. Likes are never revalidated on the video page being watched.
-- **Top list** (`/top`, Topplistan): `topVideos(by)` by `RATED` (weighted average), `LIKED` or `WATCHED`, per category
-  and decade. `/videos` takes `category`, `kind`, `decade` or `year`, `liked=1`, `unwatched=1` and `sort`
+- **Top list** (`/top`, Topplistan): `topVideos(by)` by `RATED` (weighted average), `LIKED` or `WATCHED`
+  (`watchCount`), per category and decade, chosen with underlined tabs (`LinkTabs`, `src/components/link-tabs.tsx`,
+  the same file as Spexify's); the cards are numbered and say the number they are ranked by. The playlist menus list
+  five playlists, most recently changed first, and offer the rest through `useDialogs().choose`. `/videos` takes `category`, `kind`, `decade` or `year`, `liked=1`, `unwatched=1` and `sort`
   (`SortSelect`).
 - **Playlists** (`/playlists`) are each user's own lists of whole videos and clips (a chapter, added with
   `AddToPlaylistMenu` beside each chapter, or the whole video from the button below the player). Others' public ones
@@ -130,7 +140,7 @@ no-op when the tracker isn't loaded. Event data is enum values, counts and boole
 typed text. Events: `video-create` (`defaultKind`), `video-rate` (`rating`), `video-upload` (`replaced`),
 `video-publish` (`published`), `video-play` (once per page),
 `watch-list` (`listed`), `video-like` (`liked`), `playlist-create`, `playlist-add` (`clip`, `created`), `video-next`
-(`automatic`, `playlist`), `video-watched` (`watched`), `continue-forget`, `collection-create`
+(`automatic`, `playlist`), `video-random`, `video-watched` (`watched`), `continue-forget`, `collection-create`
 (`videos`), `language-change` and `theme-change`.
 
 ## Application switcher
