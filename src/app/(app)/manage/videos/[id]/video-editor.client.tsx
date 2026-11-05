@@ -99,7 +99,6 @@ export function VideoEditor({ video, playback, admin, kinds }: {
   kinds: KindOption[];
 }) {
   const t = useTranslations("Manage");
-  const { confirm } = useDialogs();
   const tv = useTranslations("Video");
   const { pending, run, router } = useRun();
   const player = useRef<PlayerHandle>(null);
@@ -395,27 +394,36 @@ export function VideoEditor({ video, playback, admin, kinds }: {
           <Button type="submit" variant="outline" disabled={pending}>{t("uploadSubtitles")}</Button>
         </form>
       </section>
-
-      <section className="space-y-2 rounded-lg border border-destructive/40 p-4">
-        <h2 className="font-semibold">{t("trashVideo")}</h2>
-        <p className="text-sm text-muted-foreground">{t("trashVideoText")}</p>
-        <Button variant="destructive" disabled={pending} onClick={async () => {
-          if (await confirm({
-            title: t("confirmTrash", { title: video.title }),
-            confirmLabel: t("toTrash"),
-            destructive: true,
-          })) {
-            run(async () => {
-              const result = await trashVideoAction(video.id, true);
-
-              if (result.ok) {
-                router.push("/manage/videos");
-              }
-              return result;
-            }, t("trashed"));
-          }
-        }}><Trash2 />{t("toTrash")}</Button>
-      </section>
     </div>
+  );
+}
+
+/** Moving a video to the trash; shown last on the edit page, above the change log. */
+export function TrashVideo({ video }: { video: Pick<EditorVideo, "id" | "title"> }) {
+  const t = useTranslations("Manage");
+  const { confirm } = useDialogs();
+  const { pending, run, router } = useRun();
+
+  return (
+    <section className="space-y-2 rounded-lg border border-destructive/40 p-4">
+      <h2 className="font-semibold">{t("trashVideo")}</h2>
+      <p className="text-sm text-muted-foreground">{t("trashVideoText")}</p>
+      <Button variant="destructive" disabled={pending} onClick={async () => {
+        if (await confirm({
+          title: t("confirmTrash", { title: video.title }),
+          confirmLabel: t("toTrash"),
+          destructive: true,
+        })) {
+          run(async () => {
+            const result = await trashVideoAction(video.id, true);
+
+            if (result.ok) {
+              router.push("/manage/videos");
+            }
+            return result;
+          }, t("trashed"));
+        }
+      }}><Trash2 />{t("toTrash")}</Button>
+    </section>
   );
 }
