@@ -49,7 +49,8 @@
   },
   "Header": {
     "toggleLanguage": "Byt språk",
-    "toggleTheme": "Byt tema"
+    "toggleTheme": "Byt tema",
+    "toggleSidebar": "Visa eller dölj menyn"
   },
   "AppSwitcher": {
     "heading": "Byt applikation",
@@ -284,6 +285,7 @@
   },
   "Search": {
     "title": "Sök",
+    "query": "Sökord",
     "placeholder": "Sök film, spex, nummer…",
     "resultsFor": "Sökresultat för ”{q}”",
     "hint": "Sök på titlar, spex, beskrivningar, föreställningar och kapitel. Minst två tecken.",
