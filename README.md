@@ -51,6 +51,8 @@ The look (logo, favicon and colours) is FGV's, shared with Spexregister and Nyup
    SPEXIFY_WEB_URL=http://localhost:3002
    SPEXREGISTER_WEB_URL=http://localhost:3000
    FGV_REVIVAL_WEB_URL=http://localhost:3001
+   SPEXGRAM_WEB_URL=http://localhost:3004
+   ARCHIVE_WEB_URL=http://localhost:3005
    ```
    The client secret is in `realm/fgv.json` in [fgv-keycloak][7]; search for `fgv-spexflix`.
    For visitor statistics, run fgv-infra-deploy's `local/bin/configure-umami.sh` and put the ID it prints for Spexflix
@@ -66,6 +68,8 @@ The look (logo, favicon and colours) is FGV's, shared with Spexregister and Nyup
    | `SPEXIFY_WEB_URL`                | Spexify, for *Listen in Spexify* on chapters; without it there are none; also the application switcher |
    | `SPEXREGISTER_WEB_URL`           | Spexregister, for links to a spex; also the application switcher          |
    | `FGV_REVIVAL_WEB_URL`            | Nyuppsättning, for the application switcher in the header                 |
+   | `SPEXGRAM_WEB_URL`               | Spexgram, for the application switcher                                    |
+   | `ARCHIVE_WEB_URL`                | Spexarkivet, for the application switcher                                 |
 
 3. **Generate GraphQL types:**
    If you change GraphQL queries or the schema, regenerate types from a sibling `fgv-spexflix-server` checkout:
@@ -113,7 +117,7 @@ already on Docker Hub.
 
 The image contains no environment-specific values. All configuration is read at runtime: `BETTER_AUTH_URL`,
 `AUTH_SECRET`, `KEYCLOAK_CLIENT_ID`, `KEYCLOAK_CLIENT_SECRET`, `KEYCLOAK_ISSUER`, `API_GRAPHQL_ENDPOINT`,
-`MEDIA_ORIGIN`, `SPEXIFY_WEB_URL`, `SPEXREGISTER_WEB_URL`, `SUPPORT_EMAIL`, `FEEDBACK_EMAIL`, `SUPPORTED_LOCALES`, `DEFAULT_LOCALE`, `FGV_REVIVAL_WEB_URL`, `UMAMI_URL` and
+`MEDIA_ORIGIN`, `SPEXIFY_WEB_URL`, `SPEXREGISTER_WEB_URL`, `SUPPORT_EMAIL`, `FEEDBACK_EMAIL`, `SUPPORTED_LOCALES`, `DEFAULT_LOCALE`, `FGV_REVIVAL_WEB_URL`, `SPEXGRAM_WEB_URL`, `ARCHIVE_WEB_URL`, `UMAMI_URL` and
 `UMAMI_WEBSITE_ID`. Visitor statistics go to Umami only when both Umami variables are set.
 [fgv-spexflix-deploy][8] runs it.
 
