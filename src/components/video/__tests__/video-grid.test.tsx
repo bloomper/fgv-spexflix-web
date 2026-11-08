@@ -6,7 +6,7 @@ import { VideoGrid } from "@/components/video/video-grid";
 vi.mock("next/link", () => ({
   default: ({ children, href }: { children?: ReactNode; href: string }) => <a href={href}>{children}</a>,
 }));
-vi.mock("@/components/video/poster-image.client", () => ({ PosterImage: ({ title }: { title: string }) => <img alt={title} /> }));
+vi.mock("@/components/video/poster-image.client", () => ({ PosterImage: ({ title }: { title: string }) => <span role="img" aria-label={title} /> }));
 
 const KIND = { id: "k1", nameSv: "Föreställning", nameEn: "Show", isDefault: true };
 

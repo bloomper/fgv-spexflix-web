@@ -32,7 +32,7 @@ export default async function QueuePage() {
                 <TableRow key={job.id}>
                   <TableCell>
                     <Link href={`/manage/videos/${job.videoId}`}
-                          className="font-medium hover:underline">{job.videoTitle}</Link>
+                          className="font-medium hover:text-primary">{job.videoTitle}</Link>
                     {job.error && <div className="text-xs text-destructive">{job.error}</div>}
                   </TableCell>
                   <TableCell><Badge

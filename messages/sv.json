@@ -50,7 +50,11 @@
   "Header": {
     "toggleLanguage": "Byt språk",
     "toggleTheme": "Byt tema",
-    "toggleSidebar": "Visa eller dölj menyn"
+    "showMenu": "Visa menyn"
+  },
+  "Sidebar": {
+    "hideMenu": "Dölj menyn",
+    "showMenu": "Visa menyn"
   },
   "AppSwitcher": {
     "heading": "Byt applikation",
@@ -290,7 +294,10 @@
     "query": "Sökord",
     "placeholder": "Sök film, spex, nummer…",
     "resultsFor": "Sökresultat för ”{q}”",
-    "hint": "Sök på titlar, spex, beskrivningar, föreställningar och kapitel. Minst två tecken.",
+    "emptyTitle": "Vad letar du efter?",
+    "hint": "Sök på titlar, spex, beskrivningar, föreställningar och kapitel.",
+    "browse": "Eller bläddra bland alla filmer",
+    "tooShort": "Skriv minst två tecken.",
     "none": "Inget hittades."
   },
   "Manage": {

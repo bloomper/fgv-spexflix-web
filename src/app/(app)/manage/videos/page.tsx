@@ -38,7 +38,7 @@ export default async function ManageVideosPage() {
               {data?.videos.map(video => (
                 <TableRow key={video.id}>
                   <TableCell className="whitespace-normal"><Link href={`/manage/videos/${video.id}`}
-                                                                 className="font-medium hover:underline">{video.title}</Link></TableCell>
+                                                                 className="font-medium hover:text-primary">{video.title}</Link></TableCell>
                   <TableCell className="tabular-nums">{video.year}</TableCell>
                   <TableCell className="hidden sm:table-cell">{kindName(video.kind, locale)}</TableCell>
                   <TableCell

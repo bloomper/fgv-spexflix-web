@@ -188,11 +188,11 @@ export function PlaylistItems({ playlistId, owned, items }: {
   };
 
   return (
-    <ol className="divide-y rounded-lg border">
+    <ol className="divide-y overflow-hidden rounded-lg border">
       {items.map((item, i) => (
-        <li key={item.id} className="flex items-center gap-3 px-2 py-2 sm:px-3">
+        <li key={item.id} className="link-row flex items-center gap-3 px-2 py-2 sm:px-3">
           <span className="w-6 shrink-0 text-right text-sm tabular-nums text-muted-foreground">{i + 1}</span>
-          <Link href={item.href} className="flex min-w-0 flex-1 items-center gap-3 hover:underline">
+          <Link href={item.href} className="row-link flex min-w-0 flex-1 items-center gap-3">
             <PosterImage videoId={item.videoId} title={item.videoTitle} className="w-24 shrink-0 rounded" />
             <span className="min-w-0">
                             <span className="block truncate text-sm font-medium">{item.title}</span>

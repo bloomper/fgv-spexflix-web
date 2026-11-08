@@ -33,7 +33,7 @@ export default async function EditVideoPage({ params }: { params: Promise<{ id: 
       <div className="space-y-6 p-4 sm:p-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h1 className="text-2xl font-semibold tracking-tight">{video.title}</h1>
-          <Link href={`/videos/${video.id}`} className="text-sm text-primary hover:underline">{t("viewAsViewer")}</Link>
+          <Link href={`/videos/${video.id}`} className="text-sm text-primary hover:text-primary/80">{t("viewAsViewer")}</Link>
         </div>
         <VideoEditor video={video}
                      playback={playback} admin={isAdmin(authz.roles)} kinds={kinds} />

@@ -255,7 +255,7 @@ export function Watch({
           <section aria-labelledby="playlist" className="space-y-2">
             <h2 id="playlist" className="flex items-center gap-2 font-semibold">
               <ListVideo className="size-4" />
-              <Link href={`/playlists/${playlist.id}`} className="truncate hover:underline">{playlist.name}</Link>
+              <Link href={`/playlists/${playlist.id}`} className="truncate hover:text-primary">{playlist.name}</Link>
               <span className="shrink-0 text-sm font-normal text-muted-foreground tabular-nums">
                                 {t("position", { index: playlist.index + 1, count: playlist.items.length })}
                             </span>
@@ -263,8 +263,8 @@ export function Watch({
             <ol className="max-h-80 divide-y overflow-y-auto rounded-lg border">
               {playlist.items.map((item, i) => (
                 <li key={item.id} aria-current={i === playlist.index ? "true" : undefined}
-                    className={cn("px-3 py-2 text-sm", i === playlist.index && "bg-accent")}>
-                  <Link href={item.href} className="flex min-w-0 items-baseline gap-3 hover:underline">
+                    className={cn("link-row px-3 py-2 text-sm", i === playlist.index && "bg-accent")}>
+                  <Link href={item.href} className="row-link flex min-w-0 items-baseline gap-3">
                     <span className="w-6 shrink-0 text-xs tabular-nums text-muted-foreground">{i + 1}</span>
                     <span className="min-w-0 flex-1">
                                             <span
@@ -283,11 +283,11 @@ export function Watch({
         {chapters.length > 0 && (
           <section aria-labelledby="chapters" className="space-y-2">
             <h2 id="chapters" className="font-semibold">{t("chapters")}</h2>
-            <ol className="divide-y rounded-lg border">
+            <ol className="divide-y overflow-hidden rounded-lg border">
               {chapters.map(chapter => (
                 <li key={chapter.startSeconds} aria-current={chapter === playing ? "true" : undefined}
-                    className={cn("flex items-center gap-2 px-3 py-1.5", chapter === playing && "bg-accent")}>
-                  <button type="button" className="flex min-w-0 flex-1 items-baseline gap-3 text-left hover:underline"
+                    className={cn("link-row flex items-center gap-2 px-3 py-1.5", chapter === playing && "bg-accent")}>
+                  <button type="button" className="row-link flex min-w-0 flex-1 items-baseline gap-3 text-left"
                           onClick={() => player.current?.seek(chapter.startSeconds)}>
                     <span
                       className="w-14 shrink-0 text-xs tabular-nums text-muted-foreground">{formatDuration(chapter.startSeconds)}</span>
@@ -297,7 +297,7 @@ export function Watch({
                   {spexifyUrl && chapter.spexifyTrackId && (
                     <a href={`${spexifyUrl}/search?q=${encodeURIComponent(chapter.spexifyTrackTitle ?? chapter.title)}`}
                        target="_blank" rel="noopener noreferrer"
-                       className="inline-flex shrink-0 items-center gap-1 text-xs text-primary hover:underline"
+                       className="inline-flex shrink-0 items-center gap-1 text-xs text-primary hover:text-primary/80"
                        aria-label={t("listenInSpexify", { title: chapter.title })}>
                       <Music className="size-3.5" />{t("listen")}
                     </a>
@@ -330,7 +330,7 @@ export function CollectionLinks({ collections }: { collections: { id: string; ti
         <span key={collection.id}>
                     {i > 0 && ", "}
           <Link href={`/collections/${collection.id}`}
-                className="text-primary hover:underline">{collection.title}</Link>
+                className="text-primary hover:text-primary/80">{collection.title}</Link>
                 </span>
       ))}
     </p>

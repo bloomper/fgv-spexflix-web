@@ -115,7 +115,7 @@ export default async function VideoPage({ params, searchParams }: {
               <ul className="mt-1 grid gap-x-6 gap-y-0.5 sm:grid-cols-2">
                 {video.credits.map((credit, i) => (
                   <li key={`${credit.name}-${i}`} className="flex min-w-0 gap-2">
-                    <Link href={creditHref(credit.name)} className="truncate text-primary hover:underline">{credit.name}</Link>
+                    <Link href={creditHref(credit.name)} className="truncate text-primary hover:text-primary/80">{credit.name}</Link>
                     {credit.role && <span className="truncate text-muted-foreground">{credit.role}</span>}
                   </li>
                 ))}
@@ -130,7 +130,7 @@ export default async function VideoPage({ params, searchParams }: {
 
                 return (
                   <li key={spex.id} className="flex flex-wrap gap-x-2">
-                    <Link href={`/videos?spex=${spex.familyId}`} className="text-primary hover:underline">
+                    <Link href={`/videos?spex=${spex.familyId}`} className="text-primary hover:text-primary/80">
                       {video.spex.length > 1 ? tv("allFromSpex", { title: spex.title ?? name }) : t("moreFromSpex")}
                     </Link>
                   </li>

@@ -24,7 +24,7 @@ export default async function CreditPage({ params }: { params: Promise<{ name: s
     return (
       <div className="space-y-6 p-4 sm:p-6">
         <div className="space-y-1">
-          <Link href="/credits" className="text-sm text-primary hover:underline">{t("all")}</Link>
+          <Link href="/credits" className="text-sm text-primary hover:text-primary/80">{t("all")}</Link>
           <h1 className="text-2xl font-semibold tracking-tight">{name}</h1>
           <p className="text-sm text-muted-foreground">{t("videos", { count: entries.length })}</p>
         </div>

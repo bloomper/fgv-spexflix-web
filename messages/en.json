@@ -50,7 +50,11 @@
   "Header": {
     "toggleLanguage": "Change language",
     "toggleTheme": "Change theme",
-    "toggleSidebar": "Show or hide the menu"
+    "showMenu": "Show menu"
+  },
+  "Sidebar": {
+    "hideMenu": "Hide menu",
+    "showMenu": "Show menu"
   },
   "AppSwitcher": {
     "heading": "Switch application",
@@ -290,7 +294,10 @@
     "query": "Search terms",
     "placeholder": "Search video, spex, number…",
     "resultsFor": "Results for “{q}”",
-    "hint": "Search titles, spex, descriptions, performances and chapters. At least two characters.",
+    "emptyTitle": "What are you looking for?",
+    "hint": "Search titles, spex, descriptions, performances and chapters.",
+    "browse": "Or browse all videos",
+    "tooShort": "Type at least two characters.",
     "none": "Nothing found."
   },
   "Manage": {
