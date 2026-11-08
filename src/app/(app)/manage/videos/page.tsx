@@ -18,9 +18,9 @@ export default async function ManageVideosPage() {
     const data = await getVideos({ includeUnpublished: true });
 
     return (
-      <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">{t("videos")}</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("videos")}</h1>
           <Button nativeButton={false} render={<Link href="/manage/videos/new" />}><Plus />{t("newVideo")}</Button>
         </div>
         <div className="rounded-lg border">

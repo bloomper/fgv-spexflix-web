@@ -8,6 +8,7 @@ import { decadesOf, parseDecade } from "@/utils/decades";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
 import { cn } from "@/utils/utils";
+import { DataEmpty } from "@/components/data-empty";
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const BY: TopBy[] = ["RATED", "LIKED", "WATCHED"];
@@ -49,9 +50,9 @@ export default async function TopPage({ searchParams }: {
     const counts = new Map(videos.map(video => [video.id, video]));
 
     return (
-      <div className="space-y-5 p-4 sm:p-6">
+      <div className="flex flex-1 flex-col gap-5 p-4 md:p-8">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="max-w-3xl text-pretty text-sm text-muted-foreground">{t(`text.${by}`)}</p>
         </div>
         <LinkTabs label={t("by")} items={BY.map(item => ({
@@ -77,7 +78,7 @@ export default async function TopPage({ searchParams }: {
           ? <VideoGrid videos={videos} ranked label={by === "RATED" ? undefined : video => by === "LIKED"
             ? t("likes", { count: counts.get(video.id)?.likeCount ?? 0 })
             : t("watches", { count: counts.get(video.id)?.watchCount ?? 0 })} />
-          : <p className="text-muted-foreground">{t("none")}</p>}
+          : <DataEmpty title={t("none")} description={null} />}
       </div>
     );
   });

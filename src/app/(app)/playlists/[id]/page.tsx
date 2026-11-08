@@ -9,6 +9,7 @@ import { formatDuration } from "@/utils/duration";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
 import { PlaylistItems, PlaylistSettings } from "../playlist-editor.client";
+import { DataEmpty } from "@/components/data-empty";
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -34,10 +35,10 @@ export default async function PlaylistPage({ params }: { params: Promise<{ id: s
     const first = playlist.items[0];
 
     return (
-      <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight">{playlist.name}</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{playlist.name}</h1>
             {playlist.isPublic && <Badge variant="secondary"><Globe />{t("public")}</Badge>}
           </div>
           <p className="text-sm text-muted-foreground">
@@ -70,7 +71,7 @@ export default async function PlaylistPage({ params }: { params: Promise<{ id: s
             durationSeconds: item.durationSeconds,
             year: item.video.year ?? null,
           }))} />
-          : <p className="text-muted-foreground">{t("empty")}</p>}
+          : <DataEmpty title={t("empty")} description={null} />}
       </div>
     );
   });

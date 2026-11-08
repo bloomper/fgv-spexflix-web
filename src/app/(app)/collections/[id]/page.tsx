@@ -8,6 +8,7 @@ import { getCollection } from "@/lib/video/video.server";
 import { isEditor } from "@/utils/auth";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
+import { DataEmpty } from "@/components/data-empty";
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -30,9 +31,9 @@ export default async function CollectionPage({ params }: { params: Promise<{ id:
     const upNext = collection.videos.find(video => !video.finished && video.status === "READY") ?? collection.videos[0];
 
     return (
-      <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
         <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">{collection.title}</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{collection.title}</h1>
           {collection.description &&
             <p className="max-w-prose whitespace-pre-line text-sm text-muted-foreground">{collection.description}</p>}
         </div>
@@ -50,7 +51,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ id:
           )}
         </div>
         {collection.videos.length > 0 ? <VideoGrid videos={collection.videos} /> :
-          <p className="text-muted-foreground">{t("empty")}</p>}
+          <DataEmpty title={t("empty")} description={null} />}
       </div>
     );
   });

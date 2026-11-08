@@ -10,8 +10,8 @@ export default async function NewVideoPage() {
     const kinds = await getVideoKinds();
 
     return (
-      <div className="space-y-6 p-4 sm:p-6">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("newVideo")}</h1>
+      <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
+        <h1 className="text-2xl font-bold tracking-tight">{t("newVideo")}</h1>
         <p className="max-w-prose text-sm text-muted-foreground">{t("newVideoText")}</p>
         <NewVideo kinds={kinds} />
       </div>

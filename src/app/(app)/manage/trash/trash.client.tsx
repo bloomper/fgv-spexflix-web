@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { formatInstant } from "@/utils/format";
 import { deleteVideoAction, emptyTrashAction, trashVideoAction } from "@/app/(app)/manage/actions.server";
 import { useDialogs } from "@/components/dialogs.client";
+import { DataEmpty } from "@/components/data-empty";
 
 type Item = { id: string; title: string; year?: number | null; trashedAt?: string | null };
 
@@ -30,7 +31,7 @@ export function TrashList({ videos, admin }: { videos: Item[]; admin: boolean })
   });
 
   if (videos.length === 0) {
-    return <p className="text-muted-foreground">{t("empty")}</p>;
+    return <DataEmpty title={t("empty")} description={null} />;
   }
   return (
     <div className="space-y-4">

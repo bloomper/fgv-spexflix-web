@@ -8,6 +8,7 @@ import { getPlaylists } from "@/lib/video/video.server";
 import { formatDuration } from "@/utils/duration";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
+import { DataEmpty } from "@/components/data-empty";
 
 type Summary = Awaited<ReturnType<typeof getPlaylists>>[number];
 
@@ -55,17 +56,17 @@ export default async function PlaylistsPage() {
     const others = playlists.filter(playlist => !playlist.owned);
 
     return (
-      <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
             <p className="max-w-3xl text-pretty text-sm text-muted-foreground">{t("text")}</p>
           </div>
           <NewPlaylistButton />
         </div>
         <section aria-labelledby="mine" className="space-y-3">
           <h2 id="mine" className="text-lg font-semibold">{t("mine")}</h2>
-          {mine.length > 0 ? <PlaylistCards playlists={mine} /> : <p className="text-muted-foreground">{t("none")}</p>}
+          {mine.length > 0 ? <PlaylistCards playlists={mine} /> : <DataEmpty title={t("none")} description={null} />}
         </section>
         {others.length > 0 && (
           <section aria-labelledby="others" className="space-y-3">

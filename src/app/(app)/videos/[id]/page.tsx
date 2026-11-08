@@ -57,7 +57,7 @@ export default async function VideoPage({ params, searchParams }: {
     const main = video.spex[0];
 
     return (
-      <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
         {playback ? (
           <Watch videoId={video.id} playback={playback} chapters={video.chapters}
                  durationSeconds={(video.durationMs ?? 0) / 1000}
@@ -96,7 +96,7 @@ export default async function VideoPage({ params, searchParams }: {
             {main?.revival && <Badge variant="secondary">{tv("revival")}</Badge>}
             {!video.published && <Badge variant="outline">{tv("unpublished")}</Badge>}
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{video.title}</h1>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{video.title}</h1>
           <p className="text-sm text-muted-foreground">
             {[video.year, main?.categoryName, video.performance, video.performanceDate,
               video.durationMs ? formatDuration(video.durationMs / 1000) : null].filter(Boolean).join(" · ")}

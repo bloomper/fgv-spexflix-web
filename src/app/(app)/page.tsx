@@ -9,6 +9,7 @@ import { getHome, getMe } from "@/lib/video/video.server";
 import { decadesOf } from "@/utils/decades";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
+import { DataEmpty } from "@/components/data-empty";
 
 const SHELF = 6;
 
@@ -21,10 +22,10 @@ export default async function HomePage() {
     const chip = "rounded-full border px-3 py-1 text-sm hover:bg-accent";
 
     return (
-      <div className="space-y-8 p-4 sm:p-6">
+      <div className="flex flex-1 flex-col gap-8 p-4 md:p-8">
         <section className="space-y-2">
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
               {t("greeting", { name: me?.me.displayName ?? me?.me.username ?? "" })}
             </h1>
             <RandomVideoButton />
@@ -69,7 +70,7 @@ export default async function HomePage() {
         <HomeSection id="recent" title={t("recent")} more={{ href: "/videos?sort=PUBLISHED", label: t("allVideos") }}>
           {home && home.recentVideos.length > 0
             ? <VideoGrid videos={home.recentVideos} />
-            : <p className="text-muted-foreground">{t("empty")}</p>}
+            : <DataEmpty title={t("empty")} description={null} />}
         </HomeSection>
 
         {home && home.likedVideos.length > 0 && (
