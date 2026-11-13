@@ -52,6 +52,7 @@ The look (logo, favicon and colours) is FGV's, shared with Spexregister and Nyup
    SPEXREGISTER_WEB_URL=http://localhost:3000
    FGV_REVIVAL_WEB_URL=http://localhost:3001
    SPEXGRAM_WEB_URL=http://localhost:3004
+   SPEXIPEDIA_WEB_URL=http://localhost:3006
    ARCHIVE_WEB_URL=http://localhost:3005
    ```
    The client secret is in `realm/fgv.json` in [fgv-keycloak][7]; search for `fgv-spexflix`.
@@ -69,6 +70,7 @@ The look (logo, favicon and colours) is FGV's, shared with Spexregister and Nyup
    | `SPEXREGISTER_WEB_URL`           | Spexregister, for links to a spex; also the application switcher          |
    | `FGV_REVIVAL_WEB_URL`            | Nyuppsättning, for the application switcher in the header                 |
    | `SPEXGRAM_WEB_URL`               | Spexgram, for the application switcher                                    |
+   | `SPEXIPEDIA_WEB_URL`             | Spexipedia, for the application switcher                                    |
    | `ARCHIVE_WEB_URL`                | Spexarkiv, for the application switcher                                 |
 
 3. **Generate GraphQL types:**
@@ -117,7 +119,7 @@ already on Docker Hub.
 
 The image contains no environment-specific values. All configuration is read at runtime: `BETTER_AUTH_URL`,
 `AUTH_SECRET`, `KEYCLOAK_CLIENT_ID`, `KEYCLOAK_CLIENT_SECRET`, `KEYCLOAK_ISSUER`, `API_GRAPHQL_ENDPOINT`,
-`MEDIA_ORIGIN`, `SPEXIFY_WEB_URL`, `SPEXREGISTER_WEB_URL`, `SUPPORT_EMAIL`, `FEEDBACK_EMAIL`, `SUPPORTED_LOCALES`, `DEFAULT_LOCALE`, `FGV_REVIVAL_WEB_URL`, `SPEXGRAM_WEB_URL`, `ARCHIVE_WEB_URL`, `UMAMI_URL` and
+`MEDIA_ORIGIN`, `SPEXIFY_WEB_URL`, `SPEXREGISTER_WEB_URL`, `SUPPORT_EMAIL`, `FEEDBACK_EMAIL`, `SUPPORTED_LOCALES`, `DEFAULT_LOCALE`, `FGV_REVIVAL_WEB_URL`, `SPEXGRAM_WEB_URL`, `SPEXIPEDIA_WEB_URL`, `ARCHIVE_WEB_URL`, `UMAMI_URL` and
 `UMAMI_WEBSITE_ID`. Visitor statistics go to Umami only when both Umami variables are set.
 [fgv-spexflix-deploy][8] runs it.
 

@@ -42,7 +42,7 @@ export type CreditInput = {
 };
 
 /**
- * A scheduled maintenance job: copying the current spex data from Spexregister (SPEX_REFRESH), and removing uploads that
+ * A scheduled maintenance job: copying the current spex data from Spexipedia in full (SPEX_REFRESH; changes also arrive from its change feed within minutes), and removing uploads that
  * were never used (UPLOAD_CLEANUP).
  */
 export type MaintenanceJob =
@@ -99,7 +99,7 @@ export type VideoInput = {
   performance?: string | null | undefined;
   /** yyyy-mm-dd */
   performanceDate?: string | null | undefined;
-  /** Spex in Spexregister, the main one first, e.g. several for a jubilee show. Empty when the video is not about any spex. */
+  /** Spex in Spexipedia, the main one first, e.g. several for a jubilee show. Empty when the video is not about any spex. */
   spexIds?: Array<string | number>;
   /** Defaults to the main spex's title; required without a spex. */
   title?: string | null | undefined;
