@@ -16,9 +16,10 @@ const appEnv: Record<string, string> = {
   UMAMI_WEBSITE_ID: "",
   // Set here too, or a developer's .env.local (which points them at the local stack) would win over the mock
   SPEXREGISTER_WEB_URL: "",
-  FGV_REVIVAL_WEB_URL: "",
+  REVIVAL_WEB_URL: "",
   SPEXFLIX_WEB_URL: "",
   SPEXGRAM_WEB_URL: "",
+  SPEXIPEDIA_WEB_URL: "",
   ARCHIVE_WEB_URL: "",
 };
 

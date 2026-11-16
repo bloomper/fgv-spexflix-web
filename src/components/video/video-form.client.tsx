@@ -25,7 +25,7 @@ export type VideoFormValues = {
 };
 
 /**
- * A video's fields. Its spex are searched in Spexregister, or it is marked as not about any; the title and year
+ * A video's fields. Its spex are searched in Spexipedia, or it is marked as not about any; the title and year
  * default to the main spex's.
  */
 export function VideoForm({ kinds, initial, submitLabel, onSubmit }: {
