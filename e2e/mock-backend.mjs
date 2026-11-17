@@ -154,7 +154,7 @@ function resetState() {
       id: uuidOf(600), name: "Annas favoriter", description: null, isPublic: true, owner: "Anna Annan",
       items: [{ id: uuidOf(601), videoId: uuidOf(1), startSeconds: null, endSeconds: null, title: null }],
     }],
-    settings: { welcomeSv: null, welcomeEn: null, maxUploadGb: 50, keepOriginals: true },
+    settings: { welcomeSv: null, welcomeEn: null, featuredVideoId: null, maxUploadGb: 50, keepOriginals: true, castingEnabled: true },
     audit: [],
     uploads: new Map(),
     spexregisterUp: true,
@@ -764,7 +764,7 @@ const resolvers = {
     if (input.maxUploadGb < 1) {
       throw new GraphQLError("BAD_REQUEST", "Uppgifterna är inte giltiga.");
     }
-    state.settings = { ...input };
+    state.settings = { featuredVideoId: null, castingEnabled: true, ...input };
     return { settingsUpdate: state.settings };
   },
   Queue: persona => {

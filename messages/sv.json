@@ -441,7 +441,12 @@
     "keepOriginals": "Spara originalen",
     "keepOriginalsText": "Som arkivkopia. Utan dem kan filmer inte bearbetas om.",
     "save": "Spara",
-    "saved": "Sparat"
+    "saved": "Sparat",
+    "featured": "Utvald film på startsidan",
+    "featuredNewest": "Den senaste föreställningen",
+    "featuredText": "Visas stort överst på startsidan medan den är publicerad. Annars visas den senaste filmen av förvald sort.",
+    "casting": "Casta till tv",
+    "castingText": "Låt tittarna spela filmer på en Chromecast i Chrome, Edge och Android."
   },
   "Videos": {
     "title": "Filmer",
@@ -537,7 +542,12 @@
     "normalSpeed": "Normal",
     "pictureInPicture": "Bild-i-bild",
     "fullscreen": "Helskärm",
-    "exitFullscreen": "Lämna helskärm"
+    "exitFullscreen": "Lämna helskärm",
+    "cast": "Casta till en tv",
+    "stopCasting": "Sluta casta",
+    "casting": "Spelas på tv:n",
+    "castingTo": "Spelas på {device}",
+    "chapters": "Kapitel"
   },
   "WatchList": {
     "title": "Se senare",

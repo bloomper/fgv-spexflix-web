@@ -19,14 +19,14 @@ type Documents = {
     "\n    query Storage { storage { originalsBytes renditionsBytes freeBytes videoCount } }\n": typeof types.StorageDocument,
     "\n    query AuditLog($page: Int, $size: Int, $filter: AuditFilter) {\n        auditLog(page: $page, size: $size, filter: $filter) {\n            totalCount page size\n            entries { id at actorId actorName action entityType entityId summary }\n        }\n    }\n": typeof types.AuditLogDocument,
     "\n    query AuditActors { auditActors { id name } }\n": typeof types.AuditActorsDocument,
-    "\n    query Settings { settings { welcomeSv welcomeEn maxUploadGb keepOriginals } }\n": typeof types.SettingsDocument,
+    "\n    query Settings { settings { welcomeSv welcomeEn featuredVideoId maxUploadGb keepOriginals castingEnabled } }\n": typeof types.SettingsDocument,
     "mutation TrashEmpty { trashEmpty }": typeof types.TrashEmptyDocument,
     "\n    mutation SettingsUpdate($input: SettingsInput!) { settingsUpdate(input: $input) { welcomeSv } }\n": typeof types.SettingsUpdateDocument,
     "\n    query MaintenanceJobs { maintenanceJobs { job schedule running lastStartedAt lastFinishedAt lastSucceeded } }\n": typeof types.MaintenanceJobsDocument,
     "mutation MaintenanceJobRun($job: MaintenanceJob!) { maintenanceJobRun(job: $job) }": typeof types.MaintenanceJobRunDocument,
     "\n    fragment KindFields on VideoKind { id nameSv nameEn isDefault }\n": typeof types.KindFieldsFragmentDoc,
-    "\n    fragment VideoCardFields on Video {\n        id title year kind { ...KindFields } durationMs status published progressSeconds finished averageRating ratingCount liked\n        spex { id title familyId categoryName revival }\n    }\n": typeof types.VideoCardFieldsFragmentDoc,
-    "\n    query Me {\n        me { username displayName roles spexifyUser }\n        settings { welcomeSv welcomeEn maxUploadGb keepOriginals }\n    }\n": typeof types.MeDocument,
+    "\n    fragment VideoCardFields on Video {\n        id title year kind { ...KindFields } durationMs status published progressSeconds finished averageRating ratingCount liked inWatchList\n        spex { id title familyId categoryName revival }\n    }\n": typeof types.VideoCardFieldsFragmentDoc,
+    "\n    query Me {\n        me { username displayName roles spexifyUser }\n        settings { welcomeSv welcomeEn maxUploadGb keepOriginals castingEnabled featuredVideoId }\n    }\n": typeof types.MeDocument,
     "\n    query Home {\n        continueWatching(limit: 12) { ...VideoCardFields }\n        highestRated(limit: 12) { ...VideoCardFields myRating }\n        recentVideos(limit: 12) { ...VideoCardFields }\n        topVideos(by: RATED, limit: 6) { ...VideoCardFields }\n        likedVideos { ...VideoCardFields }\n        categories { id name videoCount }\n        years\n    }\n": typeof types.HomeDocument,
     "\n    query Videos($filter: VideoFilter) {\n        videos(filter: $filter) {\n            ...VideoCardFields\n        }\n        categories { id name videoCount }\n        years\n        videoKinds { ...KindFields }\n    }\n": typeof types.VideosDocument,
     "\n    query VideoKinds {\n        videoKinds { ...KindFields position videoCount }\n    }\n": typeof types.VideoKindsDocument,
@@ -84,14 +84,14 @@ const documents: Documents = {
     "\n    query Storage { storage { originalsBytes renditionsBytes freeBytes videoCount } }\n": types.StorageDocument,
     "\n    query AuditLog($page: Int, $size: Int, $filter: AuditFilter) {\n        auditLog(page: $page, size: $size, filter: $filter) {\n            totalCount page size\n            entries { id at actorId actorName action entityType entityId summary }\n        }\n    }\n": types.AuditLogDocument,
     "\n    query AuditActors { auditActors { id name } }\n": types.AuditActorsDocument,
-    "\n    query Settings { settings { welcomeSv welcomeEn maxUploadGb keepOriginals } }\n": types.SettingsDocument,
+    "\n    query Settings { settings { welcomeSv welcomeEn featuredVideoId maxUploadGb keepOriginals castingEnabled } }\n": types.SettingsDocument,
     "mutation TrashEmpty { trashEmpty }": types.TrashEmptyDocument,
     "\n    mutation SettingsUpdate($input: SettingsInput!) { settingsUpdate(input: $input) { welcomeSv } }\n": types.SettingsUpdateDocument,
     "\n    query MaintenanceJobs { maintenanceJobs { job schedule running lastStartedAt lastFinishedAt lastSucceeded } }\n": types.MaintenanceJobsDocument,
     "mutation MaintenanceJobRun($job: MaintenanceJob!) { maintenanceJobRun(job: $job) }": types.MaintenanceJobRunDocument,
     "\n    fragment KindFields on VideoKind { id nameSv nameEn isDefault }\n": types.KindFieldsFragmentDoc,
-    "\n    fragment VideoCardFields on Video {\n        id title year kind { ...KindFields } durationMs status published progressSeconds finished averageRating ratingCount liked\n        spex { id title familyId categoryName revival }\n    }\n": types.VideoCardFieldsFragmentDoc,
-    "\n    query Me {\n        me { username displayName roles spexifyUser }\n        settings { welcomeSv welcomeEn maxUploadGb keepOriginals }\n    }\n": types.MeDocument,
+    "\n    fragment VideoCardFields on Video {\n        id title year kind { ...KindFields } durationMs status published progressSeconds finished averageRating ratingCount liked inWatchList\n        spex { id title familyId categoryName revival }\n    }\n": types.VideoCardFieldsFragmentDoc,
+    "\n    query Me {\n        me { username displayName roles spexifyUser }\n        settings { welcomeSv welcomeEn maxUploadGb keepOriginals castingEnabled featuredVideoId }\n    }\n": types.MeDocument,
     "\n    query Home {\n        continueWatching(limit: 12) { ...VideoCardFields }\n        highestRated(limit: 12) { ...VideoCardFields myRating }\n        recentVideos(limit: 12) { ...VideoCardFields }\n        topVideos(by: RATED, limit: 6) { ...VideoCardFields }\n        likedVideos { ...VideoCardFields }\n        categories { id name videoCount }\n        years\n    }\n": types.HomeDocument,
     "\n    query Videos($filter: VideoFilter) {\n        videos(filter: $filter) {\n            ...VideoCardFields\n        }\n        categories { id name videoCount }\n        years\n        videoKinds { ...KindFields }\n    }\n": types.VideosDocument,
     "\n    query VideoKinds {\n        videoKinds { ...KindFields position videoCount }\n    }\n": types.VideoKindsDocument,
@@ -181,7 +181,7 @@ export function graphql(source: "\n    query AuditActors { auditActors { id name
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    query Settings { settings { welcomeSv welcomeEn maxUploadGb keepOriginals } }\n"): (typeof documents)["\n    query Settings { settings { welcomeSv welcomeEn maxUploadGb keepOriginals } }\n"];
+export function graphql(source: "\n    query Settings { settings { welcomeSv welcomeEn featuredVideoId maxUploadGb keepOriginals castingEnabled } }\n"): (typeof documents)["\n    query Settings { settings { welcomeSv welcomeEn featuredVideoId maxUploadGb keepOriginals castingEnabled } }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -205,11 +205,11 @@ export function graphql(source: "\n    fragment KindFields on VideoKind { id nam
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    fragment VideoCardFields on Video {\n        id title year kind { ...KindFields } durationMs status published progressSeconds finished averageRating ratingCount liked\n        spex { id title familyId categoryName revival }\n    }\n"): (typeof documents)["\n    fragment VideoCardFields on Video {\n        id title year kind { ...KindFields } durationMs status published progressSeconds finished averageRating ratingCount liked\n        spex { id title familyId categoryName revival }\n    }\n"];
+export function graphql(source: "\n    fragment VideoCardFields on Video {\n        id title year kind { ...KindFields } durationMs status published progressSeconds finished averageRating ratingCount liked inWatchList\n        spex { id title familyId categoryName revival }\n    }\n"): (typeof documents)["\n    fragment VideoCardFields on Video {\n        id title year kind { ...KindFields } durationMs status published progressSeconds finished averageRating ratingCount liked inWatchList\n        spex { id title familyId categoryName revival }\n    }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n    query Me {\n        me { username displayName roles spexifyUser }\n        settings { welcomeSv welcomeEn maxUploadGb keepOriginals }\n    }\n"): (typeof documents)["\n    query Me {\n        me { username displayName roles spexifyUser }\n        settings { welcomeSv welcomeEn maxUploadGb keepOriginals }\n    }\n"];
+export function graphql(source: "\n    query Me {\n        me { username displayName roles spexifyUser }\n        settings { welcomeSv welcomeEn maxUploadGb keepOriginals castingEnabled featuredVideoId }\n    }\n"): (typeof documents)["\n    query Me {\n        me { username displayName roles spexifyUser }\n        settings { welcomeSv welcomeEn maxUploadGb keepOriginals castingEnabled featuredVideoId }\n    }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

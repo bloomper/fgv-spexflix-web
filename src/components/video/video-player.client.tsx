@@ -1,16 +1,18 @@
 "use client";
 
 import * as React from "react";
-import { useCallback, useEffect, useImperativeHandle, useRef, useState, useSyncExternalStore } from "react";
+import { type ReactNode, useCallback, useEffect, useImperativeHandle, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type Hls from "hls.js";
 import {
   Airplay,
   Captions,
+  Cast,
   Check,
   Gauge,
   Keyboard,
+  ListVideo,
   Maximize,
   Minimize,
   Pause,
@@ -39,6 +41,7 @@ import { parseThumbnails, type Thumbnail, thumbnailAt } from "@/components/video
 import { saveProgressAction } from "@/components/video/actions.server";
 import { cn } from "@/utils/utils";
 import { track as trackEvent } from "@/utils/umami";
+import { useCast } from "@/components/video/cast.client";
 
 export type PlayerChapter = { startSeconds: number; title: string };
 export type PlayerHandle = { seek: (seconds: number) => void; currentTime: () => number; play: () => void };
@@ -74,6 +77,12 @@ type Props = {
    * error is shown, and when trying again. Without it, trying again refreshes the page.
    */
   onRenew?: () => Promise<boolean>;
+  /** Offers casting to a Chromecast where the browser can; an admin can turn it off. */
+  cast?: boolean;
+  /** The video's title, which the receiver shows while casting. */
+  title?: string;
+  /** Shown over the video inside the player, so that it stays in full screen, e.g. what plays next. */
+  children?: ReactNode;
   ref?: React.Ref<PlayerHandle>;
 };
 
@@ -104,6 +113,11 @@ function readSettings(): { volume: number; muted: boolean } {
  * anywhere on the page. Progress is saved every 15 seconds and when pausing. Volume and mute are remembered
  * ({@code localStorage} {@code spexflix.player}).
  *
+ * Where the browser can cast (Chrome, Edge, Android) and casting is on, a cast button plays the video on a Chromecast
+ * with Google's Default Media Receiver, from the same signed address and with the subtitles; the player then is its
+ * remote (timeline, chapters, play and pause, subtitles) and saves progress as when playing here. When casting stops,
+ * playing here continues where the receiver was.
+ *
  * When the video cannot be loaded (the media server cannot be reached, the signed address has expired, the file is
  * broken), the addresses are signed anew once, through {@code onRenew}, and playing continues where it stopped; when that
  * does not help, a message replaces the endless loading. Trying again signs anew and continues from where playing
@@ -123,6 +137,9 @@ export function VideoPlayer({
                               onTime,
                               onEnded,
                               onRenew,
+                              cast = false,
+                              title,
+                              children,
                               ref,
                             }: Props) {
   const t = useTranslations("Player");
@@ -161,6 +178,68 @@ export function VideoPlayer({
     () => "pictureInPictureEnabled" in document && document.pictureInPictureEnabled, () => false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const callbacks = useRef({ onTime, onEnded, endAt });
+  const noVideo = useRef<HTMLVideoElement>(null);
+  const autoCast = useRef(false);
+  const playOrPauseRemote = useRef<() => void>(() => undefined);
+
+  const save = useCallback((position: number) => {
+    if (recordProgress) {
+      lastSaved.current = position;
+      void saveProgressAction(videoId, position);
+    }
+  }, [recordProgress, videoId]);
+
+  const remote = useCast(cast, { videoId, title: title ?? "", url: masterUrl, subtitles }, {
+    onTime: seconds => {
+      setTime(seconds);
+      callbacks.current.onTime?.(seconds);
+      resumeAt.current = seconds;
+      if (Math.abs(seconds - lastSaved.current) >= SAVE_EVERY) {
+        save(seconds);
+      }
+
+      const stop = callbacks.current.endAt;
+
+      if (stop && seconds >= stop && !ended.current) {
+        ended.current = true;
+        playOrPauseRemote.current();
+        callbacks.current.onEnded?.();
+      }
+    },
+    onEnded: () => {
+      save(resumeAt.current);
+      if (!ended.current) {
+        ended.current = true;
+        callbacks.current.onEnded?.();
+      }
+    },
+    // Playing here goes on from where the receiver was
+    onStop: seconds => {
+      save(seconds);
+      resumeAt.current = seconds;
+      setTime(seconds);
+      if (video.current) {
+        video.current.currentTime = seconds;
+      }
+    },
+  });
+  const casting = remote.casting;
+
+  useEffect(() => {
+    playOrPauseRemote.current = remote.paused ? () => undefined : remote.playOrPause;
+  }, [remote.paused, remote.playOrPause]);
+
+  // The receiver plays: this page is its remote. Pausing there saves the position, as pausing here does
+  useEffect(() => {
+    if (casting) {
+      video.current?.pause();
+    }
+  }, [casting]);
+  useEffect(() => {
+    if (casting && remote.paused) {
+      save(resumeAt.current);
+    }
+  }, [casting, remote.paused, save]);
 
   useEffect(() => {
     callbacks.current = { onTime, onEnded, endAt };
@@ -183,7 +262,8 @@ export function VideoPlayer({
     }
   }, []);
 
-  useVideoShortcuts(video, chapters, () => setShortcutsOpen(true), toggleFullscreen);
+  // The keys control the video here, not the receiver
+  useVideoShortcuts(casting ? noVideo : video, chapters, () => setShortcutsOpen(true), toggleFullscreen);
 
   useEffect(() => {
     const onChange = () => setFullscreen(document.fullscreenElement === container.current);
@@ -224,15 +304,21 @@ export function VideoPlayer({
 
   useImperativeHandle(ref, () => ({
     seek: (seconds: number) => {
-      if (video.current) {
+      if (casting) {
+        ended.current = false;
+        remote.seek(seconds);
+        if (remote.paused) {
+          remote.playOrPause();
+        }
+      } else if (video.current) {
         ended.current = false;
         video.current.currentTime = seconds;
         void video.current.play().catch(() => undefined);
       }
     },
-    currentTime: () => video.current?.currentTime ?? 0,
-    play: () => void video.current?.play().catch(() => undefined),
-  }), []);
+    currentTime: () => casting ? remote.time : video.current?.currentTime ?? 0,
+    play: () => casting ? remote.paused && remote.playOrPause() : void video.current?.play().catch(() => undefined),
+  }), [casting, remote]);
 
   useEffect(() => {
     const element = video.current;
@@ -349,6 +435,9 @@ export function VideoPlayer({
     const element = video.current;
 
     setSubtitle(language);
+    if (casting) {
+      remote.setSubtitle(language);
+    }
     if (element) {
       Array.from(element.textTracks).forEach(track => {
         track.mode = track.language === language ? "showing" : "disabled";
@@ -375,6 +464,11 @@ export function VideoPlayer({
   const toggle = () => {
     const element = video.current;
 
+    if (casting) {
+      ended.current = false;
+      remote.playOrPause();
+      return;
+    }
     if (!element) {
       return;
     }
@@ -386,8 +480,19 @@ export function VideoPlayer({
     }
   };
 
+  const seekTo = (seconds: number) => {
+    ended.current = false;
+    if (casting) {
+      remote.seek(seconds);
+    } else if (video.current) {
+      video.current.currentTime = seconds;
+    }
+  };
+
   const seekBy = (seconds: number) => {
-    if (video.current) {
+    if (casting) {
+      remote.seek(Math.min(Math.max(0, remote.time + seconds), duration || Infinity));
+    } else if (video.current) {
       video.current.currentTime = Math.min(Math.max(0, video.current.currentTime + seconds), duration || Infinity);
     }
   };
@@ -409,12 +514,24 @@ export function VideoPlayer({
     fetch(thumbnailsUrl).then(response => response.ok ? response.text() : "").then(text => setThumbnails(parseThumbnails(text, thumbnailsUrl))).catch(() => undefined);
   }, [thumbnailsUrl]);
 
-  const save = useCallback((position: number) => {
-    if (recordProgress) {
-      lastSaved.current = position;
-      void saveProgressAction(videoId, position);
+  const startCasting = () => {
+    const element = video.current;
+    const position = element && element.currentTime > 0 ? element.currentTime : resumeAt.current;
+
+    element?.pause();
+    ended.current = false;
+    void remote.start(position, subtitle);
+  };
+
+  // Going on to the next video while a receiver is connected: it plays there too
+  useEffect(() => {
+    if (autoPlay && remote.connected && !casting && !autoCast.current) {
+      autoCast.current = true;
+      startCasting();
     }
-  }, [recordProgress, videoId]);
+    // Only when the receiver connects, for the video asked to play at once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPlay, remote.connected, casting]);
 
   useEffect(() => {
     const element = video.current;
@@ -499,7 +616,8 @@ export function VideoPlayer({
 
   const preview = hover ? thumbnailAt(thumbnails, hover.time) : undefined;
   const chapterAt = (seconds: number) => chapters.filter(chapter => chapter.startSeconds <= seconds).at(-1);
-  const shown = controlsShown || !playing || menuOpen;
+  const isPlaying = casting ? !remote.paused : playing;
+  const shown = controlsShown || !isPlaying || menuOpen || casting;
   const VolumeIcon = muted || volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
   const controlButton = "size-9 text-white hover:bg-white/15 hover:text-white focus-visible:ring-white/60";
   // The hover box stays inside the player, so that it never makes the page scroll sideways
@@ -527,7 +645,16 @@ export function VideoPlayer({
           ))}
         </video>
 
-        {!started && !failed && (
+        {casting && (
+          <div role="status"
+               className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/85 p-4 text-center text-white">
+            <Cast className="size-10" aria-hidden />
+            <p className="font-medium">{remote.device ? t("castingTo", { device: remote.device }) : t("casting")}</p>
+            {chapterAt(time) && <p className="text-sm text-white/80">{chapterAt(time)?.title}</p>}
+          </div>
+        )}
+
+        {!started && !failed && !casting && (
           <button type="button" onClick={toggle} aria-label={t("play")}
                   className="absolute inset-0 m-auto flex size-16 items-center justify-center rounded-full bg-black/60 text-white outline-none hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-white">
             <Play className="size-8 fill-current" />
@@ -549,9 +676,8 @@ export function VideoPlayer({
             onClick={event => {
               const box = event.currentTarget.getBoundingClientRect();
 
-              if (video.current && duration > 0) {
-                ended.current = false;
-                video.current.currentTime = duration * (event.clientX - box.left) / box.width;
+              if (duration > 0) {
+                seekTo(duration * (event.clientX - box.left) / box.width);
               }
             }}
             role="slider"
@@ -606,8 +732,8 @@ export function VideoPlayer({
 
           <div className="flex items-center gap-0.5 sm:gap-1">
             <Button variant="ghost" size="icon" className={controlButton} onClick={toggle}
-                    aria-label={playing ? t("pause") : t("play")}>
-              {playing ? <Pause className="fill-current" /> : <Play className="fill-current" />}
+                    aria-label={isPlaying ? t("pause") : t("play")}>
+              {isPlaying ? <Pause className="fill-current" /> : <Play className="fill-current" />}
             </Button>
             <Button variant="ghost" size="icon" className={cn(controlButton, "hidden sm:inline-flex")}
                     onClick={() => seekBy(-10)} aria-label={t("back")}>
@@ -635,6 +761,28 @@ export function VideoPlayer({
               {chapterAt(time) && <span className="hidden text-white/80 md:inline"> · {chapterAt(time)?.title}</span>}
                         </span>
             <span className="flex-1" />
+
+            {chapters.length > 1 && (
+              <DropdownMenu onOpenChange={setMenuOpen}>
+                <DropdownMenuTrigger
+                  render={<Button variant="ghost" size="icon" className={controlButton} aria-label={t("chapters")} />}>
+                  <ListVideo />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" side="top" container={container} className="max-h-80 w-72">
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>{t("chapters")}</DropdownMenuLabel>
+                    {chapters.map((chapter, i) => (
+                      <DropdownMenuItem key={chapter.startSeconds} onClick={() => seekTo(chapter.startSeconds)}>
+                        <Check className={cn(chapterAt(time) !== chapter && "invisible")} />
+                        <span className="w-5 shrink-0 text-xs tabular-nums text-muted-foreground">{i + 1}</span>
+                        <span className="min-w-0 flex-1 truncate">{chapter.title}</span>
+                        <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{formatDuration(chapter.startSeconds)}</span>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
 
             {subtitles.length > 0 && (
               <DropdownMenu onOpenChange={setMenuOpen}>
@@ -696,6 +844,13 @@ export function VideoPlayer({
               </DropdownMenuContent>
             </DropdownMenu>
 
+            {remote.available && (
+              <Button variant="ghost" size="icon" className={cn(controlButton, casting && "text-primary")}
+                      aria-label={casting ? t("stopCasting") : t("cast")} aria-pressed={casting}
+                      onClick={() => casting ? remote.stop() : startCasting()}>
+                <Cast />
+              </Button>
+            )}
             {airPlay && (
               <Button variant="ghost" size="icon" className={controlButton} aria-label={t("airPlay")}
                       onClick={() => (video.current as AirPlayVideo | null)?.webkitShowPlaybackTargetPicker?.()}>
@@ -722,7 +877,9 @@ export function VideoPlayer({
           </div>
         </div>
 
-        {failed && (
+        {children}
+
+        {failed && !casting && (
           <div role="alert"
                className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 p-4 text-center text-white">
             <TriangleAlert className="size-8" aria-hidden />

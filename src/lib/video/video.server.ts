@@ -19,7 +19,7 @@ export const KindFieldsFragment = graphql(`
 
 export const VideoCardFieldsFragment = graphql(`
     fragment VideoCardFields on Video {
-        id title year kind { ...KindFields } durationMs status published progressSeconds finished averageRating ratingCount liked
+        id title year kind { ...KindFields } durationMs status published progressSeconds finished averageRating ratingCount liked inWatchList
         spex { id title familyId categoryName revival }
     }
 `);
@@ -27,7 +27,7 @@ export const VideoCardFieldsFragment = graphql(`
 const MeQuery = graphql(`
     query Me {
         me { username displayName roles spexifyUser }
-        settings { welcomeSv welcomeEn maxUploadGb keepOriginals }
+        settings { welcomeSv welcomeEn maxUploadGb keepOriginals castingEnabled featuredVideoId }
     }
 `);
 

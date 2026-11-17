@@ -61,7 +61,17 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
   on pause (`saveProgressAction`), and a page opened with `?t=` (seconds or m:ss) starts there, with `?autoplay=1` at
   once. With hls.js the viewer can pick a quality level (`-1` hands the choice back to hls.js); Safari shows an AirPlay
   button when a receiver is near. Keyboard shortcuts (`src/components/video/shortcuts.client.tsx`) work anywhere on the
-  page except where the focused element uses the key; `?` lists them. Chromecast is not supported.
+  page except where the focused element uses the key; `?` lists them. A chapters menu in the controls lists the chapters
+  like episodes, and `VideoPlayer`'s children (what plays next, the countdown) are drawn inside the player's box so they
+  stay in full screen.
+- **Chromecast** (`useCast` in `src/components/video/cast.client.ts`): where the browser is Chrome-like and
+  `settings.castingEnabled` (an admin setting) is on, the player loads Google's Cast sender
+  (`https://www.gstatic.com`, allowed in `src/utils/csp.ts`) and shows a cast button while a receiver is near. The
+  Default Media Receiver plays the same signed master playlist with the subtitles as text tracks and the default
+  `poster.jpg` beside it; the page is then its remote (timeline, chapters, play/pause, ±10 s, subtitles), progress is
+  saved from the receiver's position, and when casting stops the browser goes on from there. The keyboard shortcuts
+  control only the browser's video. With `?autoplay=1` and a receiver still connected, the next video plays there too.
+  The media host must answer the receiver's CORS requests (`fgv-spexflix-deploy`'s `media/default.conf.template`).
 - **What plays next** is `Video.next` (the next in a collection, else of the same spex): when a video ends, `Watch`
   counts down ten seconds and opens it with `?autoplay=1`, unless the viewer turned that off (`localStorage`
   `spexflix.autoplay`). The chapter list beside the player marks the chapter that plays.

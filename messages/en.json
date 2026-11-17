@@ -441,7 +441,12 @@
     "keepOriginals": "Keep the originals",
     "keepOriginalsText": "As the archive copy. Without them videos cannot be processed again.",
     "save": "Save",
-    "saved": "Saved"
+    "saved": "Saved",
+    "featured": "Featured video on the start page",
+    "featuredNewest": "The newest show",
+    "featuredText": "Shown large at the top of the start page while it is published. Otherwise the newest video of the default kind is shown.",
+    "casting": "Cast to TV",
+    "castingText": "Let viewers play videos on a Chromecast in Chrome, Edge and Android."
   },
   "Videos": {
     "title": "Videos",
@@ -537,7 +542,12 @@
     "normalSpeed": "Normal",
     "pictureInPicture": "Picture in picture",
     "fullscreen": "Full screen",
-    "exitFullscreen": "Exit full screen"
+    "exitFullscreen": "Exit full screen",
+    "cast": "Cast to a TV",
+    "stopCasting": "Stop casting",
+    "casting": "Playing on the TV",
+    "castingTo": "Playing on {device}",
+    "chapters": "Chapters"
   },
   "WatchList": {
     "title": "Watch later",

@@ -14,7 +14,10 @@ const player = vi.hoisted(() => ({
     onTime?: (seconds: number) => void;
     autoPlay?: boolean;
     startAt?: number | null;
-    endAt?: number | null
+    endAt?: number | null;
+    cast?: boolean;
+    title?: string;
+    children?: ReactNode;
   },
 }));
 
@@ -28,7 +31,7 @@ vi.mock("@/components/dialogs.client", () => ({ useDialogs: () => ({ prompt: vi.
 vi.mock("@/components/video/video-player.client", () => ({
   VideoPlayer: (props: typeof player.props) => {
     player.props = props;
-    return <div data-testid="player" />;
+    return <div data-testid="player">{props.children}</div>;
   },
 }));
 
@@ -62,6 +65,20 @@ describe("Watch", () => {
         vi.advanceTimersByTime(1000);
       });
     }
+    expect(push).toHaveBeenCalledWith("/videos/v2?autoplay=1");
+  });
+
+  it("offers what plays next near the end, inside the player, and passes on whether casting is offered", () => {
+    show({ cast: true, title: "Första akten" });
+
+    expect(player.props.cast).toBe(true);
+    expect(player.props.title).toBe("Första akten");
+    expect(screen.getAllByRole("button", { name: /next/ })).toHaveLength(1);
+    act(() => player.props.onTime?.(95));
+    const inPlayer = screen.getByTestId("player").querySelector("button");
+
+    expect(inPlayer).toHaveTextContent(/next/);
+    fireEvent.click(inPlayer as HTMLButtonElement);
     expect(push).toHaveBeenCalledWith("/videos/v2?autoplay=1");
   });
 
