@@ -9,6 +9,7 @@ import {
   removeFromPlaylistAction,
   reorderPlaylistAction,
   saveProgressAction,
+  searchPreviewAction,
   setWatchedAction,
   updatePlaylistAction,
   watchListAction,
@@ -23,6 +24,7 @@ const api = vi.hoisted(() => ({
   playlistUpdate: vi.fn(),
   progressClear: vi.fn(),
   progressSave: vi.fn(),
+  search: vi.fn(),
   videoLike: vi.fn(),
   videoMarkWatched: vi.fn(),
   videoRate: vi.fn(),
@@ -47,6 +49,22 @@ describe("video actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     Object.values(api).forEach((fn) => fn.mockResolvedValue(undefined));
+  });
+
+  it("finds the first few videos as the viewer types, and nothing for too little or when the server is down", async () => {
+    api.search.mockResolvedValue(Array.from({ length: 8 }, (_, i) => ({ id: `v${i}`, title: `Nobel ${i}`, year: i ? 1975 : null })));
+
+    expect(await searchPreviewAction(" n ")).toEqual([]);
+    expect(api.search).not.toHaveBeenCalled();
+
+    const hits = await searchPreviewAction("  nob ");
+
+    expect(api.search).toHaveBeenCalledWith("nob");
+    expect(hits).toHaveLength(6);
+    expect(hits[0]).toEqual({ id: "v0", title: "Nobel 0", year: null });
+
+    api.search.mockRejectedValueOnce(new Error("down"));
+    expect(await searchPreviewAction("nob")).toEqual([]);
   });
 
   it("saves progress rounded, ignores bad input and failures", async () => {

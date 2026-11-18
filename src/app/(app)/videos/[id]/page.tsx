@@ -65,6 +65,7 @@ export default async function VideoPage({ params, searchParams }: {
                  endAt={item?.startSeconds !== null && item?.startSeconds !== undefined ? item.endSeconds : null}
                  inWatchList={video.inWatchList} liked={video.liked} finished={video.finished}
                  spexifyUrl={me?.me.spexifyUser ? spexifyUrl() : null} recordProgress={video.published}
+                 title={video.title} cast={me?.settings.castingEnabled ?? false}
                  next={next} autoPlay={query.autoplay === "1"}
                  playlists={playlists.filter(candidate => candidate.owned)
                    // The ones changed most recently first: the menu shows only the first few

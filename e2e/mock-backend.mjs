@@ -154,7 +154,7 @@ function resetState() {
       id: uuidOf(600), name: "Annas favoriter", description: null, isPublic: true, owner: "Anna Annan",
       items: [{ id: uuidOf(601), videoId: uuidOf(1), startSeconds: null, endSeconds: null, title: null }],
     }],
-    settings: { welcomeSv: null, welcomeEn: null, maxUploadGb: 50, keepOriginals: true },
+    settings: { welcomeSv: null, welcomeEn: null, featuredVideoId: null, maxUploadGb: 50, keepOriginals: true, castingEnabled: true },
     audit: [],
     uploads: new Map(),
     spexregisterUp: true,
@@ -310,14 +310,30 @@ const resolvers = {
     me: { username: persona.email, displayName: persona.name, roles: persona.roles, spexifyUser: true },
     settings: state.settings,
   }),
+  Browse: () => ({ videoKinds: sortedKinds().map(kind => kindOf(kind.id)), categories, years: [1975] }),
   Home: () => ({
+    // The admin's pick while it is listed, else the newest show (the default kind), else the newest video
+    featuredVideo: (() => {
+      const all = state.videos.filter(listed);
+      const picked = all.find(v => v.id === state.settings.featuredVideoId);
+      const shows = all.filter(v => v.kindId === sortedKinds()[0]?.id).sort((x, y) => (y.year ?? 0) - (x.year ?? 0));
+      const featured = picked ?? shows[0] ?? all[0];
+
+      return featured ? personal(featured) : null;
+    })(),
+    watchList: state.videos.filter(v => listed(v) && state.watchList.has(v.id)).map(personal),
+    videoKinds: sortedKinds().map(kind => kindOf(kind.id)),
+    videos: state.videos.filter(listed).map(personal),
+    collections: state.collections.map(collection => ({
+      id: collection.id, title: collection.title,
+      videos: collection.videoIds.map(id => state.videos.find(v => v.id === id)).filter(v => v && listed(v)).map(personal),
+    })).filter(collection => collection.videos.length > 0),
     continueWatching: state.videos.filter(v => listed(v) && state.progress[v.id]).map(personal),
     highestRated: state.videos.filter(v => listed(v) && state.ratings[v.id]).sort((a, b) => state.ratings[b.id] - state.ratings[a.id]).map(personal),
     recentVideos: state.videos.filter(listed).map(personal),
     topVideos: state.videos.filter(v => listed(v) && ratingsOf(v.id).length).map(personal)
       .sort((a, b) => b.averageRating - a.averageRating),
     likedVideos: [...state.liked].reverse().map(id => personal(videoById(id))),
-    categories, years: [1975],
   }),
   Liked: () => ({ likedVideos: [...state.liked].reverse().map(id => personal(videoById(id))) }),
   Top: (persona, { by }) => {
@@ -764,7 +780,7 @@ const resolvers = {
     if (input.maxUploadGb < 1) {
       throw new GraphQLError("BAD_REQUEST", "Uppgifterna är inte giltiga.");
     }
-    state.settings = { ...input };
+    state.settings = { featuredVideoId: null, castingEnabled: true, ...input };
     return { settingsUpdate: state.settings };
   },
   Queue: persona => {

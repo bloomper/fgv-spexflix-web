@@ -12,6 +12,7 @@ import {
   playlistUpdate,
   progressClear,
   progressSave,
+  search,
   videoLike,
   videoMarkWatched,
   videoRate,
@@ -55,6 +56,28 @@ export async function randomVideoAction(): Promise<string | null> {
       return weighted.length === 0 ? null : weighted[Math.floor(Math.random() * weighted.length)].id;
     } catch {
       return null;
+    }
+  });
+}
+
+/** A video found while the viewer types in the header's search field. */
+export type SearchHit = { id: string; title: string; year: number | null };
+
+/**
+ * The first few videos matching what the viewer has typed, for the header's search field; empty for fewer than two
+ * characters or when the server cannot be reached.
+ */
+export async function searchPreviewAction(q: string): Promise<SearchHit[]> {
+  const query = q.trim().slice(0, 200);
+
+  if (query.length < 2) {
+    return [];
+  }
+  return withPolicyAction(Policies.app.requireAccess, async () => {
+    try {
+      return (await search(query)).slice(0, 6).map(video => ({ id: video.id, title: video.title, year: video.year ?? null }));
+    } catch {
+      return [];
     }
   });
 }

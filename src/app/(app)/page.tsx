@@ -1,17 +1,18 @@
-import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { HomeSection } from "@/components/home-section";
 import { RatingStars } from "@/components/rating.client";
-import { VideoGrid } from "@/components/video/video-grid";
+import { DataEmpty } from "@/components/data-empty";
+import { Hero } from "@/components/video/hero";
+import { VideoRow } from "@/components/video/video-row";
 import { ForgetProgressButton } from "@/components/video/forget-progress.client";
 import { RandomVideoButton } from "@/components/video/random-video.client";
 import { getHome, getMe } from "@/lib/video/video.server";
-import { decadesOf } from "@/utils/decades";
+import { kindName } from "@/utils/format";
+import { groupByDecade, groupByKind } from "@/utils/rows";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
-import { DataEmpty } from "@/components/data-empty";
 
-const SHELF = 6;
+/** The most cards a row of a kind, a decade or a collection shows; its link shows them all. */
+const ROW = 30;
 
 export default async function HomePage() {
   return withPolicyPage(Policies.app.requireAccess, async () => {
@@ -19,72 +20,62 @@ export default async function HomePage() {
     const locale = await getLocale();
     const [home, me] = await Promise.all([getHome(), getMe()]);
     const welcome = locale === "en" ? me?.settings.welcomeEn : me?.settings.welcomeSv;
-    const chip = "rounded-full border px-3 py-1 text-sm hover:bg-accent";
+    const name = me?.me.displayName ?? me?.me.username ?? "";
+
+    if (!home || home.videos.length === 0) {
+      return (
+        <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("greeting", { name })}</h1>
+          <p className="max-w-4xl whitespace-pre-line text-pretty text-muted-foreground">{welcome || t("intro")}</p>
+          <DataEmpty title={t("empty")} description={null} />
+        </div>
+      );
+    }
 
     return (
-      <div className="flex flex-1 flex-col gap-8 p-4 md:p-8">
-        <section className="space-y-2">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              {t("greeting", { name: me?.me.displayName ?? me?.me.username ?? "" })}
-            </h1>
+      <div className="flex flex-1 flex-col pb-10">
+        {home.featuredVideo && (
+          <Hero video={home.featuredVideo}>
             <RandomVideoButton />
-          </div>
-          <p className="max-w-4xl whitespace-pre-line text-pretty text-muted-foreground">{welcome || t("intro")}</p>
+          </Hero>
+        )}
+        <section aria-label={t("welcome")} className="px-4 pt-2 pb-4 md:px-10">
+          <p className="max-w-4xl text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">{t("greeting", { name })}</span>{" "}
+            <span className="whitespace-pre-line text-pretty">{welcome || t("intro")}</span>
+          </p>
         </section>
 
-        {home && (home.categories.length > 0 || home.years.length > 0) && (
-          <nav aria-label={t("browse")} className="space-y-2">
-            <div className="flex flex-wrap gap-2">
-              {home.categories.map(category => (
-                <Link key={category.id} href={`/videos?category=${category.id}`} className={chip}>
-                  {category.name} <span className="ml-1 text-muted-foreground">{category.videoCount}</span>
-                </Link>
-              ))}
-              <Link href="/top" className={chip}>{t("topList")}</Link>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {decadesOf(home.years).map(decade => (
-                <Link key={decade} href={`/videos?decade=${decade}`}
-                      className="rounded-md border px-2.5 py-1 text-sm tabular-nums hover:bg-accent">
-                  {t("decade", { decade })}
-                </Link>
-              ))}
-            </div>
-          </nav>
-        )}
-
-        {home && home.continueWatching.length > 0 && (
-          <HomeSection id="continue" title={t("continueWatching")}>
-            <VideoGrid videos={home.continueWatching}
-                       action={video => <ForgetProgressButton videoId={video.id} title={video.title} />} />
-          </HomeSection>
-        )}
-
-        {home && home.topVideos.length > 0 && (
-          <HomeSection id="top" title={t("topRated")} more={{ href: "/top", label: t("wholeTopList") }}>
-            <VideoGrid videos={home.topVideos} />
-          </HomeSection>
-        )}
-
-        <HomeSection id="recent" title={t("recent")} more={{ href: "/videos?sort=PUBLISHED", label: t("allVideos") }}>
-          {home && home.recentVideos.length > 0
-            ? <VideoGrid videos={home.recentVideos} />
-            : <DataEmpty title={t("empty")} description={null} />}
-        </HomeSection>
-
-        {home && home.likedVideos.length > 0 && (
-          <HomeSection id="liked" title={t("liked")} more={{ href: "/liked", label: t("allLiked") }}>
-            <VideoGrid videos={home.likedVideos.slice(0, SHELF)} />
-          </HomeSection>
-        )}
-
-        {home && home.highestRated.length > 0 && (
-          <HomeSection id="highest-rated" title={t("highestRated")}>
-            <VideoGrid videos={home.highestRated.slice(0, SHELF)} label={video =>
-              <RatingStars value={home.highestRated.find(item => item.id === video.id)?.myRating ?? 0} />} />
-          </HomeSection>
-        )}
+        <div className="flex flex-col gap-6 md:gap-8">
+          <VideoRow id="continue" title={t("continueWatching")} videos={home.continueWatching}
+                    action={video => <ForgetProgressButton videoId={video.id} title={video.title} />} />
+          <VideoRow id="my-list" title={t("myList")} videos={home.watchList}
+                    more={{ href: "/watchlist", label: t("all") }} />
+          <VideoRow id="recent" title={t("recent")} videos={home.recentVideos}
+                    more={{ href: "/videos?sort=PUBLISHED", label: t("allVideos") }} />
+          <VideoRow id="top" title={t("topRated")} videos={home.topVideos}
+                    more={{ href: "/top", label: t("wholeTopList") }} />
+          {groupByKind(home.videos, home.videoKinds).map(group => (
+            <VideoRow key={group.kind.id} id={`kind-${group.kind.id}`} title={kindName(group.kind, locale)}
+                      videos={group.videos.slice(0, ROW)}
+                      more={{ href: `/videos?kind=${group.kind.id}`, label: t("all") }} />
+          ))}
+          <VideoRow id="liked" title={t("liked")} videos={home.likedVideos.slice(0, ROW)}
+                    more={{ href: "/liked", label: t("allLiked") }} />
+          {groupByDecade(home.videos).map(group => (
+            <VideoRow key={group.decade} id={`decade-${group.decade}`} title={t("decade", { decade: group.decade })}
+                      videos={group.videos.slice(0, ROW)}
+                      more={{ href: `/videos?decade=${group.decade}`, label: t("all") }} />
+          ))}
+          {home.collections.map(collection => (
+            <VideoRow key={collection.id} id={`collection-${collection.id}`} title={collection.title}
+                      videos={collection.videos.slice(0, ROW)}
+                      more={{ href: `/collections/${collection.id}`, label: t("collection") }} />
+          ))}
+          <VideoRow id="highest-rated" title={t("highestRated")} videos={home.highestRated.slice(0, ROW)}
+                    label={video => <RatingStars
+                      value={home.highestRated.find(item => item.id === video.id)?.myRating ?? 0} />} />
+        </div>
       </div>
     );
   });

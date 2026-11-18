@@ -61,7 +61,17 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
   on pause (`saveProgressAction`), and a page opened with `?t=` (seconds or m:ss) starts there, with `?autoplay=1` at
   once. With hls.js the viewer can pick a quality level (`-1` hands the choice back to hls.js); Safari shows an AirPlay
   button when a receiver is near. Keyboard shortcuts (`src/components/video/shortcuts.client.tsx`) work anywhere on the
-  page except where the focused element uses the key; `?` lists them. Chromecast is not supported.
+  page except where the focused element uses the key; `?` lists them. A chapters menu in the controls lists the chapters
+  like episodes, and `VideoPlayer`'s children (what plays next, the countdown) are drawn inside the player's box so they
+  stay in full screen.
+- **Chromecast** (`useCast` in `src/components/video/cast.client.ts`): where the browser is Chrome-like and
+  `settings.castingEnabled` (an admin setting) is on, the player loads Google's Cast sender
+  (`https://www.gstatic.com`, allowed in `src/utils/csp.ts`) and shows a cast button while a receiver is near. The
+  Default Media Receiver plays the same signed master playlist with the subtitles as text tracks and the default
+  `poster.jpg` beside it; the page is then its remote (timeline, chapters, play/pause, ±10 s, subtitles), progress is
+  saved from the receiver's position, and when casting stops the browser goes on from there. The keyboard shortcuts
+  control only the browser's video. With `?autoplay=1` and a receiver still connected, the next video plays there too.
+  The media host must answer the receiver's CORS requests (`fgv-spexflix-deploy`'s `media/default.conf.template`).
 - **What plays next** is `Video.next` (the next in a collection, else of the same spex): when a video ends, `Watch`
   counts down ten seconds and opens it with `?autoplay=1`, unless the viewer turned that off (`localStorage`
   `spexflix.autoplay`). The chapter list beside the player marks the chapter that plays.
@@ -99,9 +109,20 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
   are played, not changed. A playlist plays through the video page with `?playlist=<id>&item=<itemId>`: the page finds
   the item, starts a clip at its chapter and stops it at `endSeconds`, shows the playlist beside the player, and the
   next item (not `Video.next`) follows after the countdown. Clips do not mark the video as watched.
-- **The start page** has the same order as Spexify's: greeting, browsing (categories, the top list, decades),
-  continue watching, the top list, recently published, liked, highest rated by the user (`HomeSection`). Long texts
-  wrap with `text-pretty` up to `max-w-4xl`, not `max-w-prose`.
+- **The start page** looks like a streaming service's: a hero (`Hero`) with `featuredVideo` (an admin's pick in
+  `/admin/settings`, else the newest show), then the greeting with the welcome text, then rows of cards that scroll
+  sideways (`VideoRow`, `RowScroller`): continue watching, *Se senare* (the watch list), recently published, the top
+  list, one row per video kind (from `videoKinds`, never hardcoded: `groupByKind` in `src/utils/rows.ts`), liked,
+  one per decade, one per collection, and what the user rated highest. A row with nothing in it is not shown.
+- **Cards** (`VideoCard`) are 16:9 stills that grow on hover, keyboard focus or a long press (phones) and then show
+  the year, kind, length, rating, progress and buttons to play (`?autoplay=1`), save in *Se senare* and *more info*,
+  which opens the main spex's title page. `VideoGrid` stays for the list pages (videos, search, top list, liked).
+- **Title pages**: `/spex/[id]` (a family: the original and its revivals; `/spex` lists them all) and
+  `/collections/[id]` show a `Backdrop`, *Play* (`TitlePlay`: goes on with what was started, else the first not
+  watched) and the videos as episodes (`EpisodeList`), a spex's by kind and then per revival (`spexSections`).
+- **The header** sees through at the top and turns opaque when the page scrolls; its search shows the first videos as
+  the viewer types (`searchPreviewAction`) and its *Bläddra* menu (`BrowseMenu`, from the `Browse` query in the
+  `(app)` layout) browses by kind, decade, spex category and every spex.
 - **Spex**: a video is about a list of spex, the main one first (poster, category, default title and year), or none,
   which the editor marks explicitly (`SpexPicker` in `src/components/spex/`, the same as Spexify's). Each spex has a
   `familyId`, its original's id for a revival; `/videos?spex=<familyId>` lists an original with its revivals, and

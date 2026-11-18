@@ -27,7 +27,7 @@ const AuditActorsQuery = graphql(`
     query AuditActors { auditActors { id name } }
 `);
 const SettingsQuery = graphql(`
-    query Settings { settings { welcomeSv welcomeEn maxUploadGb keepOriginals } }
+    query Settings { settings { welcomeSv welcomeEn featuredVideoId maxUploadGb keepOriginals castingEnabled } }
 `);
 const TrashEmptyMutation = graphql(`mutation TrashEmpty { trashEmpty }`);
 const SettingsUpdateMutation = graphql(`

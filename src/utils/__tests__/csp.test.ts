@@ -10,6 +10,10 @@ describe("contentSecurityPolicy", () => {
     expect(policy).not.toContain("unsafe-eval");
   });
 
+  it("allows Google's Cast sender script", () => {
+    expect(contentSecurityPolicy(undefined, false)).toContain("script-src 'self' 'unsafe-inline' https://www.gstatic.com;");
+  });
+
   it("ignores an origin that is not one", () => {
     expect(contentSecurityPolicy("https://x.org; script-src *", false)).toContain("media-src 'self' blob:;");
   });

@@ -36,6 +36,8 @@ export type PlaylistContext = {
 
 const AUTOPLAY_KEY = "spexflix.autoplay";
 const COUNTDOWN = 10;
+/** How long before the end the player offers what plays next. */
+const NEXT_BEFORE = 30;
 /** How long before the signed addresses run out they are renewed when the page is looked at again. */
 const RENEW_BEFORE_MS = 30 * 60 * 1000;
 
@@ -77,6 +79,8 @@ export function Watch({
                         autoPlay,
                         playlists,
                         playlist,
+                        title,
+                        cast = false,
                       }: {
   videoId: string;
   playback: Playback;
@@ -93,6 +97,10 @@ export function Watch({
   autoPlay: boolean;
   playlists: OwnPlaylist[];
   playlist?: PlaylistContext | null;
+  /** The video's title, which a Chromecast shows. */
+  title?: string;
+  /** Whether casting is offered (an admin setting). */
+  cast?: boolean;
 }) {
   const t = useTranslations("Watch");
   const router = useRouter();
@@ -107,6 +115,8 @@ export function Watch({
   const [autoplayNext, setAutoplayNext] = useState(() => typeof window === "undefined" ? true : readAutoplay());
   const [countdown, setCountdown] = useState<number | null>(null);
   const playing = chapters.filter(chapter => chapter.startSeconds <= time).at(-1);
+  const end = endAt ?? durationSeconds;
+  const nearEnd = end > 0 && time >= end - NEXT_BEFORE && time < end;
 
   const go = useCallback((automatic: boolean) => {
     if (next) {
@@ -178,18 +188,26 @@ export function Watch({
                        subtitles={current.subtitles} onRenew={renew} chapters={chapters} durationSeconds={durationSeconds}
                        startAt={startAt}
                        endAt={endAt} recordProgress={recordProgress} autoPlay={autoPlay} onTime={onTime}
-                       onEnded={onEnded} />
-          {countdown !== null && next && (
-            <div role="status"
-                 className="absolute inset-x-0 top-0 flex aspect-video flex-col items-center justify-center gap-3 rounded-lg bg-black/80 p-4 text-center text-white">
-              <p className="text-sm text-white/80">{t("nextIn", { seconds: countdown })}</p>
-              <p className="text-lg font-semibold">{next.title}</p>
-              <div className="flex gap-2">
-                <Button onClick={() => go(false)}><Play />{t("playNow")}</Button>
-                <Button variant="secondary" onClick={() => setCountdown(null)}><X />{t("cancel")}</Button>
+                       onEnded={onEnded} title={title} cast={cast}>
+            {countdown !== null && next && (
+              <div role="status"
+                   className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-black/80 p-4 text-center text-white">
+                <p className="text-sm text-white/80">{t("nextIn", { seconds: countdown })}</p>
+                <p className="text-lg font-semibold">{next.title}</p>
+                <div className="flex gap-2">
+                  <Button onClick={() => go(false)}><Play />{t("playNow")}</Button>
+                  <Button variant="secondary" onClick={() => setCountdown(null)}><X />{t("cancel")}</Button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+            {/* Near the end, as streaming services do: what plays next, inside the player so it stays in full screen */}
+            {countdown === null && next && nearEnd && (
+              <Button variant="secondary" onClick={() => go(false)}
+                      className="absolute right-3 bottom-20 z-10 shadow-lg sm:right-4">
+                <Play className="fill-current" />{t("next", { title: next.title })}
+              </Button>
+            )}
+          </VideoPlayer>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" disabled={pending} aria-pressed={liked} onClick={() => startTransition(async () => {
