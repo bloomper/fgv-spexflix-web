@@ -19,8 +19,8 @@ export const KindFieldsFragment = graphql(`
 
 export const VideoCardFieldsFragment = graphql(`
     fragment VideoCardFields on Video {
-        id title year kind { ...KindFields } durationMs status published progressSeconds finished averageRating ratingCount liked inWatchList
-        spex { id title familyId categoryName revival }
+        id title year kind { ...KindFields } durationMs status published progressSeconds finished averageRating ratingCount liked inWatchList description
+        spex { id title year familyId categoryName revival }
     }
 `);
 
@@ -33,13 +33,17 @@ const MeQuery = graphql(`
 
 const HomeQuery = graphql(`
     query Home {
-        continueWatching(limit: 12) { ...VideoCardFields }
-        highestRated(limit: 12) { ...VideoCardFields myRating }
-        recentVideos(limit: 12) { ...VideoCardFields }
-        topVideos(by: RATED, limit: 6) { ...VideoCardFields }
+        featuredVideo { ...VideoCardFields }
+        continueWatching(limit: 20) { ...VideoCardFields }
+        watchList { ...VideoCardFields }
+        highestRated(limit: 20) { ...VideoCardFields myRating }
+        recentVideos(limit: 20) { ...VideoCardFields }
+        topVideos(by: RATED, limit: 20) { ...VideoCardFields }
         likedVideos { ...VideoCardFields }
-        categories { id name videoCount }
-        years
+        videoKinds { ...KindFields }
+        # Every listed video, for the rows per kind and per decade
+        videos { ...VideoCardFields }
+        collections { id title videos { ...VideoCardFields } }
     }
 `);
 
@@ -51,6 +55,14 @@ const VideosQuery = graphql(`
         categories { id name videoCount }
         years
         videoKinds { ...KindFields }
+    }
+`);
+
+const BrowseQuery = graphql(`
+    query Browse {
+        videoKinds { ...KindFields }
+        categories { id name videoCount }
+        years
     }
 `);
 
@@ -195,6 +207,7 @@ const CollectionDeleteMutation = graphql(`mutation CollectionDelete($id: ID!) { 
 
 export const getMe = () => runQuery(MeQuery, {});
 export const getHome = () => runQuery(HomeQuery, {});
+export const getBrowse = () => runQuery(BrowseQuery, {});
 export const getVideos = (filter: VideoFilter) => runQuery(VideosQuery, { filter });
 export const getVideo = async (id: string) => (await runQuery(VideoQuery, { id }))?.video ?? null;
 export const getPlayback = async (videoId: string) => (await runQuery(PlaybackQuery, { videoId }))?.playback ?? null;

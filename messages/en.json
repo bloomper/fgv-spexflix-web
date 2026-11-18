@@ -51,7 +51,13 @@
   "Header": {
     "toggleLanguage": "Change language",
     "toggleTheme": "Change theme",
-    "showMenu": "Show menu"
+    "showMenu": "Show menu",
+    "browse": "Browse",
+    "kinds": "Kinds",
+    "decades": "Decades",
+    "decade": "The {decade}s",
+    "spex": "Spex",
+    "allSpex": "All spex"
   },
   "Sidebar": {
     "hideMenu": "Hide menu",
@@ -278,18 +284,20 @@
     "recent": "Recently published",
     "allVideos": "All videos",
     "empty": "No videos are published yet.",
-    "browse": "Browse",
     "highestRated": "Highest rated by you",
     "forget": "Remove {title} from Continue watching",
     "forgetFailed": "The video could not be removed. Try again.",
-    "topList": "Top list",
     "decade": "{decade}s",
     "topRated": "Top list: highest rated",
     "wholeTopList": "The whole top list",
     "liked": "Liked by you",
     "allLiked": "Everything you like",
     "random": "Random video",
-    "randomNone": "There is no video to play."
+    "randomNone": "There is no video to play.",
+    "welcome": "Welcome",
+    "myList": "Watch later",
+    "all": "See all",
+    "collection": "Open the collection"
   },
   "Search": {
     "title": "Search",
@@ -300,7 +308,9 @@
     "hint": "Search titles, spex, descriptions, performances and chapters.",
     "browse": "Or browse all videos",
     "tooShort": "Type at least two characters.",
-    "none": "Nothing found."
+    "none": "Nothing found.",
+    "quickResults": "Results",
+    "allResults": "See all results for “{q}”"
   },
   "Manage": {
     "videos": "Videos",
@@ -645,8 +655,6 @@
     "none": "There are no collections yet.",
     "videos": "{count, plural, one {# video} other {# videos}}",
     "empty": "The collection has no videos yet.",
-    "playFromStart": "Play from the start",
-    "continue": "Continue with {title}",
     "edit": "Edit",
     "manageTitle": "Collections",
     "manageText": "A collection plays in its order: when a video ends, the next one starts.",
@@ -770,5 +778,33 @@
     "add": "Add a credit",
     "save": "Save credits",
     "saved": "The credits were saved."
+  },
+  "Hero": {
+    "featured": "Featured",
+    "play": "Play",
+    "resume": "Resume",
+    "moreInfo": "More info"
+  },
+  "Card": {
+    "play": "Play",
+    "myList": "Watch later",
+    "addToMyList": "Save to Watch later",
+    "inMyList": "Saved to Watch later",
+    "myListFailed": "Watch later could not be changed.",
+    "moreInfo": "More info",
+    "watched": "{percent}% watched",
+    "scrollBack": "Back in {row}",
+    "scrollForward": "Forward in {row}"
+  },
+  "Title": {
+    "spex": "Spex",
+    "collection": "Collection",
+    "videos": "{count, plural, one {# video} other {# videos}}",
+    "play": "Play from the start",
+    "resume": "Continue with {title}",
+    "playNext": "Play {title}",
+    "asGrid": "Show as a grid",
+    "allSpex": "All spex",
+    "noSpex": "No spex has videos yet."
   }
 }

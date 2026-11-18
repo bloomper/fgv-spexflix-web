@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { SortSelect } from "@/components/sort-select.client";
-import { HomeSection } from "@/components/home-section";
 
 const push = vi.hoisted(() => vi.fn());
 const search = vi.hoisted(() => ({ value: "category=c1&sort=TITLE" }));
@@ -36,17 +35,5 @@ describe("SortSelect", () => {
     rerender(<SortSelect options={OPTIONS} value="TITLE" label="Ordning" />);
     fireEvent.change(select, { target: { value: "YEAR_DESC" } });
     expect(push).toHaveBeenLastCalledWith("/videos");
-  });
-});
-
-describe("HomeSection", () => {
-  it("is a region named by its heading, with a link to all of its kind when given", () => {
-    const { rerender } = render(<HomeSection id="top" title="Topplistan" more={{ href: "/top", label: "Hela topplistan" }}>innehåll</HomeSection>);
-
-    expect(screen.getByRole("region", { name: "Topplistan" })).toHaveTextContent("innehåll");
-    expect(screen.getByRole("link", { name: "Hela topplistan" })).toHaveAttribute("href", "/top");
-
-    rerender(<HomeSection id="top" title="Topplistan">innehåll</HomeSection>);
-    expect(screen.queryByRole("link")).not.toBeInTheDocument();
   });
 });

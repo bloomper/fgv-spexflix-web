@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { MenuIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -10,13 +11,30 @@ import { ModeToggle } from "@/components/mode-toggle.client";
 import { LanguageToggle } from "@/components/language-toggle.client";
 import { useIsClient } from "@/hooks/use-is-client.client";
 import { HeaderSearch } from "@/components/header-search.client";
+import { type Browse, BrowseMenu } from "@/components/browse-menu.client";
+import { cn } from "@/utils/utils";
 
-export function SiteHeader({ applications }: { applications: Application[] }) {
+/**
+ * The header: the application switcher, browsing, search and the toggles. It sees through at the top of the page and
+ * turns opaque once the page scrolls.
+ */
+export function SiteHeader({ applications, browse }: { applications: Application[]; browse?: Browse | null }) {
   const isClient = useIsClient();
   const t = useTranslations();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <header data-site-header className="bg-background sticky top-0 z-50 flex w-full items-center border-b print:hidden">
+    <header data-site-header data-scrolled={scrolled || undefined}
+            className={cn("sticky top-0 z-50 flex w-full items-center border-b transition-colors duration-300 print:hidden",
+              scrolled ? "border-border bg-background shadow-sm" : "border-transparent bg-background/40 backdrop-blur-sm")}>
       <div className="flex min-h-(--header-height) w-full items-center gap-2 px-4 max-[359px]:gap-1 max-[359px]:px-2">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <MenuToggle />
@@ -24,6 +42,7 @@ export function SiteHeader({ applications }: { applications: Application[] }) {
             title={t("Meta.title")}
             applications={applications}
           />
+          {browse && <BrowseMenu browse={browse} />}
         </div>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">

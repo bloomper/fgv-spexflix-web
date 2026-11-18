@@ -51,7 +51,13 @@
   "Header": {
     "toggleLanguage": "Byt språk",
     "toggleTheme": "Byt tema",
-    "showMenu": "Visa menyn"
+    "showMenu": "Visa menyn",
+    "browse": "Bläddra",
+    "kinds": "Sorter",
+    "decades": "Decennier",
+    "decade": "{decade}-talet",
+    "spex": "Spex",
+    "allSpex": "Alla spex"
   },
   "Sidebar": {
     "hideMenu": "Dölj menyn",
@@ -278,18 +284,20 @@
     "recent": "Senast publicerat",
     "allVideos": "Alla filmer",
     "empty": "Inga filmer är publicerade ännu.",
-    "browse": "Bläddra",
     "highestRated": "Högst betyg av dig",
     "forget": "Ta bort {title} från Fortsätt titta",
     "forgetFailed": "Det gick inte att ta bort filmen. Försök igen.",
-    "topList": "Topplistan",
     "decade": "{decade}-talet",
     "topRated": "Topplistan: högst betyg",
     "wholeTopList": "Hela topplistan",
     "liked": "Gillat av dig",
     "allLiked": "Allt du gillat",
     "random": "Slumpa en film",
-    "randomNone": "Det finns ingen film att spela."
+    "randomNone": "Det finns ingen film att spela.",
+    "welcome": "Välkommen",
+    "myList": "Se senare",
+    "all": "Visa alla",
+    "collection": "Till samlingen"
   },
   "Search": {
     "title": "Sök",
@@ -300,7 +308,9 @@
     "hint": "Sök på titlar, spex, beskrivningar, föreställningar och kapitel.",
     "browse": "Eller bläddra bland alla filmer",
     "tooShort": "Skriv minst två tecken.",
-    "none": "Inget hittades."
+    "none": "Inget hittades.",
+    "quickResults": "Träffar",
+    "allResults": "Visa alla träffar för ”{q}”"
   },
   "Manage": {
     "videos": "Filmer",
@@ -645,8 +655,6 @@
     "none": "Det finns inga samlingar ännu.",
     "videos": "{count, plural, one {# film} other {# filmer}}",
     "empty": "Samlingen har inga filmer ännu.",
-    "playFromStart": "Spela från början",
-    "continue": "Fortsätt med {title}",
     "edit": "Redigera",
     "manageTitle": "Samlingar",
     "manageText": "En samling spelas i sin ordning: när en film tar slut börjar nästa.",
@@ -770,5 +778,33 @@
     "add": "Lägg till medverkande",
     "save": "Spara medverkande",
     "saved": "De medverkande är sparade."
+  },
+  "Hero": {
+    "featured": "Utvalt",
+    "play": "Spela",
+    "resume": "Fortsätt titta",
+    "moreInfo": "Mer info"
+  },
+  "Card": {
+    "play": "Spela",
+    "myList": "Se senare",
+    "addToMyList": "Spara i Se senare",
+    "inMyList": "Sparad i Se senare",
+    "myListFailed": "Se senare kunde inte ändras.",
+    "moreInfo": "Mer info",
+    "watched": "{percent} % sedd",
+    "scrollBack": "Bakåt i {row}",
+    "scrollForward": "Framåt i {row}"
+  },
+  "Title": {
+    "spex": "Spex",
+    "collection": "Samling",
+    "videos": "{count, plural, one {# film} other {# filmer}}",
+    "play": "Spela från början",
+    "resume": "Fortsätt med {title}",
+    "playNext": "Spela {title}",
+    "asGrid": "Visa som rutnät",
+    "allSpex": "Alla spex",
+    "noSpex": "Inga spex har filmer ännu."
   }
 }
