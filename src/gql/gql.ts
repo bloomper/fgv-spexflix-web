@@ -24,6 +24,7 @@ type Documents = {
     "\n    mutation SettingsUpdate($input: SettingsInput!) { settingsUpdate(input: $input) { welcomeSv } }\n": typeof types.SettingsUpdateDocument,
     "\n    query MaintenanceJobs { maintenanceJobs { job schedule running lastStartedAt lastFinishedAt lastSucceeded } }\n": typeof types.MaintenanceJobsDocument,
     "mutation MaintenanceJobRun($job: MaintenanceJob!) { maintenanceJobRun(job: $job) }": typeof types.MaintenanceJobRunDocument,
+    "\n    query SpexipediaSync { spexipediaSync { lastPulledAt lastSuccess lastError skipped { sequence kind id change error skippedAt } } }\n": typeof types.SpexipediaSyncDocument,
     "\n    fragment KindFields on VideoKind { id nameSv nameEn isDefault }\n": typeof types.KindFieldsFragmentDoc,
     "\n    fragment VideoCardFields on Video {\n        id title year kind { ...KindFields } durationMs status published progressSeconds finished averageRating ratingCount liked inWatchList description\n        spex { id title year familyId categoryName revival }\n    }\n": typeof types.VideoCardFieldsFragmentDoc,
     "\n    query Me {\n        me { username displayName roles spexifyUser }\n        settings { welcomeSv welcomeEn maxUploadGb keepOriginals castingEnabled featuredVideoId }\n    }\n": typeof types.MeDocument,
@@ -90,6 +91,7 @@ const documents: Documents = {
     "\n    mutation SettingsUpdate($input: SettingsInput!) { settingsUpdate(input: $input) { welcomeSv } }\n": types.SettingsUpdateDocument,
     "\n    query MaintenanceJobs { maintenanceJobs { job schedule running lastStartedAt lastFinishedAt lastSucceeded } }\n": types.MaintenanceJobsDocument,
     "mutation MaintenanceJobRun($job: MaintenanceJob!) { maintenanceJobRun(job: $job) }": types.MaintenanceJobRunDocument,
+    "\n    query SpexipediaSync { spexipediaSync { lastPulledAt lastSuccess lastError skipped { sequence kind id change error skippedAt } } }\n": types.SpexipediaSyncDocument,
     "\n    fragment KindFields on VideoKind { id nameSv nameEn isDefault }\n": types.KindFieldsFragmentDoc,
     "\n    fragment VideoCardFields on Video {\n        id title year kind { ...KindFields } durationMs status published progressSeconds finished averageRating ratingCount liked inWatchList description\n        spex { id title year familyId categoryName revival }\n    }\n": types.VideoCardFieldsFragmentDoc,
     "\n    query Me {\n        me { username displayName roles spexifyUser }\n        settings { welcomeSv welcomeEn maxUploadGb keepOriginals castingEnabled featuredVideoId }\n    }\n": types.MeDocument,
@@ -200,6 +202,10 @@ export function graphql(source: "\n    query MaintenanceJobs { maintenanceJobs {
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "mutation MaintenanceJobRun($job: MaintenanceJob!) { maintenanceJobRun(job: $job) }"): (typeof documents)["mutation MaintenanceJobRun($job: MaintenanceJob!) { maintenanceJobRun(job: $job) }"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n    query SpexipediaSync { spexipediaSync { lastPulledAt lastSuccess lastError skipped { sequence kind id change error skippedAt } } }\n"): (typeof documents)["\n    query SpexipediaSync { spexipediaSync { lastPulledAt lastSuccess lastError skipped { sequence kind id change error skippedAt } } }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
