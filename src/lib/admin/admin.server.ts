@@ -38,6 +38,9 @@ const MaintenanceJobsQuery = graphql(`
     query MaintenanceJobs { maintenanceJobs { job schedule running lastStartedAt lastFinishedAt lastSucceeded } }
 `);
 const MaintenanceJobRunMutation = graphql(`mutation MaintenanceJobRun($job: MaintenanceJob!) { maintenanceJobRun(job: $job) }`);
+const SpexipediaSyncQuery = graphql(`
+    query SpexipediaSync { spexipediaSync { lastPulledAt lastSuccess lastError skipped { sequence kind id change error skippedAt } } }
+`);
 
 export const getTrash = async () => (await runQuery(TrashQuery, {}))?.trash ?? [];
 export const getQueue = async () => (await runQuery(QueueQuery, {}))?.processingQueue ?? [];
@@ -49,4 +52,5 @@ export const getSettings = async () => (await runQuery(SettingsQuery, {}))?.sett
 export const trashEmpty = () => runMutation(TrashEmptyMutation, {});
 export const settingsUpdate = (input: SettingsInput) => runMutation(SettingsUpdateMutation, { input });
 export const getMaintenanceJobs = async () => (await runQuery(MaintenanceJobsQuery, {}))?.maintenanceJobs ?? [];
+export const getSpexipediaSync = async () => (await runQuery(SpexipediaSyncQuery, {}))?.spexipediaSync;
 export const maintenanceJobRun = async (job: MaintenanceJob) => Boolean((await runMutation(MaintenanceJobRunMutation, { job }))?.maintenanceJobRun);
