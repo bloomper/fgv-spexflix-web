@@ -28,9 +28,11 @@ export type VideoFormValues = {
  * A video's fields. Its spex are searched in Spexipedia, or it is marked as not about any; the title and year
  * default to the main spex's.
  */
-export function VideoForm({ kinds, initial, submitLabel, onSubmit }: {
+export function VideoForm({ kinds, initial, submitLabel, onSubmit, spexipediaUrl }: {
   /** The video kinds in order; the first is the default. */
   kinds: KindOption[];
+  /** Spexipedia's web, for editing the picked spex there. */
+  spexipediaUrl?: string | null;
   initial?: VideoFormValues;
   submitLabel: string;
   onSubmit: (input: VideoInput) => Promise<boolean>;
@@ -65,7 +67,7 @@ export function VideoForm({ kinds, initial, submitLabel, onSubmit }: {
 
   return (
     <form onSubmit={submit} className="max-w-2xl space-y-4">
-      <SpexPicker value={spex} onChange={setSpex} none={none} onNoneChange={setNone} />
+      <SpexPicker value={spex} onChange={setSpex} none={none} onNoneChange={setNone} spexipediaUrl={spexipediaUrl} />
       <div className="grid gap-4 sm:grid-cols-[1fr_8rem_12rem]">
         <div className="space-y-1.5">
           <Label htmlFor="title">{t("title")}</Label>

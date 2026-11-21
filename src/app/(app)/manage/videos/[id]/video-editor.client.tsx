@@ -92,11 +92,12 @@ function megabytes(bytes: number) {
  * Editing a video: its file (uploaded resumably and processed by the worker), fields, publishing, poster, chapters
  * linked to Spexify's tracks, and subtitles.
  */
-export function VideoEditor({ video, playback, admin, kinds }: {
+export function VideoEditor({ video, playback, admin, kinds, spexipediaUrl }: {
   video: EditorVideo;
   playback: Playback | null;
   admin: boolean;
   kinds: KindOption[];
+  spexipediaUrl?: string | null;
 }) {
   const t = useTranslations("Manage");
   const tv = useTranslations("Video");
@@ -254,7 +255,7 @@ export function VideoEditor({ video, playback, admin, kinds }: {
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">{t("details")}</h2>
-        <VideoForm kinds={kinds} submitLabel={t("save")} initial={video} onSubmit={async input => {
+        <VideoForm kinds={kinds} spexipediaUrl={spexipediaUrl} submitLabel={t("save")} initial={video} onSubmit={async input => {
           const result = await updateVideoAction(video.id, input);
 
           if (result.ok) {
