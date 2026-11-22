@@ -38,6 +38,7 @@ export function VideoForm({ kinds, initial, submitLabel, onSubmit, spexipediaUrl
   onSubmit: (input: VideoInput) => Promise<boolean>;
 }) {
   const t = useTranslations("Manage");
+  const tCommon = useTranslations("Common");
   const locale = useLocale();
   const [spex, setSpex] = useState<PickedSpex[]>(initial?.spex ?? []);
   const [none, setNone] = useState(initial !== undefined && (initial.spex ?? []).length === 0);
@@ -96,7 +97,7 @@ export function VideoForm({ kinds, initial, submitLabel, onSubmit, spexipediaUrl
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="performance-date">{t("performanceDate")}</Label>
-          <Input id="performance-date" value={performanceDate} placeholder="ÅÅÅÅ-MM-DD" pattern="\d{4}-\d{2}-\d{2}"
+          <Input id="performance-date" value={performanceDate} placeholder={tCommon("datePlaceholder")} pattern="\d{4}-\d{2}-\d{2}"
                  onChange={event => setPerformanceDate(event.target.value)} />
         </div>
       </div>
