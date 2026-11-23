@@ -101,10 +101,13 @@ export function VideoEditor({ video, playback, admin, kinds, spexipediaUrl }: {
 }) {
   const t = useTranslations("Manage");
   const tv = useTranslations("Video");
+  const tc = useTranslations("Common");
   const { pending, run, router } = useRun();
   const player = useRef<PlayerHandle>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const posterInput = useRef<HTMLInputElement>(null);
+  const subtitleInput = useRef<HTMLInputElement>(null);
+  const [subtitleFileName, setSubtitleFileName] = useState<string | null>(null);
   const [upload, setUpload] = useState<{ name: string; progress: number } | null>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [chapters, setChapters] = useState<ChapterRow[]>(() => video.chapters.map(chapter => ({
@@ -377,6 +380,7 @@ export function VideoEditor({ video, playback, admin, kinds, spexipediaUrl }: {
           form.set("label", subtitle.label);
           postForm(`/api/subtitle-upload/${video.id}`, form);
           event.currentTarget.reset();
+          setSubtitleFileName(null);
         }}>
           <div className="w-24 space-y-1">
             <Label htmlFor="sub-language" className="text-xs">{t("language")}</Label>
@@ -389,10 +393,20 @@ export function VideoEditor({ video, playback, admin, kinds, spexipediaUrl }: {
                    onChange={event => setSubtitle({ ...subtitle, label: event.target.value })} />
           </div>
           <div className="space-y-1">
+            {/* The native file input shows the browser's own language, so it is hidden behind a translated button. */}
             <Label htmlFor="sub-file" className="text-xs">{t("subtitleFile")}</Label>
-            <Input id="sub-file" name="file" type="file" accept=".vtt,.srt,text/vtt" required />
+            <input ref={subtitleInput} id="sub-file" name="file" type="file" accept=".vtt,.srt,text/vtt"
+                   className="hidden" onChange={event => setSubtitleFileName(event.target.files?.[0]?.name ?? null)} />
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" onClick={() => subtitleInput.current?.click()}>
+                {tc("chooseFile")}
+              </Button>
+              <span className="max-w-48 truncate text-sm text-muted-foreground">
+                {subtitleFileName ?? tc("noFileChosen")}
+              </span>
+            </div>
           </div>
-          <Button type="submit" variant="outline" disabled={pending}>{t("uploadSubtitles")}</Button>
+          <Button type="submit" variant="outline" disabled={pending || !subtitleFileName}>{t("uploadSubtitles")}</Button>
         </form>
       </section>
     </div>
