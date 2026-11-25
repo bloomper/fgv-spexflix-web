@@ -58,14 +58,6 @@ const VideosQuery = graphql(`
     }
 `);
 
-const BrowseQuery = graphql(`
-    query Browse {
-        videoKinds { ...KindFields }
-        categories { id name videoCount }
-        years
-    }
-`);
-
 const VideoKindsQuery = graphql(`
     query VideoKinds {
         videoKinds { ...KindFields position videoCount }
@@ -207,7 +199,6 @@ const CollectionDeleteMutation = graphql(`mutation CollectionDelete($id: ID!) { 
 
 export const getMe = () => runQuery(MeQuery, {});
 export const getHome = () => runQuery(HomeQuery, {});
-export const getBrowse = () => runQuery(BrowseQuery, {});
 export const getVideos = (filter: VideoFilter) => runQuery(VideosQuery, { filter });
 export const getVideo = async (id: string) => (await runQuery(VideoQuery, { id }))?.video ?? null;
 export const getPlayback = async (videoId: string) => (await runQuery(PlaybackQuery, { videoId }))?.playback ?? null;

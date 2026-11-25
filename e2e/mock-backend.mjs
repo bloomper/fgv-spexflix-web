@@ -310,7 +310,6 @@ const resolvers = {
     me: { username: persona.email, displayName: persona.name, roles: persona.roles, spexifyUser: true },
     settings: state.settings,
   }),
-  Browse: () => ({ videoKinds: sortedKinds().map(kind => kindOf(kind.id)), categories, years: [1975] }),
   Home: () => ({
     // The admin's pick while it is listed, else the newest show (the default kind), else the newest video
     featuredVideo: (() => {

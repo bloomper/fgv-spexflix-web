@@ -46,10 +46,7 @@ test.describe("Likes and the top list", () => {
                                                                                                   mock,
                                                                                                 }) => {
     await loginAs("viewer");
-    await page.goto("/");
-    await page.getByRole("button", { name: "Bläddra" }).click();
-    await page.getByRole("menuitem", { name: "1970-talet" }).click();
-    await expect(page).toHaveURL(/\/videos\?decade=1970/);
+    await page.goto("/videos?decade=1970");
     await expect(page.getByRole("link", { name: "1975", exact: true })).toBeVisible();
 
     await page.getByRole("combobox", { name: "Ordning" }).selectOption("TITLE");

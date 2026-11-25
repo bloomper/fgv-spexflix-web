@@ -121,8 +121,7 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
   `/collections/[id]` show a `Backdrop`, *Play* (`TitlePlay`: goes on with what was started, else the first not
   watched) and the videos as episodes (`EpisodeList`), a spex's by kind and then per revival (`spexSections`).
 - **The header** sees through at the top and turns opaque when the page scrolls; its search shows the first videos as
-  the viewer types (`searchPreviewAction`) and its *Bläddra* menu (`BrowseMenu`, from the `Browse` query in the
-  `(app)` layout) browses by kind, decade, spex category and every spex.
+  the viewer types (`searchPreviewAction`).
 - **Spex**: a video is about a list of spex, the main one first (poster, category, default title and year), or none,
   which the editor marks explicitly (`SpexPicker` in `src/components/spex/`, the same as Spexify's). Each spex has a
   `familyId`, its original's id for a revival; `/videos?spex=<familyId>` lists an original with its revivals, and

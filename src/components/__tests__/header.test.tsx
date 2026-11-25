@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { HeaderSearch } from "@/components/header-search.client";
-import { BrowseMenu } from "@/components/browse-menu.client";
 import { SiteHeader } from "@/components/site-header.client";
 
 const push = vi.hoisted(() => vi.fn());
@@ -22,12 +21,6 @@ vi.mock("@/components/ui/sidebar", () => ({ useSidebar: () => ({ toggleSidebar: 
 vi.mock("@/components/app-switcher.client", () => ({ AppSwitcher: ({ title }: { title: string }) => <span>{title}</span> }));
 vi.mock("@/components/mode-toggle.client", () => ({ ModeToggle: () => null }));
 vi.mock("@/components/language-toggle.client", () => ({ LanguageToggle: () => null }));
-
-const BROWSE = {
-  videoKinds: [{ id: "k1", nameSv: "Föreställning", nameEn: "Show" }, { id: "k2", nameSv: "Nummer", nameEn: "Number" }],
-  categories: [{ id: "c1", name: "Chalmersspexet" }],
-  years: [2026, 1975, 1979],
-};
 
 describe("HeaderSearch", () => {
   beforeEach(() => {
@@ -94,26 +87,12 @@ describe("HeaderSearch", () => {
   });
 });
 
-describe("BrowseMenu", () => {
-  it("browses by kind, decade, spex category and every spex", async () => {
-    render(<BrowseMenu browse={BROWSE} />);
-    fireEvent.click(screen.getByRole("button", { name: /browse/ }));
-
-    expect(await screen.findByRole("menuitem", { name: "Föreställning" })).toHaveAttribute("href", "/videos?kind=k1");
-    expect(screen.getByRole("menuitem", { name: /"decade":2020/ })).toHaveAttribute("href", "/videos?decade=2020");
-    expect(screen.getAllByRole("menuitem", { name: /"decade":/ })).toHaveLength(2);
-    expect(screen.getByRole("menuitem", { name: "Chalmersspexet" })).toHaveAttribute("href", "/videos?category=c1");
-    expect(screen.getByRole("menuitem", { name: "allSpex" })).toHaveAttribute("href", "/spex");
-  });
-});
-
 describe("SiteHeader", () => {
-  it("turns opaque once the page scrolls, and offers browsing", () => {
-    const { container } = render(<SiteHeader applications={[]} browse={BROWSE} />);
+  it("turns opaque once the page scrolls", () => {
+    const { container } = render(<SiteHeader applications={[]} />);
     const header = container.querySelector("header") as HTMLElement;
 
     expect(header).not.toHaveAttribute("data-scrolled");
-    expect(screen.getByRole("button", { name: /browse/ })).toBeInTheDocument();
 
     act(() => {
       Object.defineProperty(window, "scrollY", { value: 200, configurable: true });

@@ -15,7 +15,6 @@ import { ModeToggle } from "@/components/mode-toggle.client";
 import { LanguageToggle } from "@/components/language-toggle.client";
 import { requireUser } from "@/utils/auth.server";
 import { hasAccess, SSO_CHECKED_COOKIE } from "@/utils/auth";
-import { getBrowse } from "@/lib/video/video.server";
 
 export const instant = false;
 
@@ -89,13 +88,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   const accountUrl = `${(process.env.KEYCLOAK_ISSUER ?? "").replace(/\/$/, "")}/account`;
-  const [applications, browse] = await Promise.all([getApplications(), getBrowse().catch(() => null)]);
+  const applications = await getApplications();
 
   return (
     <div className="[--header-height:calc(--spacing(14))]">
       <DialogsProvider>
         <SidebarProvider className="flex flex-col">
-          <SiteHeader applications={applications} browse={browse} />
+          <SiteHeader applications={applications} />
           <div className="flex flex-1">
             <AppSidebar
               roles={roles}
