@@ -310,7 +310,6 @@ const resolvers = {
     me: { username: persona.email, displayName: persona.name, roles: persona.roles, spexifyUser: true },
     settings: state.settings,
   }),
-  Browse: () => ({ videoKinds: sortedKinds().map(kind => kindOf(kind.id)), categories, years: [1975] }),
   Home: () => ({
     // The admin's pick while it is listed, else the newest show (the default kind), else the newest video
     featuredVideo: (() => {
@@ -930,6 +929,18 @@ function handleAuthorize(url, res) {
   const redirectUri = url.searchParams.get("redirect_uri");
   if (!redirectUri) {
     res.writeHead(400).end("missing redirect_uri");
+    return;
+  }
+
+  // The mock keeps no Keycloak session, so a silent login (prompt=none), as the one a visitor gets on arrival,
+  // finds nobody logged in, as Keycloak says it
+  if (url.searchParams.get("prompt") === "none") {
+    const back = new URL(redirectUri);
+    back.searchParams.set("error", "login_required");
+    if (url.searchParams.get("state")) {
+      back.searchParams.set("state", url.searchParams.get("state"));
+    }
+    res.writeHead(302, {location: back.toString()}).end();
     return;
   }
   const code = randomUUID();

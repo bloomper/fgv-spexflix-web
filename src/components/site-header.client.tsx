@@ -11,14 +11,13 @@ import { ModeToggle } from "@/components/mode-toggle.client";
 import { LanguageToggle } from "@/components/language-toggle.client";
 import { useIsClient } from "@/hooks/use-is-client.client";
 import { HeaderSearch } from "@/components/header-search.client";
-import { type Browse, BrowseMenu } from "@/components/browse-menu.client";
 import { cn } from "@/utils/utils";
 
 /**
- * The header: the application switcher, browsing, search and the toggles. It sees through at the top of the page and
+ * The header: the application switcher, search and the toggles. It sees through at the top of the page and
  * turns opaque once the page scrolls.
  */
-export function SiteHeader({ applications, browse }: { applications: Application[]; browse?: Browse | null }) {
+export function SiteHeader({ applications }: { applications: Application[] }) {
   const isClient = useIsClient();
   const t = useTranslations();
   const [scrolled, setScrolled] = useState(false);
@@ -42,7 +41,6 @@ export function SiteHeader({ applications, browse }: { applications: Application
             title={t("Meta.title")}
             applications={applications}
           />
-          {browse && <BrowseMenu browse={browse} />}
         </div>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">

@@ -67,13 +67,7 @@
   "Header": {
     "toggleLanguage": "Change language",
     "toggleTheme": "Change theme",
-    "showMenu": "Show menu",
-    "browse": "Browse",
-    "kinds": "Kinds",
-    "decades": "Decades",
-    "decade": "The {decade}s",
-    "spex": "Spex",
-    "allSpex": "All spex"
+    "showMenu": "Show menu"
   },
   "Sidebar": {
     "hideMenu": "Hide menu",

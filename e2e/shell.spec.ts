@@ -53,11 +53,10 @@ test.describe("The application shell", () => {
     await expect(page.getByRole("region", { name: "Se senare" }).getByRole("link", { name: /Extranumret/ })).toBeVisible();
   });
 
-  test("browses from the header and opens a spex's title page", async ({ page, loginAs }) => {
+  test("opens a spex's title page from the list of every spex", async ({ page, loginAs }) => {
     await loginAs("viewer");
 
-    await page.getByRole("button", { name: "Bläddra" }).click();
-    await page.getByRole("menuitem", { name: "Alla spex" }).click();
+    await page.goto("/spex");
     await expect(page.getByRole("heading", { level: 1, name: "Alla spex" })).toBeVisible();
     await page.getByRole("main").getByRole("link", { name: /Nobel/ }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Nobel" })).toBeVisible();

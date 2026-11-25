@@ -67,13 +67,7 @@
   "Header": {
     "toggleLanguage": "Byt språk",
     "toggleTheme": "Byt tema",
-    "showMenu": "Visa menyn",
-    "browse": "Bläddra",
-    "kinds": "Sorter",
-    "decades": "Decennier",
-    "decade": "{decade}-talet",
-    "spex": "Spex",
-    "allSpex": "Alla spex"
+    "showMenu": "Visa menyn"
   },
   "Sidebar": {
     "hideMenu": "Dölj menyn",
