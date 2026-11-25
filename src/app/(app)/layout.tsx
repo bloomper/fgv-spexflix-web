@@ -1,4 +1,5 @@
 import * as React from "react";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { AppSidebar } from "@/components/app-sidebar.client";
@@ -13,7 +14,7 @@ import { LogoText } from "@/components/logo-text";
 import { ModeToggle } from "@/components/mode-toggle.client";
 import { LanguageToggle } from "@/components/language-toggle.client";
 import { requireUser } from "@/utils/auth.server";
-import { hasAccess } from "@/utils/auth";
+import { hasAccess, SSO_CHECKED_COOKIE } from "@/utils/auth";
 import { getBrowse } from "@/lib/video/video.server";
 
 export const instant = false;
@@ -23,6 +24,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const t = await getTranslations();
 
   if (!session) {
+    // Someone logged in to another FGV application gets in without pressing the login button
+    if (!(await cookies()).has(SSO_CHECKED_COOKIE)) {
+      redirect("/api/auth/login?silent=1");
+    }
+
     return (
       <div className="bg-background flex min-h-dvh flex-col">
         <header className="px-4 py-2">
