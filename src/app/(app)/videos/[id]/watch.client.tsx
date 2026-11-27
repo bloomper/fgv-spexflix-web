@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Clock, Eye, EyeOff, Heart, ListVideo, Music, Play, X } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { Button } from "@bloomper/fgv-web-ui/ui/button";
+import { Switch } from "@bloomper/fgv-web-ui/ui/switch";
 import { type PlayerHandle, VideoPlayer } from "@/components/video/video-player.client";
 import { likeVideoAction, playbackAction, setWatchedAction, watchListAction } from "@/components/video/actions.server";
 import { AddToPlaylistMenu, type OwnPlaylist } from "@/components/video/add-to-playlist.client";
@@ -232,7 +232,7 @@ export function Watch({
                       toast.error(t("watchListFailed"));
                     }
                   })}>
-            <Clock className={cn(listed && "text-primary")} />{listed ? t("inWatchList") : t("addToWatchList")}
+            <Clock className={cn(listed && "text-link")} />{listed ? t("inWatchList") : t("addToWatchList")}
           </Button>
           <AddToPlaylistMenu videoId={videoId} playlists={playlists} label={t("thisVideo")} />
           {recordProgress && (
@@ -273,7 +273,7 @@ export function Watch({
           <section aria-labelledby="playlist" className="space-y-2">
             <h2 id="playlist" className="flex items-center gap-2 font-semibold">
               <ListVideo className="size-4" />
-              <Link href={`/playlists/${playlist.id}`} className="truncate hover:text-primary">{playlist.name}</Link>
+              <Link href={`/playlists/${playlist.id}`} className="truncate hover:text-link">{playlist.name}</Link>
               <span className="shrink-0 text-sm font-normal text-muted-foreground tabular-nums">
                                 {t("position", { index: playlist.index + 1, count: playlist.items.length })}
                             </span>
@@ -315,7 +315,7 @@ export function Watch({
                   {spexifyUrl && chapter.spexifyTrackId && (
                     <a href={`${spexifyUrl}/search?q=${encodeURIComponent(chapter.spexifyTrackTitle ?? chapter.title)}`}
                        target="_blank" rel="noopener noreferrer"
-                       className="inline-flex shrink-0 items-center gap-1 text-xs text-primary hover:text-primary/80"
+                       className="inline-flex shrink-0 items-center gap-1 text-xs text-link hover:text-link/80"
                        aria-label={t("listenInSpexify", { title: chapter.title })}>
                       <Music className="size-3.5" />{t("listen")}
                     </a>
@@ -348,7 +348,7 @@ export function CollectionLinks({ collections }: { collections: { id: string; ti
         <span key={collection.id}>
                     {i > 0 && ", "}
           <Link href={`/collections/${collection.id}`}
-                className="text-primary hover:text-primary/80">{collection.title}</Link>
+                className="text-link hover:text-link/80">{collection.title}</Link>
                 </span>
       ))}
     </p>

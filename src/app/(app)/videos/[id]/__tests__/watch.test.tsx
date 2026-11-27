@@ -27,7 +27,7 @@ vi.mock("next/link", () => ({
 }));
 vi.mock("@/components/video/actions.server", () => actions);
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
-vi.mock("@/components/dialogs.client", () => ({ useDialogs: () => ({ prompt: vi.fn(), confirm: vi.fn() }) }));
+vi.mock("@bloomper/fgv-web-ui/shell/dialogs", () => ({ useDialogs: () => ({ prompt: vi.fn(), confirm: vi.fn() }) }));
 vi.mock("@/components/video/video-player.client", () => ({
   VideoPlayer: (props: typeof player.props) => {
     player.props = props;

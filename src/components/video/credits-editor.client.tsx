@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ArrowDown, ArrowUp, Plus, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@bloomper/fgv-web-ui/ui/button";
+import { Input } from "@bloomper/fgv-web-ui/ui/input";
+import { Label } from "@bloomper/fgv-web-ui/ui/label";
 import { setCreditsAction } from "@/app/(app)/manage/actions.server";
 
 type Row = { name: string; role: string };

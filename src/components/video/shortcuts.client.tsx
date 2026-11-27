@@ -3,7 +3,7 @@
 import * as React from "react";
 import { type RefObject, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@bloomper/fgv-web-ui/ui/dialog";
 
 const SHORTCUTS: { keys: string[]; action: string }[] = [
   { keys: ["Space", "K"], action: "toggle" },

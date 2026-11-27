@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@bloomper/fgv-web-ui/ui/badge";
 import { Heart } from "lucide-react";
 import { PosterImage } from "@/components/video/poster-image.client";
 import { AverageRating } from "@/components/rating.client";

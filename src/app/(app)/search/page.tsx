@@ -3,13 +3,14 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Search } from "lucide-react";
 import { SubmitButton } from "@/components/submit-button.client";
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
-import { Input } from "@/components/ui/input";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@bloomper/fgv-web-ui/ui/empty";
+import { Input } from "@bloomper/fgv-web-ui/ui/input";
 import { VideoGrid } from "@/components/video/video-grid";
 import { search } from "@/lib/video/video.server";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
-import { DataEmpty } from "@/components/data-empty";
+import { DataEmpty } from "@bloomper/fgv-web-ui/shell/data-empty";
+import { Page, PageHeader } from "@bloomper/fgv-web-ui/shell/page-header";
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   return withPolicyPage(Policies.app.requireAccess, async () => {
@@ -20,8 +21,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     const videos = ready ? await search(q) : null;
 
     return (
-      <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
-        <h1 className="text-2xl font-bold tracking-tight">{ready ? t("resultsFor", { q }) : t("title")}</h1>
+      <Page variant="content">
+        <PageHeader title={ready ? t("resultsFor", { q }) : t("title")}/>
         <Form action="/search" role="search" className="flex max-w-xl gap-2">
           <Input key={q} name="q" type="search" defaultValue={q} maxLength={200} placeholder={t("placeholder")}
                  aria-label={t("query")} aria-invalid={tooShort || undefined}
@@ -37,13 +38,13 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
               <EmptyDescription>{t("hint")}</EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
-              <Link href="/videos" className="text-sm text-primary hover:text-primary/80">{t("browse")}</Link>
+              <Link href="/videos" className="text-sm text-link hover:text-link/80">{t("browse")}</Link>
             </EmptyContent>
           </Empty>
         )}
         {videos?.length === 0 && <DataEmpty title={t("none")} description={null} />}
         {videos && videos.length > 0 && <VideoGrid videos={videos} />}
-      </div>
+      </Page>
     );
   });
 }

@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@bloomper/fgv-web-ui/ui/button";
+import { Badge } from "@bloomper/fgv-web-ui/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@bloomper/fgv-web-ui/ui/table";
 import { getVideos } from "@/lib/video/video.server";
 import { kindName } from "@/utils/format";
 import { formatDuration } from "@/utils/duration";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
+import { Page, PageHeader } from "@bloomper/fgv-web-ui/shell/page-header";
 
 export default async function ManageVideosPage() {
   return withPolicyPage(Policies.editor.requireEditor, async () => {
@@ -18,11 +19,8 @@ export default async function ManageVideosPage() {
     const data = await getVideos({ includeUnpublished: true });
 
     return (
-      <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold tracking-tight">{t("videos")}</h1>
-          <Button nativeButton={false} render={<Link href="/manage/videos/new" />}><Plus />{t("newVideo")}</Button>
-        </div>
+      <Page variant="content">
+        <PageHeader title={t("videos")} actions={<Button nativeButton={false} render={<Link href="/manage/videos/new" />}><Plus />{t("newVideo")}</Button>}/>
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
@@ -38,7 +36,7 @@ export default async function ManageVideosPage() {
               {data?.videos.map(video => (
                 <TableRow key={video.id}>
                   <TableCell className="whitespace-normal"><Link href={`/manage/videos/${video.id}`}
-                                                                 className="font-medium hover:text-primary">{video.title}</Link></TableCell>
+                                                                 className="font-medium hover:text-link">{video.title}</Link></TableCell>
                   <TableCell className="tabular-nums">{video.year}</TableCell>
                   <TableCell className="hidden sm:table-cell">{kindName(video.kind, locale)}</TableCell>
                   <TableCell
@@ -56,7 +54,7 @@ export default async function ManageVideosPage() {
             </TableBody>
           </Table>
         </div>
-      </div>
+      </Page>
     );
   });
 }

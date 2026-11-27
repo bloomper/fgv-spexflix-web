@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { Info, Play } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@bloomper/fgv-web-ui/ui/badge";
+import { Button } from "@bloomper/fgv-web-ui/ui/button";
 import { Backdrop } from "@/components/video/backdrop";
 import { infoHrefOf, type RowVideo } from "@/components/video/video-row";
 import { formatDuration } from "@/utils/duration";
@@ -21,7 +21,7 @@ export function Hero({ video, children }: { video: RowVideo & { description?: st
 
   return (
     <Backdrop videoId={video.id} title={video.title}>
-      <p className="text-xs font-semibold tracking-widest text-primary uppercase">{t("featured")}</p>
+      <p className="text-xs font-semibold tracking-widest text-link uppercase">{t("featured")}</p>
       <h1 className="text-3xl font-bold tracking-tight text-balance drop-shadow sm:text-5xl">{video.title}</h1>
       <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
         <Badge variant="secondary">{kindName(video.kind, locale)}</Badge>

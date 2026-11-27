@@ -17,10 +17,9 @@ vi.mock("next/link", () => ({
     <a href={href} onClick={onClick} {...rest}>{children}</a>,
 }));
 vi.mock("@/components/video/actions.server", () => actions);
-vi.mock("@/components/ui/sidebar", () => ({ useSidebar: () => ({ toggleSidebar: vi.fn(), openMobile: false }) }));
-vi.mock("@/components/app-switcher.client", () => ({ AppSwitcher: ({ title }: { title: string }) => <span>{title}</span> }));
-vi.mock("@/components/mode-toggle.client", () => ({ ModeToggle: () => null }));
-vi.mock("@/components/language-toggle.client", () => ({ LanguageToggle: () => null }));
+vi.mock("@bloomper/fgv-web-ui/ui/sidebar", () => ({ useSidebar: () => ({ toggleSidebar: vi.fn(), openMobile: false }) }));
+vi.mock("@bloomper/fgv-web-ui/shell/app-switcher", () => ({ AppSwitcher: ({ title }: { title: string }) => <span>{title}</span> }));
+vi.mock("@bloomper/fgv-web-ui/shell/toggles", () => ({ ModeToggle: () => null, LanguageToggle: () => null }));
 
 describe("HeaderSearch", () => {
   beforeEach(() => {

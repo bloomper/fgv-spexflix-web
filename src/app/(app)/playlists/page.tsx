@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Globe, ListVideo } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@bloomper/fgv-web-ui/ui/badge";
 import { PosterImage } from "@/components/video/poster-image.client";
 import { NewPlaylistButton } from "./playlist-editor.client";
 import { getPlaylists } from "@/lib/video/video.server";
 import { formatDuration } from "@/utils/duration";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
-import { DataEmpty } from "@/components/data-empty";
+import { DataEmpty } from "@bloomper/fgv-web-ui/shell/data-empty";
+import { Page, PageHeader } from "@bloomper/fgv-web-ui/shell/page-header";
 
 type Summary = Awaited<ReturnType<typeof getPlaylists>>[number];
 
@@ -56,14 +57,8 @@ export default async function PlaylistsPage() {
     const others = playlists.filter(playlist => !playlist.owned);
 
     return (
-      <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
-            <p className="max-w-3xl text-pretty text-sm text-muted-foreground">{t("text")}</p>
-          </div>
-          <NewPlaylistButton />
-        </div>
+      <Page variant="content">
+        <PageHeader title={t("title")} description={t("text")} actions={<NewPlaylistButton />}/>
         <section aria-labelledby="mine" className="space-y-3">
           <h2 id="mine" className="text-lg font-semibold">{t("mine")}</h2>
           {mine.length > 0 ? <PlaylistCards playlists={mine} /> : <DataEmpty title={t("none")} description={null} />}
@@ -74,7 +69,7 @@ export default async function PlaylistsPage() {
             <PlaylistCards playlists={others} />
           </section>
         )}
-      </div>
+      </Page>
     );
   });
 }

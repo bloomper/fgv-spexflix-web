@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Play } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@bloomper/fgv-web-ui/ui/button";
 import { resumeTarget } from "@/utils/rows";
 import type { RowVideo } from "@/components/video/video-row";
 

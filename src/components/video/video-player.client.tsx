@@ -26,7 +26,7 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@bloomper/fgv-web-ui/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,7 +34,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@bloomper/fgv-web-ui/ui/dropdown-menu";
 import { useVideoShortcuts, VideoShortcutsDialog } from "@/components/video/shortcuts.client";
 import { formatDuration } from "@/utils/duration";
 import { parseThumbnails, type Thumbnail, thumbnailAt } from "@/components/video/thumbnails";
@@ -787,7 +787,7 @@ export function VideoPlayer({
             {subtitles.length > 0 && (
               <DropdownMenu onOpenChange={setMenuOpen}>
                 <DropdownMenuTrigger
-                  render={<Button variant="ghost" size="icon" className={cn(controlButton, subtitle && "text-primary")}
+                  render={<Button variant="ghost" size="icon" className={cn(controlButton, subtitle && "text-link")}
                                   aria-label={t("subtitles")} />}>
                   <Captions />
                 </DropdownMenuTrigger>
@@ -845,7 +845,7 @@ export function VideoPlayer({
             </DropdownMenu>
 
             {remote.available && (
-              <Button variant="ghost" size="icon" className={cn(controlButton, casting && "text-primary")}
+              <Button variant="ghost" size="icon" className={cn(controlButton, casting && "text-link")}
                       aria-label={casting ? t("stopCasting") : t("cast")} aria-pressed={casting}
                       onClick={() => casting ? remote.stop() : startCasting()}>
                 <Cast />

@@ -2,8 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Pencil } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@bloomper/fgv-web-ui/ui/badge";
+import { Button } from "@bloomper/fgv-web-ui/ui/button";
 import { PosterImage } from "@/components/video/poster-image.client";
 import { creditHref } from "@/lib/credits";
 import { getMe, getPlayback, getPlaylist, getPlaylists, getVideo, spexifyUrl } from "@/lib/video/video.server";
@@ -14,6 +14,7 @@ import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
 import { isEditor } from "@/utils/auth";
 import { CollectionLinks, Watch } from "./watch.client";
+import { Page } from "@bloomper/fgv-web-ui/shell/page-header";
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -57,7 +58,7 @@ export default async function VideoPage({ params, searchParams }: {
     const main = video.spex[0];
 
     return (
-      <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
+      <Page variant="content">
         {playback ? (
           <Watch videoId={video.id} playback={playback} chapters={video.chapters}
                  durationSeconds={(video.durationMs ?? 0) / 1000}
@@ -116,7 +117,7 @@ export default async function VideoPage({ params, searchParams }: {
               <ul className="mt-1 grid gap-x-6 gap-y-0.5 sm:grid-cols-2">
                 {video.credits.map((credit, i) => (
                   <li key={`${credit.name}-${i}`} className="flex min-w-0 gap-2">
-                    <Link href={creditHref(credit.name)} className="truncate text-primary hover:text-primary/80">{credit.name}</Link>
+                    <Link href={creditHref(credit.name)} className="truncate text-link hover:text-link/80">{credit.name}</Link>
                     {credit.role && <span className="truncate text-muted-foreground">{credit.role}</span>}
                   </li>
                 ))}
@@ -131,7 +132,7 @@ export default async function VideoPage({ params, searchParams }: {
 
                 return (
                   <li key={spex.id} className="flex flex-wrap gap-x-2">
-                    <Link href={`/videos?spex=${spex.familyId}`} className="text-primary hover:text-primary/80">
+                    <Link href={`/videos?spex=${spex.familyId}`} className="text-link hover:text-link/80">
                       {video.spex.length > 1 ? tv("allFromSpex", { title: spex.title ?? name }) : t("moreFromSpex")}
                     </Link>
                   </li>
@@ -145,7 +146,7 @@ export default async function VideoPage({ params, searchParams }: {
             </Button>
           )}
         </div>
-      </div>
+      </Page>
     );
   });
 }

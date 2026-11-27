@@ -3,7 +3,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Play } from "lucide-react";
 import { PosterImage } from "@/components/video/poster-image.client";
 import type { RowVideo } from "@/components/video/video-row";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@bloomper/fgv-web-ui/ui/badge";
 import { formatDuration } from "@/utils/duration";
 import { kindName } from "@/utils/format";
 import { watchedFraction } from "@/utils/rows";

@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Search } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { buttonVariants } from "@bloomper/fgv-web-ui/ui/button";
+import { Input } from "@bloomper/fgv-web-ui/ui/input";
 import { type SearchHit, searchPreviewAction } from "@/components/video/actions.server";
 
 /** How long typing pauses before the field looks for videos. */
@@ -112,7 +112,7 @@ export function HeaderSearch() {
                 </ul>
               )}
             <Link href={all} onClick={() => setOpen(false)}
-                  className="block border-t px-3 py-2 text-sm text-primary hover:bg-accent focus-visible:bg-accent focus-visible:outline-none">
+                  className="block border-t px-3 py-2 text-sm text-link hover:bg-accent focus-visible:bg-accent focus-visible:outline-none">
               {t("allResults", { q: typed })}
             </Link>
           </div>

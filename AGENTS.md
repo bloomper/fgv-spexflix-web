@@ -31,7 +31,7 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
 ## Conventions
 
 - `"use client"` ⇔ `*.client.ts(x)`; `import "server-only"` and `"use server"` ⇔ `*.server.ts`. Exceptions:
-  `src/auth.ts`, Next.js reserved file names, and shadcn's `src/components/ui/**` and `src/hooks/use-mobile.ts`.
+  `src/auth.ts` and Next.js reserved file names.
 - Cache Components is on. `(app)/layout.tsx` keeps `export const instant = false`. The root layout's metadata stays
   static.
 - Cache Components keeps visited pages alive, so a client component that copies a server prop into state (an
@@ -45,6 +45,34 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
 - No `NEXT_PUBLIC_*` variables: read config on the server at request time and pass it as props.
 - **The Content Security Policy is set in `src/proxy.ts`**, not `next.config.ts`, because it names the media hostname
   (`MEDIA_ORIGIN`), which differs per environment while `next.config.ts` headers are fixed at build time.
+
+## Shared FGV UI
+
+The theme, the shadcn components and the application shell come from `@bloomper/fgv-web-ui` (repo
+`bloomper/fgv-web-ui`, published to GitHub Packages), shared by all eight FGV web applications:
+
+- `@bloomper/fgv-web-ui/ui/<name>` for every shadcn component (`button`, `sidebar`, `dialog`, …). Don't add a local
+  copy with `shadcn add`: the shell and the application must share one `SidebarProvider`, and a change that belongs in
+  every application goes into the package.
+- `shell/*`: `SiteHeader` (wrapped in `src/components/site-header.client.tsx` with Spexflix's own controls),
+  `AppSwitcher`, `resolveApplications`, `SidebarBrand`, `NavMain`, `NavSecondary`, the toggles, `DataEmpty`, the
+  status pages and the logos.
+- **Pages** are a `Page` (`variant="content"` for articles and records, the default for lists and forms) with a
+  `PageHeader` first (`title`, `description`, `actions`, `eyebrow`, `badges`), both from `shell/page-header`; a page's
+  `loading.tsx` uses the same `Page`.
+- **Confirmations** always ask in an alert dialog: `ConfirmButton` (`shell/confirm-button`), or
+  `useDialogs().confirm` / `prompt` / `choose` (`shell/dialogs`, `DialogsProvider` in the `(app)` layout) inside a
+  handler. Never `window.confirm` or `window.prompt`.
+- `src/app/globals.css` imports `tailwindcss` and the package's `styles.css`, then only what is Spexflix's own. The brand
+  colour on the page background (links, labels, active icons) is `text-link`; `primary` is for fills.
+- The favicons in `src/app/` (`icon.svg`, `favicon.ico`, `apple-icon.png`) are Spexflix's switcher icon on the brand
+  blue, generated in the package (`scripts/app-icons.mjs`).
+- The shell's texts live in the package under `FgvUi`; `withFgvMessages` adds them wherever messages are loaded
+  (`src/i18n/request.ts`, `src/app/layout.tsx`, `changeLocale` in `src/app/provider.client.tsx`), and
+  `FgvShellProvider` there hands the shell `changeLocale` and Umami's `track`.
+- Installing needs a token, even locally: `.npmrc` reads `NODE_AUTH_TOKEN` (a token with `read:packages`). CI uses
+  `GITHUB_TOKEN`, and the image build gets it as the `npm_token` build secret.
+- Vitest inlines the package (`server.deps.inline`) so the mocks in the setup file reach it.
 
 ## How Spexflix works in the web
 
@@ -130,8 +158,9 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
 - **Video kinds** are configured by admins (`/admin/kinds`) and come from `videoKinds`; show them with
   `kindName(kind, locale)`. The first kind is the default for new videos.
 - **Dialogs**: never `window.confirm`, `window.prompt` or `window.alert`. Ask with `useDialogs()` (`confirm` and
-  `prompt`, from `DialogsProvider` in `src/components/dialogs.client.tsx`, which the `(app)` layout mounts). The e2e
-  fixture `noNativeDialogs` fails any test that opens a native dialog; answer the app's own with `answerDialog`.
+  `prompt`, from `DialogsProvider` in `@bloomper/fgv-web-ui/shell/dialogs`, which the `(app)` layout mounts). The e2e
+  fixture `noNativeDialogs` fails any test that opens a native dialog; answer the app's own with
+  `answerDialog`, which finds both the alert dialog of a confirmation and the plain one of a prompt.
 - **The change log** (`ChangeLog` in `src/components/audit/change-log.tsx`) filters by kind, event, person (ADMIN),
   period and text through the address, links each change to its record, and `RecordHistory` shows a record's latest
   changes on its edit page. Record kinds and their pages are in `src/app/(app)/manage/audit/links.ts`.
@@ -141,9 +170,9 @@ from the media server (nginx, `spexflix-media`) through signed addresses. Stack 
 
 ## Look
 
-The look is FGV's, the same as Spexregister's and Nyuppsättning's: `Logo`, `LogoText` and `LogoHome` in
-`src/components/`, `src/app/favicon.ico`, and the colours in `src/app/globals.css`. Don't give the application a logo
-or colours of its own. `src/app/icon.svg` (the FGV logo) is only for the installable app's manifest.
+The look is FGV's, the same as Spexregister's and Nyuppsättning's: `Logo`, `LogoText` and `LogoHome` from
+`@bloomper/fgv-web-ui/shell/`, and the colours in `@bloomper/fgv-web-ui/styles.css`. Don't give the application a logo or colours of its own; its
+favicons (`src/app/icon.svg`, `favicon.ico`, `apple-icon.png`) are its switcher icon on the brand blue, from the package.
 
 ## Consent and visitor statistics
 
@@ -165,15 +194,15 @@ typed text. Events: `video-create` (`defaultKind`), `video-rate` (`rating`), `vi
 
 ## Application switcher
 
-The title in the header (`src/components/app-switcher.client.tsx`) opens a menu of the FGV applications: Spexregister,
-Nyuppsättning, Spexflix, Spexify, Spexgram and Spexarkiv. `getApplications()` (`src/utils/applications.server.ts`) lists the current one and
+The title in the header (`AppSwitcher` from `@bloomper/fgv-web-ui/shell/app-switcher`) opens a menu of the FGV
+applications, in the same order in every application: Medlemskap, Spexipedia, Spexregister, Nyuppsättning, Spexflix,
+Spexify, Spexgram and Spexarkiv. `getApplications()` (`src/utils/applications.server.ts`) lists the current one and
 each other one whose `USER` role is in the access token and whose address is set (`SPEXREGISTER_WEB_URL`,
 `REVIVAL_WEB_URL`, `SPEXFLIX_WEB_URL`, `SPEXIFY_WEB_URL`, `SPEXGRAM_WEB_URL`, `SPEXIPEDIA_WEB_URL`,
 `ARCHIVE_WEB_URL`). The role is there because fgv-keycloak maps every web
 client to the other web clients' `USER` role; a realm imported before that needs fgv-infra-deploy's
-`bin/configure-keycloak.sh`. With no other application to offer, the title is plain text. The six webs (with fgv-spexgram-web and
-fgv-archive-web) carry identical copies of `applications.ts`, the component and their tests, and differ only in the id passed in
-`applications.server.ts`, so change all six together.
+`bin/configure-keycloak.sh`. With no other application to offer, the title is plain text. The list, the
+component and their tests live in the package; each application only passes its own id in `applications.server.ts`.
 
 ## Testing
 

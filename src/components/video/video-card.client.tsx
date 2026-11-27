@@ -123,7 +123,7 @@ export function VideoCard({ video, infoHref, action, label }: {
           <button type="button" disabled={pending} aria-pressed={listed}
                   aria-label={t("myList")} title={listed ? t("inMyList") : t("addToMyList")}
                   className={cn("flex size-8 items-center justify-center rounded-full border-2 border-foreground/40 hover:border-foreground",
-                    listed && "border-primary text-primary")}
+                    listed && "border-primary text-link")}
                   onClick={() => startTransition(async () => {
                     const value = !listed;
 

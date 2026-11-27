@@ -5,7 +5,7 @@ import { useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ListPlus, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@bloomper/fgv-web-ui/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,9 +14,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@bloomper/fgv-web-ui/ui/dropdown-menu";
 import { addToPlaylistAction, createPlaylistAction } from "@/components/video/actions.server";
-import { useDialogs } from "@/components/dialogs.client";
+import { useDialogs } from "@bloomper/fgv-web-ui/shell/dialogs";
 import { track } from "@/utils/umami";
 
 export type OwnPlaylist = { id: string; name: string };

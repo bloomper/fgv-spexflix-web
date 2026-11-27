@@ -4,6 +4,7 @@ import { getVideos } from "@/lib/video/video.server";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
 import { SettingsForm } from "./settings-form.client";
+import { Page, PageHeader } from "@bloomper/fgv-web-ui/shell/page-header";
 
 export default async function SettingsPage() {
   return withPolicyPage(Policies.admin.requireAdmin, async () => {
@@ -12,10 +13,10 @@ export default async function SettingsPage() {
     const videos = (catalogue?.videos ?? []).map(video => ({ id: video.id, title: video.title, year: video.year }));
 
     return (
-      <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
-        <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+      <Page variant="content">
+        <PageHeader title={t("title")}/>
         {settings && <SettingsForm key={JSON.stringify(settings)} initial={settings} videos={videos} />}
-      </div>
+      </Page>
     );
   });
 }

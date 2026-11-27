@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { LayoutGrid } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@bloomper/fgv-web-ui/ui/button";
 import { Backdrop } from "@/components/video/backdrop";
 import { EpisodeList } from "@/components/video/episode-list";
 import { TitlePlay } from "@/components/video/title-actions";
@@ -44,7 +44,7 @@ export default async function SpexPage({ params }: { params: Promise<{ id: strin
     return (
       <div className="flex flex-1 flex-col pb-10">
         <Backdrop videoId={ordered[0]?.id} title={title}>
-          <p className="text-xs font-semibold tracking-widest text-primary uppercase">{t("spex")}</p>
+          <p className="text-xs font-semibold tracking-widest text-link uppercase">{t("spex")}</p>
           <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-5xl">{title}</h1>
           <p className="text-sm text-muted-foreground">
             {[spex?.year, spex?.categoryName, t("videos", { count: videos.length })].filter(Boolean).join(" · ")}

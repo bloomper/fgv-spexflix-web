@@ -1,6 +1,6 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { RatingStars } from "@/components/rating.client";
-import { DataEmpty } from "@/components/data-empty";
+import { DataEmpty } from "@bloomper/fgv-web-ui/shell/data-empty";
 import { Hero } from "@/components/video/hero";
 import { VideoRow } from "@/components/video/video-row";
 import { ForgetProgressButton } from "@/components/video/forget-progress.client";
@@ -10,6 +10,7 @@ import { kindName } from "@/utils/format";
 import { groupByDecade, groupByKind } from "@/utils/rows";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
+import { Page, PageHeader } from "@bloomper/fgv-web-ui/shell/page-header";
 
 /** The most cards a row of a kind, a decade or a collection shows; its link shows them all. */
 const ROW = 30;
@@ -24,11 +25,10 @@ export default async function HomePage() {
 
     if (!home || home.videos.length === 0) {
       return (
-        <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("greeting", { name })}</h1>
-          <p className="max-w-4xl whitespace-pre-line text-pretty text-muted-foreground">{welcome || t("intro")}</p>
+        <Page variant="content">
+          <PageHeader title={t("greeting", { name })} description={welcome || t("intro")}/>
           <DataEmpty title={t("empty")} description={null} />
-        </div>
+        </Page>
       );
     }
 
