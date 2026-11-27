@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { DataEmpty } from "@/components/data-empty";
+import { DataEmpty } from "@bloomper/fgv-web-ui/shell/data-empty";
 import { PosterImage } from "@/components/video/poster-image.client";
 import { getVideos } from "@/lib/video/video.server";
 import { spexFamilies } from "@/utils/spex-families";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
+import { Page, PageHeader } from "@bloomper/fgv-web-ui/shell/page-header";
 
 /**
  * Every spex with videos, each opening its title page.
@@ -16,8 +17,8 @@ export default async function SpexIndexPage() {
     const families = spexFamilies((await getVideos({}))?.videos ?? []);
 
     return (
-      <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
-        <h1 className="text-2xl font-bold tracking-tight">{t("allSpex")}</h1>
+      <Page variant="content">
+        <PageHeader title={t("allSpex")}/>
         {families.length === 0 ? <DataEmpty title={t("noSpex")} description={null} /> : (
           <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6">
             {families.map(family => (
@@ -36,7 +37,7 @@ export default async function SpexIndexPage() {
             ))}
           </ul>
         )}
-      </div>
+      </Page>
     );
   });
 }

@@ -7,12 +7,12 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ArrowDown, ArrowUp, Pencil, Plus, Trash2, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@bloomper/fgv-web-ui/ui/button";
+import { Input } from "@bloomper/fgv-web-ui/ui/input";
+import { Label } from "@bloomper/fgv-web-ui/ui/label";
+import { Switch } from "@bloomper/fgv-web-ui/ui/switch";
+import { Textarea } from "@bloomper/fgv-web-ui/ui/textarea";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@bloomper/fgv-web-ui/ui/dialog";
 import { PosterImage } from "@/components/video/poster-image.client";
 import {
   createPlaylistAction,
@@ -21,7 +21,7 @@ import {
   reorderPlaylistAction,
   updatePlaylistAction,
 } from "@/components/video/actions.server";
-import { useDialogs } from "@/components/dialogs.client";
+import { useDialogs } from "@bloomper/fgv-web-ui/shell/dialogs";
 import { formatDuration } from "@/utils/duration";
 import { track } from "@/utils/umami";
 

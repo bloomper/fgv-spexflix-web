@@ -4,7 +4,8 @@ import { PosterImage } from "@/components/video/poster-image.client";
 import { getCollections } from "@/lib/video/video.server";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
-import { DataEmpty } from "@/components/data-empty";
+import { DataEmpty } from "@bloomper/fgv-web-ui/shell/data-empty";
+import { Page, PageHeader } from "@bloomper/fgv-web-ui/shell/page-header";
 
 export default async function CollectionsPage() {
   return withPolicyPage(Policies.app.requireAccess, async () => {
@@ -12,9 +13,8 @@ export default async function CollectionsPage() {
     const collections = await getCollections();
 
     return (
-      <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
-        <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
-        <p className="max-w-prose text-sm text-muted-foreground">{t("text")}</p>
+      <Page variant="content">
+        <PageHeader title={t("title")} description={t("text")}/>
         {collections.length === 0 ? <DataEmpty title={t("none")} description={null} /> : (
           <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
             {collections.map(collection => (
@@ -38,7 +38,7 @@ export default async function CollectionsPage() {
             ))}
           </ul>
         )}
-      </div>
+      </Page>
     );
   });
 }

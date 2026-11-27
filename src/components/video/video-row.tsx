@@ -36,7 +36,7 @@ export function VideoRow({ id, title, more, videos, action, label }: {
       <div className="flex items-baseline gap-3 px-4 md:px-10">
         <h2 id={id} className="text-lg font-semibold md:text-xl">{title}</h2>
         {more && (
-          <Link href={more.href} className="inline-flex items-center text-sm text-primary hover:text-primary/80">
+          <Link href={more.href} className="inline-flex items-center text-sm text-link hover:text-link/80">
             {more.label}<ChevronRight className="size-4" aria-hidden />
           </Link>
         )}

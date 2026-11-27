@@ -6,12 +6,12 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Camera, ImageUp, Plus, RefreshCw, Trash2, Upload, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Button } from "@bloomper/fgv-web-ui/ui/button";
+import { Badge } from "@bloomper/fgv-web-ui/ui/badge";
+import { Switch } from "@bloomper/fgv-web-ui/ui/switch";
+import { Input } from "@bloomper/fgv-web-ui/ui/input";
+import { Label } from "@bloomper/fgv-web-ui/ui/label";
+import { NativeSelect, NativeSelectOption } from "@bloomper/fgv-web-ui/ui/native-select";
 import { type KindOption, VideoForm, type VideoFormValues } from "@/components/video/video-form.client";
 import { type PlayerHandle, VideoPlayer } from "@/components/video/video-player.client";
 import { PosterImage } from "@/components/video/poster-image.client";
@@ -30,7 +30,7 @@ import {
   updateVideoAction,
 } from "@/app/(app)/manage/actions.server";
 import { track } from "@/utils/umami";
-import { useDialogs } from "@/components/dialogs.client";
+import { useDialogs } from "@bloomper/fgv-web-ui/shell/dialogs";
 
 export type EditorVideo = VideoFormValues & {
   id: string;

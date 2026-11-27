@@ -4,7 +4,8 @@ import { creditHref } from "@/lib/credits";
 import { getCredits } from "@/lib/video/video.server";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
-import { DataEmpty } from "@/components/data-empty";
+import { DataEmpty } from "@bloomper/fgv-web-ui/shell/data-empty";
+import { Page, PageHeader } from "@bloomper/fgv-web-ui/shell/page-header";
 
 /**
  * Everyone who takes part in the videos, by name, with how many videos each, like Spexify's credits pages.
@@ -15,9 +16,8 @@ export default async function CreditsPage() {
     const credits = await getCredits();
 
     return (
-      <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
-        <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
-        <p className="max-w-prose text-sm text-muted-foreground">{t("text")}</p>
+      <Page variant="content">
+        <PageHeader title={t("title")} description={t("text")}/>
         {credits.length === 0 ? <DataEmpty title={t("none")} description={null} /> : (
           <ul className="grid gap-x-6 sm:grid-cols-2 lg:grid-cols-3">
             {credits.map(credit => (
@@ -33,7 +33,7 @@ export default async function CreditsPage() {
             ))}
           </ul>
         )}
-      </div>
+      </Page>
     );
   });
 }

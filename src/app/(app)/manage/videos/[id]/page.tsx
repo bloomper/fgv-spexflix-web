@@ -9,6 +9,7 @@ import { TrashVideo, VideoEditor } from "./video-editor.client";
 import { CreditsEditor } from "@/components/video/credits-editor.client";
 import { RecordHistory } from "@/components/audit/change-log";
 import { auditLink } from "../../audit/links";
+import { Page, PageHeader } from "@bloomper/fgv-web-ui/shell/page-header";
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -30,11 +31,8 @@ export default async function EditVideoPage({ params }: { params: Promise<{ id: 
     const playback = video.status === "READY" ? await getPlayback(id) : null;
 
     return (
-      <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h1 className="text-2xl font-bold tracking-tight">{video.title}</h1>
-          <Link href={`/videos/${video.id}`} className="text-sm text-primary hover:text-primary/80">{t("viewAsViewer")}</Link>
-        </div>
+      <Page variant="content">
+        <PageHeader title={video.title} actions={<Link href={`/videos/${video.id}`} className="text-sm text-link hover:text-link/80">{t("viewAsViewer")}</Link>}/>
         <VideoEditor video={video}
                      playback={playback} admin={isAdmin(authz.roles)} kinds={kinds}
                      spexipediaUrl={process.env.SPEXIPEDIA_WEB_URL?.trim().replace(/\/+$/, "") || null} />
@@ -44,7 +42,7 @@ export default async function EditVideoPage({ params }: { params: Promise<{ id: 
         </div>
         <TrashVideo video={video} />
         <RecordHistory entityId={video.id} path="/manage/audit" linkOf={auditLink} />
-      </div>
+      </Page>
     );
   });
 }

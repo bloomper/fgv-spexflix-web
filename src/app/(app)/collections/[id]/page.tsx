@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@bloomper/fgv-web-ui/ui/button";
 import { Backdrop } from "@/components/video/backdrop";
 import { EpisodeList } from "@/components/video/episode-list";
 import { TitlePlay } from "@/components/video/title-actions";
@@ -10,7 +10,7 @@ import { getCollection } from "@/lib/video/video.server";
 import { isEditor } from "@/utils/auth";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
-import { DataEmpty } from "@/components/data-empty";
+import { DataEmpty } from "@bloomper/fgv-web-ui/shell/data-empty";
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -37,7 +37,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ id:
     return (
       <div className="flex flex-1 flex-col pb-10">
         <Backdrop videoId={collection.videos[0]?.id} title={collection.title}>
-          <p className="text-xs font-semibold tracking-widest text-primary uppercase">{tt("collection")}</p>
+          <p className="text-xs font-semibold tracking-widest text-link uppercase">{tt("collection")}</p>
           <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-5xl">{collection.title}</h1>
           <p className="text-sm text-muted-foreground">{tt("videos", { count: collection.videos.length })}</p>
           {collection.description &&

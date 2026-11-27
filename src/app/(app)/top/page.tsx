@@ -8,7 +8,8 @@ import { decadesOf, parseDecade } from "@/utils/decades";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
 import { cn } from "@/utils/utils";
-import { DataEmpty } from "@/components/data-empty";
+import { DataEmpty } from "@bloomper/fgv-web-ui/shell/data-empty";
+import { Page, PageHeader } from "@bloomper/fgv-web-ui/shell/page-header";
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const BY: TopBy[] = ["RATED", "LIKED", "WATCHED"];
@@ -50,11 +51,8 @@ export default async function TopPage({ searchParams }: {
     const counts = new Map(videos.map(video => [video.id, video]));
 
     return (
-      <div className="flex flex-1 flex-col gap-5 p-4 md:p-8">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
-          <p className="max-w-3xl text-pretty text-sm text-muted-foreground">{t(`text.${by}`)}</p>
-        </div>
+      <Page variant="content">
+        <PageHeader title={t("title")} description={t(`text.${by}`)}/>
         <LinkTabs label={t("by")} items={BY.map(item => ({
           href: link({ by: item }), label: t(`byLabel.${item}`), active: by === item,
         }))} />
@@ -79,7 +77,7 @@ export default async function TopPage({ searchParams }: {
             ? t("likes", { count: counts.get(video.id)?.likeCount ?? 0 })
             : t("watches", { count: counts.get(video.id)?.watchCount ?? 0 })} />
           : <DataEmpty title={t("none")} description={null} />}
-      </div>
+      </Page>
     );
   });
 }

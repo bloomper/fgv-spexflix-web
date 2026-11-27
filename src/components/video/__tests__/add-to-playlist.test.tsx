@@ -9,7 +9,7 @@ const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
 const track = vi.hoisted(() => vi.fn());
 
 vi.mock("@/components/video/actions.server", () => actions);
-vi.mock("@/components/dialogs.client", () => ({ useDialogs: () => dialogs }));
+vi.mock("@bloomper/fgv-web-ui/shell/dialogs", () => ({ useDialogs: () => dialogs }));
 vi.mock("sonner", () => ({ toast }));
 vi.mock("@/utils/umami", () => ({ track }));
 

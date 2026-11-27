@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@bloomper/fgv-web-ui/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@bloomper/fgv-web-ui/ui/table";
 import { getQueue } from "@/lib/admin/admin.server";
 import { formatInstant } from "@/utils/format";
 import { Policies } from "@/utils/policy.server";
 import { withPolicyPage } from "@/utils/route.server";
+import { Page, PageHeader } from "@bloomper/fgv-web-ui/shell/page-header";
 
 export default async function QueuePage() {
   return withPolicyPage(Policies.editor.requireEditor, async () => {
@@ -13,9 +14,8 @@ export default async function QueuePage() {
     const jobs = await getQueue();
 
     return (
-      <div className="flex flex-1 flex-col gap-6 p-4 md:p-8">
-        <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
-        <p className="max-w-prose text-sm text-muted-foreground">{t("text")}</p>
+      <Page variant="content">
+        <PageHeader title={t("title")} description={t("text")}/>
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
@@ -32,7 +32,7 @@ export default async function QueuePage() {
                 <TableRow key={job.id}>
                   <TableCell>
                     <Link href={`/manage/videos/${job.videoId}`}
-                          className="font-medium hover:text-primary">{job.videoTitle}</Link>
+                          className="font-medium hover:text-link">{job.videoTitle}</Link>
                     {job.error && <div className="text-xs text-destructive">{job.error}</div>}
                   </TableCell>
                   <TableCell><Badge
@@ -47,7 +47,7 @@ export default async function QueuePage() {
             </TableBody>
           </Table>
         </div>
-      </div>
+      </Page>
     );
   });
 }
