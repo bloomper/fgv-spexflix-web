@@ -1,7 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { type ReactNode, useCallback, useEffect, useImperativeHandle, useRef, useState, useSyncExternalStore } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type Hls from "hls.js";
@@ -51,7 +59,7 @@ type Level = { height: number; bitrate: number };
 
 type AirPlayVideo = HTMLVideoElement & {
   webkitShowPlaybackTargetPicker?: () => void;
-  webkitEnterFullscreen?: () => void
+  webkitEnterFullscreen?: () => void;
 };
 
 type Props = {
@@ -124,24 +132,24 @@ function readSettings(): { volume: number; muted: boolean } {
  * stopped.
  */
 export function VideoPlayer({
-                              videoId,
-                              masterUrl,
-                              thumbnailsUrl,
-                              subtitles,
-                              chapters,
-                              durationSeconds,
-                              startAt,
-                              endAt,
-                              recordProgress = true,
-                              autoPlay = false,
-                              onTime,
-                              onEnded,
-                              onRenew,
-                              cast = false,
-                              title,
-                              children,
-                              ref,
-                            }: Props) {
+  videoId,
+  masterUrl,
+  thumbnailsUrl,
+  subtitles,
+  chapters,
+  durationSeconds,
+  startAt,
+  endAt,
+  recordProgress = true,
+  autoPlay = false,
+  onTime,
+  onEnded,
+  onRenew,
+  cast = false,
+  title,
+  children,
+  ref,
+}: Props) {
   const t = useTranslations("Player");
   const container = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
@@ -174,55 +182,65 @@ export function VideoPlayer({
   const [levels, setLevels] = useState<Level[]>([]);
   const [level, setLevel] = useState(-1);
   const [airPlay, setAirPlay] = useState(false);
-  const pictureInPicture = useSyncExternalStore(noSubscription,
-    () => "pictureInPictureEnabled" in document && document.pictureInPictureEnabled, () => false);
+  const pictureInPicture = useSyncExternalStore(
+    noSubscription,
+    () => "pictureInPictureEnabled" in document && document.pictureInPictureEnabled,
+    () => false
+  );
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const callbacks = useRef({ onTime, onEnded, endAt });
   const noVideo = useRef<HTMLVideoElement>(null);
   const autoCast = useRef(false);
   const playOrPauseRemote = useRef<() => void>(() => undefined);
 
-  const save = useCallback((position: number) => {
-    if (recordProgress) {
-      lastSaved.current = position;
-      void saveProgressAction(videoId, position);
-    }
-  }, [recordProgress, videoId]);
+  const save = useCallback(
+    (position: number) => {
+      if (recordProgress) {
+        lastSaved.current = position;
+        void saveProgressAction(videoId, position);
+      }
+    },
+    [recordProgress, videoId]
+  );
 
-  const remote = useCast(cast, { videoId, title: title ?? "", url: masterUrl, subtitles }, {
-    onTime: seconds => {
-      setTime(seconds);
-      callbacks.current.onTime?.(seconds);
-      resumeAt.current = seconds;
-      if (Math.abs(seconds - lastSaved.current) >= SAVE_EVERY) {
+  const remote = useCast(
+    cast,
+    { videoId, title: title ?? "", url: masterUrl, subtitles },
+    {
+      onTime: (seconds) => {
+        setTime(seconds);
+        callbacks.current.onTime?.(seconds);
+        resumeAt.current = seconds;
+        if (Math.abs(seconds - lastSaved.current) >= SAVE_EVERY) {
+          save(seconds);
+        }
+
+        const stop = callbacks.current.endAt;
+
+        if (stop && seconds >= stop && !ended.current) {
+          ended.current = true;
+          playOrPauseRemote.current();
+          callbacks.current.onEnded?.();
+        }
+      },
+      onEnded: () => {
+        save(resumeAt.current);
+        if (!ended.current) {
+          ended.current = true;
+          callbacks.current.onEnded?.();
+        }
+      },
+      // Playing here goes on from where the receiver was
+      onStop: (seconds) => {
         save(seconds);
-      }
-
-      const stop = callbacks.current.endAt;
-
-      if (stop && seconds >= stop && !ended.current) {
-        ended.current = true;
-        playOrPauseRemote.current();
-        callbacks.current.onEnded?.();
-      }
-    },
-    onEnded: () => {
-      save(resumeAt.current);
-      if (!ended.current) {
-        ended.current = true;
-        callbacks.current.onEnded?.();
-      }
-    },
-    // Playing here goes on from where the receiver was
-    onStop: seconds => {
-      save(seconds);
-      resumeAt.current = seconds;
-      setTime(seconds);
-      if (video.current) {
-        video.current.currentTime = seconds;
-      }
-    },
-  });
+        resumeAt.current = seconds;
+        setTime(seconds);
+        if (video.current) {
+          video.current.currentTime = seconds;
+        }
+      },
+    }
+  );
   const casting = remote.casting;
 
   useEffect(() => {
@@ -280,9 +298,14 @@ export function VideoPlayer({
       return;
     }
 
-    const onAvailability = (event: Event) => setAirPlay((event as Event & {
-      availability?: string
-    }).availability === "available");
+    const onAvailability = (event: Event) =>
+      setAirPlay(
+        (
+          event as Event & {
+            availability?: string;
+          }
+        ).availability === "available"
+      );
 
     element.addEventListener("webkitplaybacktargetavailabilitychanged", onAvailability);
     return () => element.removeEventListener("webkitplaybacktargetavailabilitychanged", onAvailability);
@@ -296,29 +319,36 @@ export function VideoPlayer({
     hideTimer.current = setTimeout(() => setControlsShown(false), HIDE_AFTER);
   }, []);
 
-  useEffect(() => () => {
-    if (hideTimer.current) {
-      clearTimeout(hideTimer.current);
-    }
-  }, []);
-
-  useImperativeHandle(ref, () => ({
-    seek: (seconds: number) => {
-      if (casting) {
-        ended.current = false;
-        remote.seek(seconds);
-        if (remote.paused) {
-          remote.playOrPause();
-        }
-      } else if (video.current) {
-        ended.current = false;
-        video.current.currentTime = seconds;
-        void video.current.play().catch(() => undefined);
+  useEffect(
+    () => () => {
+      if (hideTimer.current) {
+        clearTimeout(hideTimer.current);
       }
     },
-    currentTime: () => casting ? remote.time : video.current?.currentTime ?? 0,
-    play: () => casting ? remote.paused && remote.playOrPause() : void video.current?.play().catch(() => undefined),
-  }), [casting, remote]);
+    []
+  );
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      seek: (seconds: number) => {
+        if (casting) {
+          ended.current = false;
+          remote.seek(seconds);
+          if (remote.paused) {
+            remote.playOrPause();
+          }
+        } else if (video.current) {
+          ended.current = false;
+          video.current.currentTime = seconds;
+          void video.current.play().catch(() => undefined);
+        }
+      },
+      currentTime: () => (casting ? remote.time : (video.current?.currentTime ?? 0)),
+      play: () => (casting ? remote.paused && remote.playOrPause() : void video.current?.play().catch(() => undefined)),
+    }),
+    [casting, remote]
+  );
 
   useEffect(() => {
     const element = video.current;
@@ -346,7 +376,7 @@ export function VideoPlayer({
       if (onRenew && !renewed.current) {
         renewed.current = true;
         resumeAt.current = element.currentTime || resumeAt.current;
-        void onRenew().then(renewed => {
+        void onRenew().then((renewed) => {
           if (!renewed && !cancelled) {
             setFailed(true);
           }
@@ -398,7 +428,7 @@ export function VideoPlayer({
           fail();
         });
         instance.on(HlsClass.Events.MANIFEST_PARSED, (_event, data) => {
-          setLevels(data.levels.map(candidate => ({ height: candidate.height, bitrate: candidate.bitrate })));
+          setLevels(data.levels.map((candidate) => ({ height: candidate.height, bitrate: candidate.bitrate })));
           if (autoPlay) {
             void element.play().catch(() => undefined);
           }
@@ -439,7 +469,7 @@ export function VideoPlayer({
       remote.setSubtitle(language);
     }
     if (element) {
-      Array.from(element.textTracks).forEach(track => {
+      Array.from(element.textTracks).forEach((track) => {
         track.mode = track.language === language ? "showing" : "disabled";
       });
     }
@@ -500,10 +530,10 @@ export function VideoPlayer({
   const retry = () => {
     resumeAt.current = video.current?.currentTime || resumeAt.current;
     if (onRenew) {
-      void onRenew().then(() => setAttempt(value => value + 1));
+      void onRenew().then(() => setAttempt((value) => value + 1));
     } else {
       router.refresh();
-      setAttempt(value => value + 1);
+      setAttempt((value) => value + 1);
     }
   };
 
@@ -511,7 +541,10 @@ export function VideoPlayer({
     if (!thumbnailsUrl) {
       return;
     }
-    fetch(thumbnailsUrl).then(response => response.ok ? response.text() : "").then(text => setThumbnails(parseThumbnails(text, thumbnailsUrl))).catch(() => undefined);
+    fetch(thumbnailsUrl)
+      .then((response) => (response.ok ? response.text() : ""))
+      .then((text) => setThumbnails(parseThumbnails(text, thumbnailsUrl)))
+      .catch(() => undefined);
   }, [thumbnailsUrl]);
 
   const startCasting = () => {
@@ -586,7 +619,8 @@ export function VideoPlayer({
       }
     };
     const onRate = () => setSpeed(element.playbackRate);
-    const onTracks = () => setSubtitle(Array.from(element.textTracks).find(track => track.mode === "showing")?.language ?? null);
+    const onTracks = () =>
+      setSubtitle(Array.from(element.textTracks).find((track) => track.mode === "showing")?.language ?? null);
 
     element.addEventListener("timeupdate", onTimeUpdate);
     element.addEventListener("play", onPlay);
@@ -615,7 +649,7 @@ export function VideoPlayer({
   }, [save]);
 
   const preview = hover ? thumbnailAt(thumbnails, hover.time) : undefined;
-  const chapterAt = (seconds: number) => chapters.filter(chapter => chapter.startSeconds <= seconds).at(-1);
+  const chapterAt = (seconds: number) => chapters.filter((chapter) => chapter.startSeconds <= seconds).at(-1);
   const isPlaying = casting ? !remote.paused : playing;
   const shown = controlsShown || !isPlaying || menuOpen || casting;
   const VolumeIcon = muted || volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
@@ -626,58 +660,91 @@ export function VideoPlayer({
 
   return (
     <div className="space-y-2">
-      <div ref={container}
-           className={cn("group/player relative overflow-hidden rounded-lg bg-black", fullscreen && "rounded-none", !shown && "cursor-none")}
-           onMouseMove={showControls} onFocusCapture={showControls} onTouchStart={showControls}>
-        <video ref={video} playsInline crossOrigin="anonymous" preload="metadata" x-webkit-airplay="allow"
-               onPlay={() => {
-                 // Once per page: how many videos are watched, not how often they are paused
-                 if (!played.current) {
-                   played.current = true;
-                   trackEvent("video-play");
-                 }
-               }}
-               onClick={toggle} onDoubleClick={toggleFullscreen}
-               className={cn("block aspect-video w-full bg-black", fullscreen && "h-full")}
-               poster={`/api/poster/${videoId}`}>
-          {subtitles.map(entry => (
-            <track key={entry.language} kind="subtitles" src={entry.url} srcLang={entry.language} label={entry.label} />
+      <div
+        ref={container}
+        className={cn(
+          "group/player relative overflow-hidden rounded-lg bg-black",
+          fullscreen && "rounded-none",
+          !shown && "cursor-none"
+        )}
+        onMouseMove={showControls}
+        onFocusCapture={showControls}
+        onTouchStart={showControls}
+      >
+        <video
+          ref={video}
+          playsInline
+          crossOrigin="anonymous"
+          preload="metadata"
+          x-webkit-airplay="allow"
+          onPlay={() => {
+            // Once per page: how many videos are watched, not how often they are paused
+            if (!played.current) {
+              played.current = true;
+              trackEvent("video-play");
+            }
+          }}
+          onClick={toggle}
+          onDoubleClick={toggleFullscreen}
+          className={cn("block aspect-video w-full bg-black", fullscreen && "h-full")}
+          poster={`/api/poster/${videoId}`}
+        >
+          {subtitles.map((entry) => (
+            <track
+              key={entry.language}
+              kind="subtitles"
+              src={entry.url}
+              srcLang={entry.language}
+              label={entry.label}
+            />
           ))}
         </video>
 
         {casting && (
-          <div role="status"
-               className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/85 p-4 text-center text-white">
-            <Cast className="size-10" aria-hidden />
+          <div
+            role="status"
+            className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/85 p-4 text-center text-white"
+          >
+            <Cast
+              className="size-10"
+              aria-hidden
+            />
             <p className="font-medium">{remote.device ? t("castingTo", { device: remote.device }) : t("casting")}</p>
             {chapterAt(time) && <p className="text-sm text-white/80">{chapterAt(time)?.title}</p>}
           </div>
         )}
 
         {!started && !failed && !casting && (
-          <button type="button" onClick={toggle} aria-label={t("play")}
-                  className="absolute inset-0 m-auto flex size-16 items-center justify-center rounded-full bg-black/60 text-white outline-none hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-white">
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label={t("play")}
+            className="absolute inset-0 m-auto flex size-16 items-center justify-center rounded-full bg-black/60 text-white outline-none hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-white"
+          >
             <Play className="size-8 fill-current" />
           </button>
         )}
 
         <div
-          className={cn("absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent px-2 pt-10 pb-1.5 text-white transition-opacity duration-200 sm:px-3",
-            shown ? "opacity-100" : "pointer-events-none opacity-0")}>
+          className={cn(
+            "absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent px-2 pt-10 pb-1.5 text-white transition-opacity duration-200 sm:px-3",
+            shown ? "opacity-100" : "pointer-events-none opacity-0"
+          )}
+        >
           <div
             className="relative h-5 cursor-pointer"
-            onMouseMove={event => {
+            onMouseMove={(event) => {
               const box = event.currentTarget.getBoundingClientRect();
               const x = Math.min(Math.max(event.clientX - box.left, 0), box.width);
 
-              setHover({ x, width: box.width, time: duration * x / box.width });
+              setHover({ x, width: box.width, time: (duration * x) / box.width });
             }}
             onMouseLeave={() => setHover(null)}
-            onClick={event => {
+            onClick={(event) => {
               const box = event.currentTarget.getBoundingClientRect();
 
               if (duration > 0) {
-                seekTo(duration * (event.clientX - box.left) / box.width);
+                seekTo((duration * (event.clientX - box.left)) / box.width);
               }
             }}
             role="slider"
@@ -687,7 +754,7 @@ export function VideoPlayer({
             aria-valuemax={Math.round(duration)}
             aria-valuenow={Math.round(time)}
             aria-valuetext={formatDuration(time)}
-            onKeyDown={event => {
+            onKeyDown={(event) => {
               if (event.key === "ArrowRight") {
                 event.preventDefault();
                 seekBy(10);
@@ -695,34 +762,48 @@ export function VideoPlayer({
                 event.preventDefault();
                 seekBy(-10);
               }
-            }}>
-            <div
-              className="absolute top-2 h-1 w-full rounded bg-white/30 transition-[height,top] group-hover/player:top-1.5 group-hover/player:h-2">
+            }}
+          >
+            <div className="absolute top-2 h-1 w-full rounded bg-white/30 transition-[height,top] group-hover/player:top-1.5 group-hover/player:h-2">
               {endAt && duration > 0 && startAt !== undefined && startAt !== null && (
-                <div className="absolute inset-y-0 bg-white/30"
-                     style={{
-                       left: `${100 * startAt / duration}%`,
-                       width: `${100 * Math.max(0, endAt - startAt) / duration}%`,
-                     }} />
+                <div
+                  className="absolute inset-y-0 bg-white/30"
+                  style={{
+                    left: `${(100 * startAt) / duration}%`,
+                    width: `${(100 * Math.max(0, endAt - startAt)) / duration}%`,
+                  }}
+                />
               )}
-              <div className="relative h-full rounded bg-primary"
-                   style={{ width: duration > 0 ? `${Math.min(100, 100 * time / duration)}%` : 0 }} />
+              <div
+                className="bg-primary relative h-full rounded"
+                style={{ width: duration > 0 ? `${Math.min(100, (100 * time) / duration)}%` : 0 }}
+              />
             </div>
-            {duration > 0 && chapters.filter(chapter => chapter.startSeconds > 0).map(chapter => (
-              <span key={chapter.startSeconds} className="absolute top-1 h-3 w-0.5 bg-white/70"
-                    style={{ left: `${100 * chapter.startSeconds / duration}%` }} />
-            ))}
+            {duration > 0 &&
+              chapters
+                .filter((chapter) => chapter.startSeconds > 0)
+                .map((chapter) => (
+                  <span
+                    key={chapter.startSeconds}
+                    className="absolute top-1 h-3 w-0.5 bg-white/70"
+                    style={{ left: `${(100 * chapter.startSeconds) / duration}%` }}
+                  />
+                ))}
             {hover && (
               <div
-                className="pointer-events-none absolute bottom-6 z-10 rounded bg-popover p-1 text-center text-xs text-popover-foreground shadow"
-                style={{ left: boxLeft, width: boxWidth }}>
+                className="bg-popover text-popover-foreground pointer-events-none absolute bottom-6 z-10 rounded p-1 text-center text-xs shadow"
+                style={{ left: boxLeft, width: boxWidth }}
+              >
                 {preview && (
-                  <div className="mx-auto mb-1 overflow-hidden rounded" style={{
-                    width: preview.width,
-                    height: preview.height,
-                    backgroundImage: `url("${preview.url}")`,
-                    backgroundPosition: `-${preview.x}px -${preview.y}px`,
-                  }} />
+                  <div
+                    className="mx-auto mb-1 overflow-hidden rounded"
+                    style={{
+                      width: preview.width,
+                      height: preview.height,
+                      backgroundImage: `url("${preview.url}")`,
+                      backgroundPosition: `-${preview.x}px -${preview.y}px`,
+                    }}
+                  />
                 )}
                 <div className="tabular-nums">{formatDuration(hover.time)}</div>
                 {chapterAt(hover.time) && <div className="truncate">{chapterAt(hover.time)?.title}</div>}
@@ -731,52 +812,97 @@ export function VideoPlayer({
           </div>
 
           <div className="flex items-center gap-0.5 sm:gap-1">
-            <Button variant="ghost" size="icon" className={controlButton} onClick={toggle}
-                    aria-label={isPlaying ? t("pause") : t("play")}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={controlButton}
+              onClick={toggle}
+              aria-label={isPlaying ? t("pause") : t("play")}
+            >
               {isPlaying ? <Pause className="fill-current" /> : <Play className="fill-current" />}
             </Button>
-            <Button variant="ghost" size="icon" className={cn(controlButton, "hidden sm:inline-flex")}
-                    onClick={() => seekBy(-10)} aria-label={t("back")}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(controlButton, "hidden sm:inline-flex")}
+              onClick={() => seekBy(-10)}
+              aria-label={t("back")}
+            >
               <RotateCcw />
             </Button>
-            <Button variant="ghost" size="icon" className={cn(controlButton, "hidden sm:inline-flex")}
-                    onClick={() => seekBy(10)} aria-label={t("forward")}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(controlButton, "hidden sm:inline-flex")}
+              onClick={() => seekBy(10)}
+              aria-label={t("forward")}
+            >
               <RotateCw />
             </Button>
             <div className="group/volume flex items-center">
-              <Button variant="ghost" size="icon" className={controlButton} aria-label={muted ? t("unmute") : t("mute")}
-                      onClick={() => {
-                        if (video.current) {
-                          video.current.muted = !video.current.muted;
-                        }
-                      }}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={controlButton}
+                aria-label={muted ? t("unmute") : t("mute")}
+                onClick={() => {
+                  if (video.current) {
+                    video.current.muted = !video.current.muted;
+                  }
+                }}
+              >
                 <VolumeIcon />
               </Button>
-              <input type="range" min={0} max={1} step={0.05} value={muted ? 0 : volume} aria-label={t("volume")}
-                     onChange={event => changeVolume(Number(event.target.value))}
-                     className="hidden h-1 w-0 cursor-pointer accent-white opacity-0 transition-all group-hover/volume:w-20 group-hover/volume:opacity-100 focus:w-20 focus:opacity-100 sm:block" />
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={muted ? 0 : volume}
+                aria-label={t("volume")}
+                onChange={(event) => changeVolume(Number(event.target.value))}
+                className="hidden h-1 w-0 cursor-pointer accent-white opacity-0 transition-all group-hover/volume:w-20 group-hover/volume:opacity-100 focus:w-20 focus:opacity-100 sm:block"
+              />
             </div>
             <span className="min-w-0 truncate px-1 text-xs tabular-nums sm:text-sm">
-                            {formatDuration(time)} / {formatDuration(duration)}
+              {formatDuration(time)} / {formatDuration(duration)}
               {chapterAt(time) && <span className="hidden text-white/80 md:inline"> · {chapterAt(time)?.title}</span>}
-                        </span>
+            </span>
             <span className="flex-1" />
 
             {chapters.length > 1 && (
               <DropdownMenu onOpenChange={setMenuOpen}>
                 <DropdownMenuTrigger
-                  render={<Button variant="ghost" size="icon" className={controlButton} aria-label={t("chapters")} />}>
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={controlButton}
+                      aria-label={t("chapters")}
+                    />
+                  }
+                >
                   <ListVideo />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" side="top" container={container} className="max-h-80 w-72">
+                <DropdownMenuContent
+                  align="end"
+                  side="top"
+                  container={container}
+                  className="max-h-80 w-72"
+                >
                   <DropdownMenuGroup>
                     <DropdownMenuLabel>{t("chapters")}</DropdownMenuLabel>
                     {chapters.map((chapter, i) => (
-                      <DropdownMenuItem key={chapter.startSeconds} onClick={() => seekTo(chapter.startSeconds)}>
+                      <DropdownMenuItem
+                        key={chapter.startSeconds}
+                        onClick={() => seekTo(chapter.startSeconds)}
+                      >
                         <Check className={cn(chapterAt(time) !== chapter && "invisible")} />
-                        <span className="w-5 shrink-0 text-xs tabular-nums text-muted-foreground">{i + 1}</span>
+                        <span className="text-muted-foreground w-5 shrink-0 text-xs tabular-nums">{i + 1}</span>
                         <span className="min-w-0 flex-1 truncate">{chapter.title}</span>
-                        <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{formatDuration(chapter.startSeconds)}</span>
+                        <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+                          {formatDuration(chapter.startSeconds)}
+                        </span>
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuGroup>
@@ -787,19 +913,35 @@ export function VideoPlayer({
             {subtitles.length > 0 && (
               <DropdownMenu onOpenChange={setMenuOpen}>
                 <DropdownMenuTrigger
-                  render={<Button variant="ghost" size="icon" className={cn(controlButton, subtitle && "text-link")}
-                                  aria-label={t("subtitles")} />}>
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn(controlButton, subtitle && "text-link")}
+                      aria-label={t("subtitles")}
+                    />
+                  }
+                >
                   <Captions />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" side="top" container={container}>
+                <DropdownMenuContent
+                  align="end"
+                  side="top"
+                  container={container}
+                >
                   <DropdownMenuGroup>
                     <DropdownMenuLabel>{t("subtitles")}</DropdownMenuLabel>
                     <DropdownMenuItem onClick={() => chooseSubtitle(null)}>
-                      <Check className={cn(subtitle !== null && "invisible")} />{t("subtitlesOff")}
+                      <Check className={cn(subtitle !== null && "invisible")} />
+                      {t("subtitlesOff")}
                     </DropdownMenuItem>
-                    {subtitles.map(entry => (
-                      <DropdownMenuItem key={entry.language} onClick={() => chooseSubtitle(entry.language)}>
-                        <Check className={cn(subtitle !== entry.language && "invisible")} />{entry.label}
+                    {subtitles.map((entry) => (
+                      <DropdownMenuItem
+                        key={entry.language}
+                        onClick={() => chooseSubtitle(entry.language)}
+                      >
+                        <Check className={cn(subtitle !== entry.language && "invisible")} />
+                        {entry.label}
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuGroup>
@@ -809,17 +951,35 @@ export function VideoPlayer({
 
             <DropdownMenu onOpenChange={setMenuOpen}>
               <DropdownMenuTrigger
-                render={<Button variant="ghost" size="icon" className={controlButton} aria-label={t("settings")} />}>
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={controlButton}
+                    aria-label={t("settings")}
+                  />
+                }
+              >
                 <Settings2 />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" side="top" container={container} className="max-h-80">
+              <DropdownMenuContent
+                align="end"
+                side="top"
+                container={container}
+                className="max-h-80"
+              >
                 <DropdownMenuGroup>
-                  <DropdownMenuLabel className="flex items-center gap-2"><Gauge className="size-4" />{t("speed")}
+                  <DropdownMenuLabel className="flex items-center gap-2">
+                    <Gauge className="size-4" />
+                    {t("speed")}
                   </DropdownMenuLabel>
-                  {SPEEDS.map(value => (
-                    <DropdownMenuItem key={value} onClick={() => chooseSpeed(value)}>
-                      <Check
-                        className={cn(speed !== value && "invisible")} />{value === 1 ? t("normalSpeed") : `${value}×`}
+                  {SPEEDS.map((value) => (
+                    <DropdownMenuItem
+                      key={value}
+                      onClick={() => chooseSpeed(value)}
+                    >
+                      <Check className={cn(speed !== value && "invisible")} />
+                      {value === 1 ? t("normalSpeed") : `${value}×`}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuGroup>
@@ -827,51 +987,76 @@ export function VideoPlayer({
                   <DropdownMenuGroup>
                     <DropdownMenuLabel>{t("quality")}</DropdownMenuLabel>
                     <DropdownMenuItem onClick={() => chooseLevel(-1)}>
-                      <Check className={cn(level !== -1 && "invisible")} />{t("auto")}
+                      <Check className={cn(level !== -1 && "invisible")} />
+                      {t("auto")}
                     </DropdownMenuItem>
                     {levels.map((candidate, i) => (
-                      <DropdownMenuItem key={`${candidate.height}-${candidate.bitrate}`} onClick={() => chooseLevel(i)}>
-                        <Check className={cn(level !== i && "invisible")} />{candidate.height}p
+                      <DropdownMenuItem
+                        key={`${candidate.height}-${candidate.bitrate}`}
+                        onClick={() => chooseLevel(i)}
+                      >
+                        <Check className={cn(level !== i && "invisible")} />
+                        {candidate.height}p
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuGroup>
                 )}
                 <DropdownMenuGroup>
                   <DropdownMenuItem onClick={() => setShortcutsOpen(true)}>
-                    <Keyboard />{t("shortcuts")}
+                    <Keyboard />
+                    {t("shortcuts")}
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
 
             {remote.available && (
-              <Button variant="ghost" size="icon" className={cn(controlButton, casting && "text-link")}
-                      aria-label={casting ? t("stopCasting") : t("cast")} aria-pressed={casting}
-                      onClick={() => casting ? remote.stop() : startCasting()}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(controlButton, casting && "text-link")}
+                aria-label={casting ? t("stopCasting") : t("cast")}
+                aria-pressed={casting}
+                onClick={() => (casting ? remote.stop() : startCasting())}
+              >
                 <Cast />
               </Button>
             )}
             {airPlay && (
-              <Button variant="ghost" size="icon" className={controlButton} aria-label={t("airPlay")}
-                      onClick={() => (video.current as AirPlayVideo | null)?.webkitShowPlaybackTargetPicker?.()}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={controlButton}
+                aria-label={t("airPlay")}
+                onClick={() => (video.current as AirPlayVideo | null)?.webkitShowPlaybackTargetPicker?.()}
+              >
                 <Airplay />
               </Button>
             )}
             {pictureInPicture && (
-              <Button variant="ghost" size="icon" className={cn(controlButton, "hidden sm:inline-flex")}
-                      aria-label={t("pictureInPicture")}
-                      onClick={() => {
-                        if (document.pictureInPictureElement) {
-                          void document.exitPictureInPicture().catch(() => undefined);
-                        } else {
-                          void video.current?.requestPictureInPicture().catch(() => undefined);
-                        }
-                      }}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(controlButton, "hidden sm:inline-flex")}
+                aria-label={t("pictureInPicture")}
+                onClick={() => {
+                  if (document.pictureInPictureElement) {
+                    void document.exitPictureInPicture().catch(() => undefined);
+                  } else {
+                    void video.current?.requestPictureInPicture().catch(() => undefined);
+                  }
+                }}
+              >
                 <PictureInPicture2 />
               </Button>
             )}
-            <Button variant="ghost" size="icon" className={controlButton} onClick={toggleFullscreen}
-                    aria-label={fullscreen ? t("exitFullscreen") : t("fullscreen")}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={controlButton}
+              onClick={toggleFullscreen}
+              aria-label={fullscreen ? t("exitFullscreen") : t("fullscreen")}
+            >
               {fullscreen ? <Minimize /> : <Maximize />}
             </Button>
           </div>
@@ -880,21 +1065,32 @@ export function VideoPlayer({
         {children}
 
         {failed && !casting && (
-          <div role="alert"
-               className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 p-4 text-center text-white">
-            <TriangleAlert className="size-8" aria-hidden />
+          <div
+            role="alert"
+            className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 p-4 text-center text-white"
+          >
+            <TriangleAlert
+              className="size-8"
+              aria-hidden
+            />
             <div>
               <p className="font-medium">{t("error")}</p>
               <p className="text-sm text-white/80">{t("errorHint")}</p>
             </div>
-            <Button variant="secondary" onClick={retry}>
+            <Button
+              variant="secondary"
+              onClick={retry}
+            >
               <RotateCcw />
               {t("retry")}
             </Button>
           </div>
         )}
       </div>
-      <VideoShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+      <VideoShortcutsDialog
+        open={shortcutsOpen}
+        onOpenChange={setShortcutsOpen}
+      />
     </div>
   );
 }

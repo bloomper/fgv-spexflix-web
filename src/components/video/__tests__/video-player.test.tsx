@@ -42,8 +42,8 @@ vi.mock("hls.js", () => {
 
     on = (event: string, listener: (event: string, data: never) => void) => this.listeners.push({ event, listener });
 
-    fire = (event: string, data: unknown) => this.listeners.filter(entry => entry.event === event)
-      .forEach(entry => entry.listener(event, data as never));
+    fire = (event: string, data: unknown) =>
+      this.listeners.filter((entry) => entry.event === event).forEach((entry) => entry.listener(event, data as never));
 
     emit = (data: { fatal: boolean; type: string }) => this.fire("hlsError", data);
 
@@ -55,21 +55,32 @@ vi.mock("hls.js", () => {
 
 const MASTER = "https://media.test/v/1/master.m3u8";
 const THUMBS = "https://media.test/v/1/thumbs/thumbs.vtt";
-const CHAPTERS = [{ startSeconds: 0, title: "Ouvertyr" }, { startSeconds: 60, title: "Första akten" }];
+const CHAPTERS = [
+  { startSeconds: 0, title: "Ouvertyr" },
+  { startSeconds: 60, title: "Första akten" },
+];
 
-const show = (props: Partial<Parameters<typeof VideoPlayer>[0]> = {}) => render(
-  <VideoPlayer videoId="1" masterUrl={MASTER}
-               subtitles={[{ language: "sv", label: "Svenska", url: "https://media.test/sv.vtt" }]}
-               chapters={CHAPTERS} durationSeconds={120} {...props} />);
+const show = (props: Partial<Parameters<typeof VideoPlayer>[0]> = {}) =>
+  render(
+    <VideoPlayer
+      videoId="1"
+      masterUrl={MASTER}
+      subtitles={[{ language: "sv", label: "Svenska", url: "https://media.test/sv.vtt" }]}
+      chapters={CHAPTERS}
+      durationSeconds={120}
+      {...props}
+    />
+  );
 
 const media = (container: HTMLElement) => container.querySelector("video") as HTMLVideoElement;
 const timeline = () => screen.getByRole("slider", { name: "timeline" });
 
 /** jsdom does not play media: move the clock and fire the event the browser would. */
-const playTo = (element: HTMLVideoElement, seconds: number) => act(() => {
-  element.currentTime = seconds;
-  fireEvent.timeUpdate(element);
-});
+const playTo = (element: HTMLVideoElement, seconds: number) =>
+  act(() => {
+    element.currentTime = seconds;
+    fireEvent.timeUpdate(element);
+  });
 
 describe("VideoPlayer", () => {
   beforeEach(() => {
@@ -79,8 +90,16 @@ describe("VideoPlayer", () => {
     vi.spyOn(HTMLMediaElement.prototype, "canPlayType").mockReturnValue("");
     vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
     vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({ left: 0, width: 200 } as DOMRect);
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(
-      "WEBVTT\n\n00:00:00.000 --> 00:01:00.000\nsprite.jpg#xywh=0,0,160,90\n\n00:01:00.000 --> 00:02:00.000\nsprite.jpg#xywh=160,0,160,90\n")));
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(
+            "WEBVTT\n\n00:00:00.000 --> 00:01:00.000\nsprite.jpg#xywh=0,0,160,90\n\n00:01:00.000 --> 00:02:00.000\nsprite.jpg#xywh=160,0,160,90\n"
+          )
+        )
+    );
   });
 
   afterEach(() => {
@@ -132,8 +151,16 @@ describe("VideoPlayer", () => {
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 
     // The page passes the new addresses in
-    rerender(<VideoPlayer videoId="v1" masterUrl={`${MASTER}?renewed`} subtitles={[]} chapters={CHAPTERS}
-                          durationSeconds={120} onRenew={onRenew} />);
+    rerender(
+      <VideoPlayer
+        videoId="v1"
+        masterUrl={`${MASTER}?renewed`}
+        subtitles={[]}
+        chapters={CHAPTERS}
+        durationSeconds={120}
+        onRenew={onRenew}
+      />
+    );
     await waitFor(() => expect(hls.instances).toHaveLength(2));
     expect(hls.instances[1].options).toEqual({ startPosition: 40 });
 
@@ -271,7 +298,12 @@ describe("VideoPlayer", () => {
     const { container } = show();
 
     await waitFor(() => expect(hls.instances).toHaveLength(1));
-    act(() => hls.instances[0].emitManifest([{ height: 360, bitrate: 800_000 }, { height: 720, bitrate: 2_500_000 }]));
+    act(() =>
+      hls.instances[0].emitManifest([
+        { height: 360, bitrate: 800_000 },
+        { height: 720, bitrate: 2_500_000 },
+      ])
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "settings" }));
     fireEvent.click(await screen.findByRole("menuitem", { name: "720p" }));
@@ -342,7 +374,8 @@ describe("VideoPlayer", () => {
       value: Object.assign([track], {
         addEventListener: vi.fn(),
         removeEventListener: vi.fn(),
-      }), configurable: true,
+      }),
+      configurable: true,
     });
     fireEvent.click(screen.getByRole("button", { name: "subtitles" }));
     fireEvent.click(await screen.findByRole("menuitem", { name: "Svenska" }));
@@ -374,6 +407,8 @@ describe("VideoPlayer", () => {
 
     expect(parseFloat(box.style.left) + parseFloat(box.style.width)).toBeLessThanOrEqual(200);
     fireEvent.mouseMove(timeline(), { clientX: 1 });
-    expect(parseFloat((container.querySelector(".pointer-events-none.absolute.bottom-6") as HTMLElement).style.left)).toBeGreaterThanOrEqual(0);
+    expect(
+      parseFloat((container.querySelector(".pointer-events-none.absolute.bottom-6") as HTMLElement).style.left)
+    ).toBeGreaterThanOrEqual(0);
   });
 });

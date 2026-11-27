@@ -13,8 +13,18 @@ export default async function LikedPage() {
 
     return (
       <Page variant="content">
-        <PageHeader title={t("title")} description={t("text")}/>
-        {videos.length > 0 ? <VideoGrid videos={videos} /> : <DataEmpty title={t("none")} description={null} />}
+        <PageHeader
+          title={t("title")}
+          description={t("text")}
+        />
+        {videos.length > 0 ? (
+          <VideoGrid videos={videos} />
+        ) : (
+          <DataEmpty
+            title={t("none")}
+            description={null}
+          />
+        )}
       </Page>
     );
   });

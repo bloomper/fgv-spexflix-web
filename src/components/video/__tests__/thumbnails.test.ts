@@ -6,7 +6,8 @@ describe("parseThumbnails", () => {
   it("reads cues and resolves sprites against the index", () => {
     const thumbnails = parseThumbnails(
       "WEBVTT\n\n00:00:00.000 --> 00:00:10.000\nsprite_001.jpg#xywh=0,0,160,90\n\n00:00:10.000 --> 00:00:20.000\nsprite_001.jpg#xywh=160,0,160,90\n",
-      "https://media.example.org/v/1/sig/uuid/1/thumbs/thumbs.vtt");
+      "https://media.example.org/v/1/sig/uuid/1/thumbs/thumbs.vtt"
+    );
 
     expect(thumbnails).toHaveLength(2);
     expect(thumbnails[1]).toEqual({

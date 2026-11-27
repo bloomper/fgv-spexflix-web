@@ -25,7 +25,7 @@ type Params = {
   spex?: string;
   sort?: string;
   liked?: string;
-  unwatched?: string
+  unwatched?: string;
 };
 
 export default async function VideosPage({ searchParams }: { searchParams: Promise<Params> }) {
@@ -38,7 +38,7 @@ export default async function VideosPage({ searchParams }: { searchParams: Promi
     const decadeNumber = yearNumber ? Math.floor(yearNumber / 10) * 10 : parseDecade(decade);
     const kindValue = kind && ID.test(kind) ? kind : null;
     const spexId = spex && ID.test(spex) ? spex : null;
-    const sortBy = SORTS.find(candidate => candidate === sort) ?? "YEAR_DESC";
+    const sortBy = SORTS.find((candidate) => candidate === sort) ?? "YEAR_DESC";
     const onlyLiked = liked === "1";
     const onlyUnwatched = unwatched === "1";
     const data = await getVideos({
@@ -53,8 +53,10 @@ export default async function VideosPage({ searchParams }: { searchParams: Promi
       toYear: !yearNumber && decadeNumber ? decadeNumber + 9 : null,
     });
     // The spex as the videos have it: the original when the filter is one, else the revival itself.
-    const linked = data?.videos.flatMap(video => video.spex);
-    const spexTitle = spexId ? (linked?.find(item => item.id === spexId)?.title ?? linked?.find(item => item.familyId === spexId)?.title) : null;
+    const linked = data?.videos.flatMap((video) => video.spex);
+    const spexTitle = spexId
+      ? (linked?.find((item) => item.id === spexId)?.title ?? linked?.find((item) => item.familyId === spexId)?.title)
+      : null;
     const current = {
       category: categoryId,
       year: yearNumber,
@@ -71,68 +73,142 @@ export default async function VideosPage({ searchParams }: { searchParams: Promi
       Object.entries({ ...current, ...changes }).forEach(([key, value]) => value && query.set(key, String(value)));
       return `/videos${query.size ? `?${query}` : ""}`;
     };
-    const chip = (active: boolean) => cn("rounded-full border px-3 py-1 text-sm", active ? "bg-primary text-primary-foreground" : "hover:bg-accent");
+    const chip = (active: boolean) =>
+      cn("rounded-full border px-3 py-1 text-sm", active ? "bg-primary text-primary-foreground" : "hover:bg-accent");
     const years = data?.years ?? [];
 
     return (
       <Page variant="content">
-        <PageHeader title={t("title")} actions={<div className="flex flex-wrap items-center gap-2">
-            <Link href={link({ liked: onlyLiked ? null : "1" })}
-                  className={cn(chip(onlyLiked), "inline-flex items-center gap-1.5")}
-                  aria-pressed={onlyLiked}>
-              <Heart className={cn("size-4", onlyLiked && "fill-current")} />{t("onlyLiked")}
-            </Link>
-            <Link href={link({ unwatched: onlyUnwatched ? null : "1" })}
-                  className={cn(chip(onlyUnwatched), "inline-flex items-center gap-1.5")}
-                  aria-pressed={onlyUnwatched}>
-              <EyeOff className="size-4" />{t("onlyUnwatched")}
-            </Link>
-            <Suspense>
-              <SortSelect label={t("sortLabel")} value={sortBy}
-                          options={SORTS.map(value => ({ value, label: t(`sort.${value}`) }))} />
-            </Suspense>
-          </div>}/>
+        <PageHeader
+          title={t("title")}
+          actions={
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href={link({ liked: onlyLiked ? null : "1" })}
+                className={cn(chip(onlyLiked), "inline-flex items-center gap-1.5")}
+                aria-pressed={onlyLiked}
+              >
+                <Heart className={cn("size-4", onlyLiked && "fill-current")} />
+                {t("onlyLiked")}
+              </Link>
+              <Link
+                href={link({ unwatched: onlyUnwatched ? null : "1" })}
+                className={cn(chip(onlyUnwatched), "inline-flex items-center gap-1.5")}
+                aria-pressed={onlyUnwatched}
+              >
+                <EyeOff className="size-4" />
+                {t("onlyUnwatched")}
+              </Link>
+              <Suspense>
+                <SortSelect
+                  label={t("sortLabel")}
+                  value={sortBy}
+                  options={SORTS.map((value) => ({ value, label: t(`sort.${value}`) }))}
+                />
+              </Suspense>
+            </div>
+          }
+        />
         {spexId && (
           <p className="flex flex-wrap items-baseline gap-x-3 text-sm">
             <span>{t("spexFilter", { title: spexTitle ?? "?" })}</span>
-            <Link href={link({ spex: null })} className="text-link hover:text-link/80">{t("clearSpex")}</Link>
+            <Link
+              href={link({ spex: null })}
+              className="text-link hover:text-link/80"
+            >
+              {t("clearSpex")}
+            </Link>
           </p>
         )}
-        <nav aria-label={t("categories")} className="flex flex-wrap gap-2">
-          <Link href={link({ category: null })} className={chip(!categoryId)}>{t("allCategories")}</Link>
-          {data?.categories.map(item => (
-            <Link key={item.id} href={link({ category: item.id })} className={chip(categoryId === item.id)}
-                  aria-current={categoryId === item.id ? "page" : undefined}>{item.name}</Link>
+        <nav
+          aria-label={t("categories")}
+          className="flex flex-wrap gap-2"
+        >
+          <Link
+            href={link({ category: null })}
+            className={chip(!categoryId)}
+          >
+            {t("allCategories")}
+          </Link>
+          {data?.categories.map((item) => (
+            <Link
+              key={item.id}
+              href={link({ category: item.id })}
+              className={chip(categoryId === item.id)}
+              aria-current={categoryId === item.id ? "page" : undefined}
+            >
+              {item.name}
+            </Link>
           ))}
         </nav>
-        <nav aria-label={t("kinds")} className="flex flex-wrap gap-2">
-          <Link href={link({ kind: null })} className={chip(!kindValue)}>{t("allKinds")}</Link>
-          {data?.videoKinds.map(item => (
-            <Link key={item.id} href={link({ kind: item.id })} className={chip(kindValue === item.id)}
-                  aria-current={kindValue === item.id ? "page" : undefined}>{kindName(item, locale)}</Link>
+        <nav
+          aria-label={t("kinds")}
+          className="flex flex-wrap gap-2"
+        >
+          <Link
+            href={link({ kind: null })}
+            className={chip(!kindValue)}
+          >
+            {t("allKinds")}
+          </Link>
+          {data?.videoKinds.map((item) => (
+            <Link
+              key={item.id}
+              href={link({ kind: item.id })}
+              className={chip(kindValue === item.id)}
+              aria-current={kindValue === item.id ? "page" : undefined}
+            >
+              {kindName(item, locale)}
+            </Link>
           ))}
         </nav>
-        <nav aria-label={t("years")} className="space-y-2">
+        <nav
+          aria-label={t("years")}
+          className="space-y-2"
+        >
           <div className="flex flex-wrap gap-1.5">
-            <Link href={link({ year: null, decade: null })} className={chip(!decadeNumber)}>{t("allYears")}</Link>
-            {decadesOf(years).map(item => (
-              <Link key={item} href={link({ year: null, decade: item })}
-                    className={cn(chip(decadeNumber === item && !yearNumber), "tabular-nums")}
-                    aria-current={decadeNumber === item && !yearNumber ? "page" : undefined}>{t("decade", { decade: item })}</Link>
+            <Link
+              href={link({ year: null, decade: null })}
+              className={chip(!decadeNumber)}
+            >
+              {t("allYears")}
+            </Link>
+            {decadesOf(years).map((item) => (
+              <Link
+                key={item}
+                href={link({ year: null, decade: item })}
+                className={cn(chip(decadeNumber === item && !yearNumber), "tabular-nums")}
+                aria-current={decadeNumber === item && !yearNumber ? "page" : undefined}
+              >
+                {t("decade", { decade: item })}
+              </Link>
             ))}
           </div>
           {decadeNumber && (
             <div className="flex flex-wrap gap-1.5">
-              {years.filter(item => item >= decadeNumber && item < decadeNumber + 10).map(item => (
-                <Link key={item} href={link({ year: item, decade: null })}
-                      className={cn(chip(yearNumber === item), "tabular-nums")}
-                      aria-current={yearNumber === item ? "page" : undefined}>{item}</Link>
-              ))}
+              {years
+                .filter((item) => item >= decadeNumber && item < decadeNumber + 10)
+                .map((item) => (
+                  <Link
+                    key={item}
+                    href={link({ year: item, decade: null })}
+                    className={cn(chip(yearNumber === item), "tabular-nums")}
+                    aria-current={yearNumber === item ? "page" : undefined}
+                  >
+                    {item}
+                  </Link>
+                ))}
             </div>
           )}
         </nav>
-        {data && data.videos.length > 0 ? <VideoGrid videos={data.videos} /> :
-          <DataEmpty title={t("none")} description={null} />}
+        {data && data.videos.length > 0 ? (
+          <VideoGrid videos={data.videos} />
+        ) : (
+          <DataEmpty
+            title={t("none")}
+            description={null}
+          />
+        )}
       </Page>
     );
   });

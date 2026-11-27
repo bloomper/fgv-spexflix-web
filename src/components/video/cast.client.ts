@@ -97,7 +97,7 @@ export function loadCast(): Promise<boolean> {
   if (!loading) {
     const w = window as CastWindow;
 
-    loading = new Promise<boolean>(resolve => {
+    loading = new Promise<boolean>((resolve) => {
       if (!w.chrome) {
         resolve(false);
         return;
@@ -106,7 +106,7 @@ export function loadCast(): Promise<boolean> {
         resolve(initialise(w));
         return;
       }
-      w.__onGCastApiAvailable = available => resolve(available && initialise(w));
+      w.__onGCastApiAvailable = (available) => resolve(available && initialise(w));
 
       const script = document.createElement("script");
 
@@ -161,11 +161,18 @@ export type Cast = {
   setSubtitle: (language: string | null) => void;
 };
 
-const castWindow = () => typeof window === "undefined" ? undefined : window as CastWindow;
+const castWindow = () => (typeof window === "undefined" ? undefined : (window as CastWindow));
 const framework = () => castWindow()?.cast?.framework;
 const chromeCast = () => castWindow()?.chrome?.cast;
 
-type Remote = { ours: boolean; time: number; duration: number; paused: boolean; state: string | null; device: string | null };
+type Remote = {
+  ours: boolean;
+  time: number;
+  duration: number;
+  paused: boolean;
+  state: string | null;
+  device: string | null;
+};
 
 const IDLE: Remote = { ours: false, time: 0, duration: 0, paused: true, state: null, device: null };
 
@@ -193,7 +200,7 @@ export function useCast(enabled: boolean, media: CastMedia, events: CastEvents =
     let cancelled = false;
     let cleanup = () => undefined as void;
 
-    void loadCast().then(ok => {
+    void loadCast().then((ok) => {
       const cast = framework();
 
       if (!ok || cancelled || !cast) {
@@ -206,17 +213,24 @@ export function useCast(enabled: boolean, media: CastMedia, events: CastEvents =
       const onState = (event: { castState: string }) => setCastState(event.castState);
       const onChange = () => {
         const was = last.current;
-        const ours = remotePlayer.isConnected && remotePlayer.mediaInfo?.customData?.videoId === latest.current.media.videoId;
+        const ours =
+          remotePlayer.isConnected && remotePlayer.mediaInfo?.customData?.videoId === latest.current.media.videoId;
         const now: Remote = {
           ours,
           time: ours ? remotePlayer.currentTime : was.time,
           duration: ours && remotePlayer.duration > 0 ? remotePlayer.duration : was.duration,
           paused: remotePlayer.isPaused,
           state: remotePlayer.playerState,
-          device: remotePlayer.isConnected ? context.getCurrentSession()?.getCastDevice()?.friendlyName ?? null : null,
+          device: remotePlayer.isConnected
+            ? (context.getCurrentSession()?.getCastDevice()?.friendlyName ?? null)
+            : null,
         };
-        const ended = was.ours && was.state !== "IDLE" && (!ours || now.state === "IDLE")
-          && was.duration > 0 && was.time >= was.duration - 3;
+        const ended =
+          was.ours &&
+          was.state !== "IDLE" &&
+          (!ours || now.state === "IDLE") &&
+          was.duration > 0 &&
+          was.time >= was.duration - 3;
 
         last.current = now;
         setRemote(now);
@@ -298,7 +312,7 @@ export function useCast(enabled: boolean, media: CastMedia, events: CastEvents =
     });
 
     const request = new chrome.media.LoadRequest(info);
-    const track = subtitles.findIndex(entry => entry.language === subtitle) + 1;
+    const track = subtitles.findIndex((entry) => entry.language === subtitle) + 1;
 
     request.currentTime = seconds;
     request.autoplay = true;
@@ -317,10 +331,14 @@ export function useCast(enabled: boolean, media: CastMedia, events: CastEvents =
   const setSubtitle = useCallback((language: string | null) => {
     const chrome = chromeCast();
     const session = framework()?.CastContext.getInstance().getCurrentSession()?.getMediaSession();
-    const track = latest.current.media.subtitles.findIndex(entry => entry.language === language) + 1;
+    const track = latest.current.media.subtitles.findIndex((entry) => entry.language === language) + 1;
 
     if (chrome && session) {
-      session.editTracksInfo(new chrome.media.EditTracksInfoRequest(track > 0 ? [track] : []), () => undefined, () => undefined);
+      session.editTracksInfo(
+        new chrome.media.EditTracksInfoRequest(track > 0 ? [track] : []),
+        () => undefined,
+        () => undefined
+      );
     }
   }, []);
 

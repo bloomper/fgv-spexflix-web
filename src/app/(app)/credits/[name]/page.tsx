@@ -21,18 +21,32 @@ export default async function CreditPage({ params }: { params: Promise<{ name: s
 
     const t = await getTranslations("Credits");
     const entries = await getCreditVideos(name);
-    const roles = new Map(entries.map(entry => [entry.video.id, entry.role]));
+    const roles = new Map(entries.map((entry) => [entry.video.id, entry.role]));
 
     return (
       <Page variant="content">
         <PageHeader
           title={name}
-          eyebrow={<Link href="/credits" className="text-link hover:text-link/80">{t("all")}</Link>}
+          eyebrow={
+            <Link
+              href="/credits"
+              className="text-link hover:text-link/80"
+            >
+              {t("all")}
+            </Link>
+          }
           description={t("videos", { count: entries.length })}
         />
-        {entries.length === 0 ? <DataEmpty title={t("nothing")} description={null} /> : (
-          <VideoGrid videos={entries.map(entry => entry.video)}
-                     label={video => roles.get(video.id) ?? null} />
+        {entries.length === 0 ? (
+          <DataEmpty
+            title={t("nothing")}
+            description={null}
+          />
+        ) : (
+          <VideoGrid
+            videos={entries.map((entry) => entry.video)}
+            label={(video) => roles.get(video.id) ?? null}
+          />
         )}
       </Page>
     );

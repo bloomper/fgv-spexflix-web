@@ -10,12 +10,18 @@ export default async function SettingsPage() {
   return withPolicyPage(Policies.admin.requireAdmin, async () => {
     const t = await getTranslations("AdminSettings");
     const [settings, catalogue] = await Promise.all([getSettings(), getVideos({ sort: "YEAR_DESC" })]);
-    const videos = (catalogue?.videos ?? []).map(video => ({ id: video.id, title: video.title, year: video.year }));
+    const videos = (catalogue?.videos ?? []).map((video) => ({ id: video.id, title: video.title, year: video.year }));
 
     return (
       <Page variant="content">
-        <PageHeader title={t("title")}/>
-        {settings && <SettingsForm key={JSON.stringify(settings)} initial={settings} videos={videos} />}
+        <PageHeader title={t("title")} />
+        {settings && (
+          <SettingsForm
+            key={JSON.stringify(settings)}
+            initial={settings}
+            videos={videos}
+          />
+        )}
       </Page>
     );
   });

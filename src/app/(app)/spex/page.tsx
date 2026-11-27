@@ -18,19 +18,32 @@ export default async function SpexIndexPage() {
 
     return (
       <Page variant="content">
-        <PageHeader title={t("allSpex")}/>
-        {families.length === 0 ? <DataEmpty title={t("noSpex")} description={null} /> : (
+        <PageHeader title={t("allSpex")} />
+        {families.length === 0 ? (
+          <DataEmpty
+            title={t("noSpex")}
+            description={null}
+          />
+        ) : (
           <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6">
-            {families.map(family => (
+            {families.map((family) => (
               <li key={family.id}>
-                <Link href={`/spex/${family.id}`} className="group block rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <Link
+                  href={`/spex/${family.id}`}
+                  className="group focus-visible:ring-ring block rounded-md outline-none focus-visible:ring-2"
+                >
                   <span className="block overflow-hidden rounded-md shadow-md">
-                    <PosterImage videoId={family.videoId} title={family.title}
-                                 className="w-full transition-transform duration-200 group-hover:scale-105" />
+                    <PosterImage
+                      videoId={family.videoId}
+                      title={family.title}
+                      className="w-full transition-transform duration-200 group-hover:scale-105"
+                    />
                   </span>
                   <span className="mt-1.5 block truncate font-medium">{family.title}</span>
-                  <span className="block text-xs text-muted-foreground">
-                    {[family.year, family.categoryName, t("videos", { count: family.count })].filter(Boolean).join(" · ")}
+                  <span className="text-muted-foreground block text-xs">
+                    {[family.year, family.categoryName, t("videos", { count: family.count })]
+                      .filter(Boolean)
+                      .join(" · ")}
                   </span>
                 </Link>
               </li>

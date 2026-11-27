@@ -121,7 +121,7 @@ The theme, the shadcn components and the application shell come from `@bloomper/
   page refreshes every 3 seconds while a job is queued or running. Posters and subtitles (WebVTT or SubRip) are
   multipart forms through `/api/poster-upload/[id]` and `/api/subtitle-upload/[id]`.
 - **Chapters** are edited as rows (start in m:ss, title, optional Spexify track from `spexifyTracks`) and saved
-  together with `chaptersSet`. Viewers with Spexify access (`me.spexifyUser`) get *Listen in Spexify* links.
+  together with `chaptersSet`. Viewers with Spexify access (`me.spexifyUser`) get _Listen in Spexify_ links.
 - **Ratings** are each user's own, 1–5 (`videoRate`, 0 removes); every video card and the video page show everyone's
   average as stars (`AverageRating` in `src/components/rating.client.tsx`, shared with Spexify), and the start page
   what the user rated highest (`highestRated`). Show ratings as stars, never as text.
@@ -139,14 +139,14 @@ The theme, the shadcn components and the application shell come from `@bloomper/
   next item (not `Video.next`) follows after the countdown. Clips do not mark the video as watched.
 - **The start page** looks like a streaming service's: a hero (`Hero`) with `featuredVideo` (an admin's pick in
   `/admin/settings`, else the newest show), then the greeting with the welcome text, then rows of cards that scroll
-  sideways (`VideoRow`, `RowScroller`): continue watching, *Se senare* (the watch list), recently published, the top
+  sideways (`VideoRow`, `RowScroller`): continue watching, _Se senare_ (the watch list), recently published, the top
   list, one row per video kind (from `videoKinds`, never hardcoded: `groupByKind` in `src/utils/rows.ts`), liked,
   one per decade, one per collection, and what the user rated highest. A row with nothing in it is not shown.
 - **Cards** (`VideoCard`) are 16:9 stills that grow on hover, keyboard focus or a long press (phones) and then show
-  the year, kind, length, rating, progress and buttons to play (`?autoplay=1`), save in *Se senare* and *more info*,
+  the year, kind, length, rating, progress and buttons to play (`?autoplay=1`), save in _Se senare_ and _more info_,
   which opens the main spex's title page. `VideoGrid` stays for the list pages (videos, search, top list, liked).
 - **Title pages**: `/spex/[id]` (a family: the original and its revivals; `/spex` lists them all) and
-  `/collections/[id]` show a `Backdrop`, *Play* (`TitlePlay`: goes on with what was started, else the first not
+  `/collections/[id]` show a `Backdrop`, _Play_ (`TitlePlay`: goes on with what was started, else the first not
   watched) and the videos as episodes (`EpisodeList`), a spex's by kind and then per revival (`spexSections`).
 - **The header** sees through at the top and turns opaque when the page scrolls; its search shows the first videos as
   the viewer types (`searchPreviewAction`).

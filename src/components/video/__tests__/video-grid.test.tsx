@@ -6,7 +6,14 @@ import { VideoGrid } from "@/components/video/video-grid";
 vi.mock("next/link", () => ({
   default: ({ children, href }: { children?: ReactNode; href: string }) => <a href={href}>{children}</a>,
 }));
-vi.mock("@/components/video/poster-image.client", () => ({ PosterImage: ({ title }: { title: string }) => <span role="img" aria-label={title} /> }));
+vi.mock("@/components/video/poster-image.client", () => ({
+  PosterImage: ({ title }: { title: string }) => (
+    <span
+      role="img"
+      aria-label={title}
+    />
+  ),
+}));
 
 const KIND = { id: "k1", nameSv: "Föreställning", nameEn: "Show", isDefault: true };
 
@@ -16,15 +23,23 @@ describe("VideoGrid", () => {
       <VideoGrid
         videos={[
           {
-            id: "v1", title: "Nobel", year: 1975, kind: KIND, durationMs: 120_000, progressSeconds: 60, averageRating: 4.5, ratingCount: 2,
-            liked: true, spex: [{ categoryName: "Chalmersspexet", revival: true }],
+            id: "v1",
+            title: "Nobel",
+            year: 1975,
+            kind: KIND,
+            durationMs: 120_000,
+            progressSeconds: 60,
+            averageRating: 4.5,
+            ratingCount: 2,
+            liked: true,
+            spex: [{ categoryName: "Chalmersspexet", revival: true }],
           },
           { id: "v2", title: "Bearbetas", kind: KIND, status: "PROCESSING", published: false, finished: true },
         ]}
         label={(video) => (video.id === "v1" ? "2 gillar" : null)}
         action={(video) => <button type="button">Ta bort {video.title}</button>}
         hrefFor={(id) => `/manage/videos/${id}`}
-      />,
+      />
     );
 
     expect(screen.getByRole("link", { name: /Nobel/ })).toHaveAttribute("href", "/manage/videos/v1");

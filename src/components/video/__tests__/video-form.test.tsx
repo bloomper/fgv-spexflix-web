@@ -41,7 +41,13 @@ describe("VideoForm", () => {
   it("needs a spex, or no spex marked and a title, before it can be saved, and sends empty fields as null", async () => {
     const onSubmit = vi.fn().mockResolvedValue(true);
 
-    render(<VideoForm kinds={KINDS} submitLabel="Spara" onSubmit={onSubmit} />);
+    render(
+      <VideoForm
+        kinds={KINDS}
+        submitLabel="Spara"
+        onSubmit={onSubmit}
+      />
+    );
     expect(screen.getByRole("button", { name: "Spara" })).toBeDisabled();
 
     await userEvent.type(screen.getByLabelText("title"), "  Blandade visor ");
@@ -51,23 +57,31 @@ describe("VideoForm", () => {
     await userEvent.selectOptions(screen.getByLabelText("kind"), "Nummer");
     await userEvent.click(screen.getByRole("button", { name: "Spara" }));
 
-    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith({
-      spexIds: [],
-      title: "Blandade visor",
-      year: null,
-      kindId: "k-number",
-      performance: null,
-      performanceDate: null,
-      description: null,
-    }));
+    await waitFor(() =>
+      expect(onSubmit).toHaveBeenCalledWith({
+        spexIds: [],
+        title: "Blandade visor",
+        year: null,
+        kindId: "k-number",
+        performance: null,
+        performanceDate: null,
+        description: null,
+      })
+    );
   });
 
   it("searches Spexipedia after two letters and picks a spex", async () => {
     const onSubmit = vi.fn().mockResolvedValue(true);
 
-    render(<VideoForm kinds={KINDS} submitLabel="Spara" onSubmit={onSubmit} />);
+    render(
+      <VideoForm
+        kinds={KINDS}
+        submitLabel="Spara"
+        onSubmit={onSubmit}
+      />
+    );
     await userEvent.type(screen.getByLabelText("search"), "N");
-    await new Promise(resolve => setTimeout(resolve, 350));
+    await new Promise((resolve) => setTimeout(resolve, 350));
     expect(searchSpexAction).not.toHaveBeenCalled();
 
     await userEvent.type(screen.getByLabelText("search"), "o");
@@ -87,21 +101,29 @@ describe("VideoForm", () => {
     await userEvent.type(screen.getByLabelText("description"), "Inspelad live");
     await userEvent.click(screen.getByRole("button", { name: "Spara" }));
 
-    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith({
-      spexIds: ["7"],
-      title: null,
-      year: 1993,
-      kindId: "k-show",
-      performance: "Premiären",
-      performanceDate: "1993-02-12",
-      description: "Inspelad live",
-    }));
+    await waitFor(() =>
+      expect(onSubmit).toHaveBeenCalledWith({
+        spexIds: ["7"],
+        title: null,
+        year: 1993,
+        kindId: "k-show",
+        performance: "Premiären",
+        performanceDate: "1993-02-12",
+        description: "Inspelad live",
+      })
+    );
   });
 
   it("tells when the search fails", async () => {
     searchSpexAction.mockResolvedValue({ ok: false, code: "UNAVAILABLE", message: "Spexipedia svarar inte" });
 
-    render(<VideoForm kinds={KINDS} submitLabel="Spara" onSubmit={vi.fn()} />);
+    render(
+      <VideoForm
+        kinds={KINDS}
+        submitLabel="Spara"
+        onSubmit={vi.fn()}
+      />
+    );
     await userEvent.type(screen.getByLabelText("search"), "Ali");
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Spexipedia svarar inte"));
@@ -111,15 +133,22 @@ describe("VideoForm", () => {
     const onSubmit = vi.fn().mockResolvedValue(true);
 
     searchSpexAction.mockResolvedValue({ ok: true, data: [CLEOPATRA] });
-    render(<VideoForm kinds={KINDS} submitLabel="Spara" onSubmit={onSubmit} initial={{
-      spex: [NOBEL_REVIVAL],
-      title: "Nobel – live",
-      year: 1992,
-      kind: { id: "k-trailer" },
-      performance: "Gala",
-      performanceDate: "1992-11-01",
-      description: "Text",
-    }} />);
+    render(
+      <VideoForm
+        kinds={KINDS}
+        submitLabel="Spara"
+        onSubmit={onSubmit}
+        initial={{
+          spex: [NOBEL_REVIVAL],
+          title: "Nobel – live",
+          year: 1992,
+          kind: { id: "k-trailer" },
+          performance: "Gala",
+          performanceDate: "1992-11-01",
+          description: "Text",
+        }}
+      />
+    );
 
     expect(screen.getByLabelText("title")).toHaveValue("Nobel – live");
     expect(screen.getByLabelText("year")).toHaveValue("1992");
@@ -140,8 +169,14 @@ describe("VideoForm", () => {
   });
 
   it("starts with no spex marked for a video without spex", () => {
-    render(<VideoForm kinds={KINDS} submitLabel="Spara" onSubmit={vi.fn()}
-                      initial={{ spex: [], title: "Jubileet", kind: { id: "k-show" } }} />);
+    render(
+      <VideoForm
+        kinds={KINDS}
+        submitLabel="Spara"
+        onSubmit={vi.fn()}
+        initial={{ spex: [], title: "Jubileet", kind: { id: "k-show" } }}
+      />
+    );
 
     expect(screen.getByRole("checkbox", { name: "none" })).toBeChecked();
     expect(screen.getByRole("button", { name: "Spara" })).toBeEnabled();

@@ -24,7 +24,12 @@ const LONG_PRESS = 500;
  * year, kind, length, everyone's rating, how far the user has come and buttons to play, to save it in the watch list
  * and for more about it.
  */
-export function VideoCard({ video, infoHref, action, label }: {
+export function VideoCard({
+  video,
+  infoHref,
+  action,
+  label,
+}: {
   video: VideoSummary & { inWatchList?: boolean };
   /** The title page: the spex, else the video itself. */
   infoHref: string;
@@ -60,11 +65,14 @@ export function VideoCard({ video, infoHref, action, label }: {
     return () => document.removeEventListener("pointerdown", collapse);
   }, [expanded]);
 
-  useEffect(() => () => {
-    if (timer.current) {
-      clearTimeout(timer.current);
-    }
-  }, []);
+  useEffect(
+    () => () => {
+      if (timer.current) {
+        clearTimeout(timer.current);
+      }
+    },
+    []
+  );
 
   const cancelPress = () => {
     if (timer.current) {
@@ -74,39 +82,54 @@ export function VideoCard({ video, infoHref, action, label }: {
   };
 
   return (
-    <div ref={card} data-expanded={expanded || undefined}
-         className="group/card relative transition-transform duration-200 ease-out hover:z-20 hover:scale-110 focus-within:z-20 focus-within:scale-110 data-expanded:z-20 data-expanded:scale-110"
-         onTouchStart={() => {
-           pressed.current = false;
-           cancelPress();
-           timer.current = setTimeout(() => {
-             pressed.current = true;
-             setExpanded(true);
-           }, LONG_PRESS);
-         }}
-         onTouchEnd={cancelPress} onTouchMove={cancelPress}
-         onContextMenu={event => expanded && event.preventDefault()}>
+    <div
+      ref={card}
+      data-expanded={expanded || undefined}
+      className="group/card relative transition-transform duration-200 ease-out focus-within:z-20 focus-within:scale-110 hover:z-20 hover:scale-110 data-expanded:z-20 data-expanded:scale-110"
+      onTouchStart={() => {
+        pressed.current = false;
+        cancelPress();
+        timer.current = setTimeout(() => {
+          pressed.current = true;
+          setExpanded(true);
+        }, LONG_PRESS);
+      }}
+      onTouchEnd={cancelPress}
+      onTouchMove={cancelPress}
+      onContextMenu={(event) => expanded && event.preventDefault()}
+    >
       {action && <div className="absolute top-1.5 right-1.5 z-10">{action}</div>}
-      <Link href={`/videos/${video.id}`}
-            className="block rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            onClick={event => {
-              // The long press grew the card; lifting the finger is not a tap on it
-              if (pressed.current) {
-                event.preventDefault();
-                pressed.current = false;
-              }
-            }}>
-        <div className="relative overflow-hidden rounded-md bg-muted shadow-md">
-          <PosterImage videoId={video.id} title={video.title} className="w-full" />
+      <Link
+        href={`/videos/${video.id}`}
+        className="focus-visible:ring-ring block rounded-md outline-none focus-visible:ring-2"
+        onClick={(event) => {
+          // The long press grew the card; lifting the finger is not a tap on it
+          if (pressed.current) {
+            event.preventDefault();
+            pressed.current = false;
+          }
+        }}
+      >
+        <div className="bg-muted relative overflow-hidden rounded-md shadow-md">
+          <PosterImage
+            videoId={video.id}
+            title={video.title}
+            className="w-full"
+          />
           {duration > 0 && (
-            <span className="absolute right-1.5 bottom-2 rounded bg-black/75 px-1.5 py-0.5 text-xs text-white tabular-nums transition-opacity group-hover/card:opacity-0 group-focus-within/card:opacity-0 group-data-expanded/card:opacity-0">
+            <span className="absolute right-1.5 bottom-2 rounded bg-black/75 px-1.5 py-0.5 text-xs text-white tabular-nums transition-opacity group-focus-within/card:opacity-0 group-hover/card:opacity-0 group-data-expanded/card:opacity-0">
               {formatDuration(duration)}
             </span>
           )}
           {watched > 0 && (
-            <span className="absolute inset-x-0 bottom-0 h-1 bg-white/30"
-                  aria-label={t("watched", { percent: Math.round(watched * 100) })}>
-              <span className="block h-full bg-primary" style={{ width: `${watched * 100}%` }} />
+            <span
+              className="absolute inset-x-0 bottom-0 h-1 bg-white/30"
+              aria-label={t("watched", { percent: Math.round(watched * 100) })}
+            >
+              <span
+                className="bg-primary block h-full"
+                style={{ width: `${watched * 100}%` }}
+              />
             </span>
           )}
         </div>
@@ -114,41 +137,63 @@ export function VideoCard({ video, infoHref, action, label }: {
       </Link>
 
       {/* What the card shows when it grows */}
-      <div className="pointer-events-none absolute inset-x-0 top-full z-20 -mt-6 rounded-b-md bg-popover p-2.5 text-popover-foreground opacity-0 shadow-xl transition-opacity duration-200 group-hover/card:pointer-events-auto group-hover/card:opacity-100 group-focus-within/card:pointer-events-auto group-focus-within/card:opacity-100 group-data-expanded/card:pointer-events-auto group-data-expanded/card:opacity-100">
+      <div className="bg-popover text-popover-foreground pointer-events-none absolute inset-x-0 top-full z-20 -mt-6 rounded-b-md p-2.5 opacity-0 shadow-xl transition-opacity duration-200 group-focus-within/card:pointer-events-auto group-focus-within/card:opacity-100 group-hover/card:pointer-events-auto group-hover/card:opacity-100 group-data-expanded/card:pointer-events-auto group-data-expanded/card:opacity-100">
         <div className="flex items-center gap-1.5">
-          <Link href={`/videos/${video.id}?autoplay=1`} aria-label={t("play")} title={t("play")}
-                className="flex size-8 items-center justify-center rounded-full bg-foreground text-background hover:bg-foreground/80">
+          <Link
+            href={`/videos/${video.id}?autoplay=1`}
+            aria-label={t("play")}
+            title={t("play")}
+            className="bg-foreground text-background hover:bg-foreground/80 flex size-8 items-center justify-center rounded-full"
+          >
             <Play className="size-4 fill-current" />
           </Link>
-          <button type="button" disabled={pending} aria-pressed={listed}
-                  aria-label={t("myList")} title={listed ? t("inMyList") : t("addToMyList")}
-                  className={cn("flex size-8 items-center justify-center rounded-full border-2 border-foreground/40 hover:border-foreground",
-                    listed && "border-primary text-link")}
-                  onClick={() => startTransition(async () => {
-                    const value = !listed;
+          <button
+            type="button"
+            disabled={pending}
+            aria-pressed={listed}
+            aria-label={t("myList")}
+            title={listed ? t("inMyList") : t("addToMyList")}
+            className={cn(
+              "border-foreground/40 hover:border-foreground flex size-8 items-center justify-center rounded-full border-2",
+              listed && "border-primary text-link"
+            )}
+            onClick={() =>
+              startTransition(async () => {
+                const value = !listed;
 
-                    setListed(value);
-                    if (await watchListAction(video.id, value)) {
-                      track("watch-list", { listed: value });
-                    } else {
-                      setListed(!value);
-                      toast.error(t("myListFailed"));
-                    }
-                  })}>
+                setListed(value);
+                if (await watchListAction(video.id, value)) {
+                  track("watch-list", { listed: value });
+                } else {
+                  setListed(!value);
+                  toast.error(t("myListFailed"));
+                }
+              })
+            }
+          >
             {listed ? <Check className="size-4" /> : <Plus className="size-4" />}
           </button>
           <span className="flex-1" />
-          <Link href={infoHref} aria-label={t("moreInfo")} title={t("moreInfo")}
-                className="flex size-8 items-center justify-center rounded-full border-2 border-foreground/40 hover:border-foreground">
+          <Link
+            href={infoHref}
+            aria-label={t("moreInfo")}
+            title={t("moreInfo")}
+            className="border-foreground/40 hover:border-foreground flex size-8 items-center justify-center rounded-full border-2"
+          >
             <Info className="size-4" />
           </Link>
         </div>
-        <div className="mt-2 text-xs text-muted-foreground">
-          {[video.year, kindName(video.kind, locale), duration > 0 ? formatDuration(duration) : null].filter(Boolean).join(" · ")}
+        <div className="text-muted-foreground mt-2 text-xs">
+          {[video.year, kindName(video.kind, locale), duration > 0 ? formatDuration(duration) : null]
+            .filter(Boolean)
+            .join(" · ")}
         </div>
         <div className="mt-1 flex items-center gap-2">
-          <AverageRating average={video.averageRating} count={video.ratingCount} />
-          {label && <span className="text-xs text-muted-foreground">{label}</span>}
+          <AverageRating
+            average={video.averageRating}
+            count={video.ratingCount}
+          />
+          {label && <span className="text-muted-foreground text-xs">{label}</span>}
         </div>
       </div>
     </div>

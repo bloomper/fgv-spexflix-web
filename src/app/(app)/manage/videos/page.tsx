@@ -20,7 +20,18 @@ export default async function ManageVideosPage() {
 
     return (
       <Page variant="content">
-        <PageHeader title={t("videos")} actions={<Button nativeButton={false} render={<Link href="/manage/videos/new" />}><Plus />{t("newVideo")}</Button>}/>
+        <PageHeader
+          title={t("videos")}
+          actions={
+            <Button
+              nativeButton={false}
+              render={<Link href="/manage/videos/new" />}
+            >
+              <Plus />
+              {t("newVideo")}
+            </Button>
+          }
+        />
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
@@ -33,20 +44,33 @@ export default async function ManageVideosPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data?.videos.map(video => (
+              {data?.videos.map((video) => (
                 <TableRow key={video.id}>
-                  <TableCell className="whitespace-normal"><Link href={`/manage/videos/${video.id}`}
-                                                                 className="font-medium hover:text-link">{video.title}</Link></TableCell>
+                  <TableCell className="whitespace-normal">
+                    <Link
+                      href={`/manage/videos/${video.id}`}
+                      className="hover:text-link font-medium"
+                    >
+                      {video.title}
+                    </Link>
+                  </TableCell>
                   <TableCell className="tabular-nums">{video.year}</TableCell>
                   <TableCell className="hidden sm:table-cell">{kindName(video.kind, locale)}</TableCell>
-                  <TableCell
-                    className="hidden tabular-nums sm:table-cell">{video.durationMs ? formatDuration(video.durationMs / 1000) : ""}</TableCell>
+                  <TableCell className="hidden tabular-nums sm:table-cell">
+                    {video.durationMs ? formatDuration(video.durationMs / 1000) : ""}
+                  </TableCell>
                   <TableCell className="whitespace-normal">
                     <div className="flex flex-wrap gap-1">
-                      {video.status !== "READY" && <Badge
-                        variant={video.status === "FAILED" ? "destructive" : "secondary"}>{tv(`status.${video.status}`)}</Badge>}
-                      {video.published ? <Badge variant="secondary">{t("published")}</Badge> :
-                        <Badge variant="outline">{t("unpublished")}</Badge>}
+                      {video.status !== "READY" && (
+                        <Badge variant={video.status === "FAILED" ? "destructive" : "secondary"}>
+                          {tv(`status.${video.status}`)}
+                        </Badge>
+                      )}
+                      {video.published ? (
+                        <Badge variant="secondary">{t("published")}</Badge>
+                      ) : (
+                        <Badge variant="outline">{t("unpublished")}</Badge>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

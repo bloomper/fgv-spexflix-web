@@ -32,16 +32,38 @@ export default async function EditVideoPage({ params }: { params: Promise<{ id: 
 
     return (
       <Page variant="content">
-        <PageHeader title={video.title} actions={<Link href={`/videos/${video.id}`} className="text-sm text-link hover:text-link/80">{t("viewAsViewer")}</Link>}/>
-        <VideoEditor video={video}
-                     playback={playback} admin={isAdmin(authz.roles)} kinds={kinds}
-                     spexipediaUrl={process.env.SPEXIPEDIA_WEB_URL?.trim().replace(/\/+$/, "") || null} />
+        <PageHeader
+          title={video.title}
+          actions={
+            <Link
+              href={`/videos/${video.id}`}
+              className="text-link hover:text-link/80 text-sm"
+            >
+              {t("viewAsViewer")}
+            </Link>
+          }
+        />
+        <VideoEditor
+          video={video}
+          playback={playback}
+          admin={isAdmin(authz.roles)}
+          kinds={kinds}
+          spexipediaUrl={process.env.SPEXIPEDIA_WEB_URL?.trim().replace(/\/+$/, "") || null}
+        />
         {/* Keyed by the saved credits: the page stays mounted, and the rows start over from what was saved */}
         <div className="pt-4">
-          <CreditsEditor key={JSON.stringify(video.credits)} videoId={video.id} credits={video.credits} />
+          <CreditsEditor
+            key={JSON.stringify(video.credits)}
+            videoId={video.id}
+            credits={video.credits}
+          />
         </div>
         <TrashVideo video={video} />
-        <RecordHistory entityId={video.id} path="/manage/audit" linkOf={auditLink} />
+        <RecordHistory
+          entityId={video.id}
+          path="/manage/audit"
+          linkOf={auditLink}
+        />
       </Page>
     );
   });

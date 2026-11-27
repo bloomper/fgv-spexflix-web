@@ -28,7 +28,13 @@ export type VideoFormValues = {
  * A video's fields. Its spex are searched in Spexipedia, or it is marked as not about any; the title and year
  * default to the main spex's.
  */
-export function VideoForm({ kinds, initial, submitLabel, onSubmit, spexipediaUrl }: {
+export function VideoForm({
+  kinds,
+  initial,
+  submitLabel,
+  onSubmit,
+  spexipediaUrl,
+}: {
   /** The video kinds in order; the first is the default. */
   kinds: KindOption[];
   /** Spexipedia's web, for editing the picked spex there. */
@@ -55,7 +61,7 @@ export function VideoForm({ kinds, initial, submitLabel, onSubmit, spexipediaUrl
     event.preventDefault();
     startTransition(async () => {
       await onSubmit({
-        spexIds: spex.map(item => item.id),
+        spexIds: spex.map((item) => item.id),
         title: title.trim() || null,
         year: year ? Number(year) : null,
         kindId: kindId || null,
@@ -67,46 +73,95 @@ export function VideoForm({ kinds, initial, submitLabel, onSubmit, spexipediaUrl
   };
 
   return (
-    <form onSubmit={submit} className="max-w-2xl space-y-4">
-      <SpexPicker value={spex} onChange={setSpex} none={none} onNoneChange={setNone} spexipediaUrl={spexipediaUrl} />
+    <form
+      onSubmit={submit}
+      className="max-w-2xl space-y-4"
+    >
+      <SpexPicker
+        value={spex}
+        onChange={setSpex}
+        none={none}
+        onNoneChange={setNone}
+        spexipediaUrl={spexipediaUrl}
+      />
       <div className="grid gap-4 sm:grid-cols-[1fr_8rem_12rem]">
         <div className="space-y-1.5">
           <Label htmlFor="title">{t("title")}</Label>
-          <Input id="title" value={title} maxLength={255} required={none} placeholder={main?.title ?? ""}
-                 onChange={event => setTitle(event.target.value)} />
+          <Input
+            id="title"
+            value={title}
+            maxLength={255}
+            required={none}
+            placeholder={main?.title ?? ""}
+            onChange={(event) => setTitle(event.target.value)}
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="year">{t("year")}</Label>
-          <Input id="year" inputMode="numeric" pattern="\d{4}" value={year}
-                 placeholder={main?.year ? String(main.year) : ""}
-                 onChange={event => setYear(event.target.value)} />
+          <Input
+            id="year"
+            inputMode="numeric"
+            pattern="\d{4}"
+            value={year}
+            placeholder={main?.year ? String(main.year) : ""}
+            onChange={(event) => setYear(event.target.value)}
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="kind">{t("kind")}</Label>
-          <NativeSelect id="kind" value={kindId} onChange={event => setKindId(event.target.value)}>
-            {kinds.map(kind => <NativeSelectOption key={kind.id}
-                                                   value={kind.id}>{kindName(kind, locale)}</NativeSelectOption>)}
+          <NativeSelect
+            id="kind"
+            value={kindId}
+            onChange={(event) => setKindId(event.target.value)}
+          >
+            {kinds.map((kind) => (
+              <NativeSelectOption
+                key={kind.id}
+                value={kind.id}
+              >
+                {kindName(kind, locale)}
+              </NativeSelectOption>
+            ))}
           </NativeSelect>
         </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-[1fr_12rem]">
         <div className="space-y-1.5">
           <Label htmlFor="performance">{t("performance")}</Label>
-          <Input id="performance" value={performance} maxLength={255} placeholder={t("performancePlaceholder")}
-                 onChange={event => setPerformance(event.target.value)} />
+          <Input
+            id="performance"
+            value={performance}
+            maxLength={255}
+            placeholder={t("performancePlaceholder")}
+            onChange={(event) => setPerformance(event.target.value)}
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="performance-date">{t("performanceDate")}</Label>
-          <Input id="performance-date" value={performanceDate} placeholder={tCommon("datePlaceholder")} pattern="\d{4}-\d{2}-\d{2}"
-                 onChange={event => setPerformanceDate(event.target.value)} />
+          <Input
+            id="performance-date"
+            value={performanceDate}
+            placeholder={tCommon("datePlaceholder")}
+            pattern="\d{4}-\d{2}-\d{2}"
+            onChange={(event) => setPerformanceDate(event.target.value)}
+          />
         </div>
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="description">{t("description")}</Label>
-        <Textarea id="description" rows={4} value={description}
-                  onChange={event => setDescription(event.target.value)} />
+        <Textarea
+          id="description"
+          rows={4}
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}
+        />
       </div>
-      <Button type="submit" disabled={pending || (spex.length === 0 && !(none && title.trim()))}>{submitLabel}</Button>
+      <Button
+        type="submit"
+        disabled={pending || (spex.length === 0 && !(none && title.trim()))}
+      >
+        {submitLabel}
+      </Button>
     </form>
   );
 }

@@ -4,8 +4,8 @@ test("a visitor who is not logged in gets the login screen and no app", async ({
   await page.goto("/");
 
   await expect(page.getByText("Du behöver vara inloggad med ditt FGV-konto för att titta.")).toBeVisible();
-  await expect(page.locator("a[href=\"/api/auth/login\"]")).toBeVisible();
-  await expect(page.locator("[data-slot=\"sidebar\"]")).toHaveCount(0);
+  await expect(page.locator('a[href="/api/auth/login"]')).toBeVisible();
+  await expect(page.locator('[data-slot="sidebar"]')).toHaveCount(0);
 });
 
 test("a user without USER sees the no-access page and no videos", async ({ page, loginAs }) => {
@@ -19,7 +19,7 @@ test("a user without USER sees the no-access page and no videos", async ({ page,
   await page.goto("/manage/videos");
   await expect(page).toHaveURL(/\/no-access$/);
   await expect(page.getByText("nils@example.org", { exact: false })).toBeVisible();
-  await expect(page.locator("[data-slot=\"sidebar\"]")).toHaveCount(0);
+  await expect(page.locator('[data-slot="sidebar"]')).toHaveCount(0);
 
   await page.getByRole("button", { name: "Logga ut" }).click();
   await expect(page.getByText("Du behöver vara inloggad med ditt FGV-konto för att titta.")).toBeVisible();

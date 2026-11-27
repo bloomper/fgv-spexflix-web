@@ -14,7 +14,7 @@ test.describe("The trash", () => {
     await expect(page.getByRole("button", { name: "Radera" })).toHaveCount(0);
     await page.getByRole("button", { name: "Återställ" }).click();
     await expect(page.getByText("Papperskorgen är tom.")).toBeVisible();
-    expect((await mock.state()).videos.find(v => v.id === uuidOf(1))?.trashedAt).toBeNull();
+    expect((await mock.state()).videos.find((v) => v.id === uuidOf(1))?.trashedAt).toBeNull();
   });
 
   test("an admin deletes from the trash and empties it", async ({ page, loginAs, mock }) => {
@@ -27,13 +27,17 @@ test.describe("The trash", () => {
     }
 
     await page.goto("/manage/trash");
-    await page.getByRole("listitem").filter({ hasText: "Opublicerad film" }).getByRole("button", { name: "Radera" }).click();
+    await page
+      .getByRole("listitem")
+      .filter({ hasText: "Opublicerad film" })
+      .getByRole("button", { name: "Radera" })
+      .click();
     await answerDialog(page, "Radera");
     await expect(page.getByText("Opublicerad film")).toHaveCount(0);
     await page.getByRole("button", { name: "Töm papperskorgen" }).click();
     await answerDialog(page, "Töm papperskorgen");
     await expect(page.getByText("Papperskorgen är tom.")).toBeVisible();
-    expect((await mock.state()).videos.map(v => v.title)).toEqual(["Bearbetas", "Extranumret"]);
+    expect((await mock.state()).videos.map((v) => v.title)).toEqual(["Bearbetas", "Extranumret"]);
   });
 });
 

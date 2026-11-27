@@ -18,7 +18,7 @@ const PERSONAS = {
   viewer: { sub: "p-viewer", name: "Tina Tittare", email: "tina@example.org", roles: ["USER"] },
   noaccess: { sub: "p-noaccess", name: "Nils Nekad", email: "nils@example.org", roles: [] },
 };
-const bySub = Object.fromEntries(Object.values(PERSONAS).map(persona => [persona.sub, persona]));
+const bySub = Object.fromEntries(Object.values(PERSONAS).map((persona) => [persona.sub, persona]));
 let currentPersona = "admin";
 
 // As Spexflix Server words them
@@ -35,7 +35,7 @@ class GraphQLError extends Error {
 }
 
 /** The UUID the server would give the entity numbered n here. */
-const uuidOf = n => `00000000-0000-7000-8000-${String(n).padStart(12, "0")}`;
+const uuidOf = (n) => `00000000-0000-7000-8000-${String(n).padStart(12, "0")}`;
 
 const SPEX = {
   id: uuidOf(1),
@@ -59,9 +59,9 @@ const REVIVAL = {
 };
 const SPEXREGISTER = [SPEX, REVIVAL];
 /** The linked spex, as the server copies them from Spexregister. */
-const spexOf = ids => (ids ?? []).map(id => SPEXREGISTER.find(spex => spex.id === id)).filter(Boolean);
+const spexOf = (ids) => (ids ?? []).map((id) => SPEXREGISTER.find((spex) => spex.id === id)).filter(Boolean);
 /** Whether the video is about the spex or, when it is an original, one of its revivals. */
-const isAbout = (v, spexId) => v.spex.some(spex => spex.id === spexId || spex.parentId === spexId);
+const isAbout = (v, spexId) => v.spex.some((spex) => spex.id === spexId || spex.parentId === spexId);
 
 function video(id, title, extra = {}) {
   return {
@@ -87,12 +87,15 @@ function video(id, title, extra = {}) {
     hasThumbnails: false,
     posterSeconds: null,
     renditions: [{ height: 720, width: 1280, bitrateKbps: 3000, copied: true, size: 1000 }],
-    chapters: [{ startSeconds: 0, title: "Ouvertyr", spexifyTrackId: null, spexifyTrackTitle: null },
-      { startSeconds: 20, title: "Kärleksduetten", spexifyTrackId: uuidOf(12), spexifyTrackTitle: "Kärleksduetten" }],
+    chapters: [
+      { startSeconds: 0, title: "Ouvertyr", spexifyTrackId: null, spexifyTrackTitle: null },
+      { startSeconds: 20, title: "Kärleksduetten", spexifyTrackId: uuidOf(12), spexifyTrackTitle: "Kärleksduetten" },
+    ],
     subtitles: [],
     createdAt: "2026-10-01T10:00:00Z",
     lastModifiedAt: null,
-    job: null, ...extra,
+    job: null,
+    ...extra,
   };
 }
 
@@ -132,14 +135,16 @@ function resetState() {
       video(uuidOf(3), "Bearbetas", { published: false, status: "PROCESSING", renditions: [] }),
       video(uuidOf(4), "Extranumret", { kindId: uuidOf(902), performanceDate: "1975-02-15" }),
     ],
-    collections: [{
-      id: uuidOf(500),
-      title: "Nobel genom åren",
-      description: "Allt från Nobel.",
-      videoIds: [uuidOf(4), uuidOf(2), uuidOf(1)],
-      createdAt: "2026-10-01T10:00:00Z",
-      lastModifiedAt: null,
-    }],
+    collections: [
+      {
+        id: uuidOf(500),
+        title: "Nobel genom åren",
+        description: "Allt från Nobel.",
+        videoIds: [uuidOf(4), uuidOf(2), uuidOf(1)],
+        createdAt: "2026-10-01T10:00:00Z",
+        lastModifiedAt: null,
+      },
+    ],
     finished: new Set(),
     progress: {},
     // The viewer's ratings by video id, and everyone else's
@@ -150,11 +155,24 @@ function resetState() {
     liked: [],
     otherLikes: { [uuidOf(4)]: 2 },
     // Everyone's playlists: the viewer's own (owner "viewer") and others' public ones
-    playlists: [{
-      id: uuidOf(600), name: "Annas favoriter", description: null, isPublic: true, owner: "Anna Annan",
-      items: [{ id: uuidOf(601), videoId: uuidOf(1), startSeconds: null, endSeconds: null, title: null }],
-    }],
-    settings: { welcomeSv: null, welcomeEn: null, featuredVideoId: null, maxUploadGb: 50, keepOriginals: true, castingEnabled: true },
+    playlists: [
+      {
+        id: uuidOf(600),
+        name: "Annas favoriter",
+        description: null,
+        isPublic: true,
+        owner: "Anna Annan",
+        items: [{ id: uuidOf(601), videoId: uuidOf(1), startSeconds: null, endSeconds: null, title: null }],
+      },
+    ],
+    settings: {
+      welcomeSv: null,
+      welcomeEn: null,
+      featuredVideoId: null,
+      maxUploadGb: 50,
+      keepOriginals: true,
+      castingEnabled: true,
+    },
     audit: [],
     uploads: new Map(),
     spexregisterUp: true,
@@ -165,7 +183,7 @@ function resetState() {
 
 resetState();
 
-const isEditor = persona => persona.roles.includes("EDITOR") || persona.roles.includes("ADMIN");
+const isEditor = (persona) => persona.roles.includes("EDITOR") || persona.roles.includes("ADMIN");
 const forbidden = () => new GraphQLError("FORBIDDEN", "Du har inte behörighet att göra det.");
 
 function requireUser(persona) {
@@ -178,15 +196,15 @@ function requireUser(persona) {
   return persona;
 }
 
-const listed = v => v.published && v.status === "READY" && !v.trashedAt;
-const visible = persona => state.videos.filter(v => !v.trashedAt && (listed(v) || isEditor(persona)));
+const listed = (v) => v.published && v.status === "READY" && !v.trashedAt;
+const visible = (persona) => state.videos.filter((v) => !v.trashedAt && (listed(v) || isEditor(persona)));
 const sortedKinds = () => [...state.kinds].sort((a, b) => a.position - b.position);
-const kindOf = kindId => ({
-  ...state.kinds.find(kind => kind.id === kindId),
+const kindOf = (kindId) => ({
+  ...state.kinds.find((kind) => kind.id === kindId),
   isDefault: sortedKinds()[0]?.id === kindId,
 });
-const ratingsOf = id => [...(state.otherRatings[id] ?? []), ...(state.ratings[id] ? [state.ratings[id]] : [])];
-const personal = v => ({
+const ratingsOf = (id) => [...(state.otherRatings[id] ?? []), ...(state.ratings[id] ? [state.ratings[id]] : [])];
+const personal = (v) => ({
   ...v,
   kind: kindOf(v.kindId),
   myRating: state.ratings[v.id] ?? 0,
@@ -201,16 +219,18 @@ const personal = v => ({
   credits: v.credits ?? [],
 });
 const playlistOut = (persona, playlist) => {
-  const items = playlist.items.filter(item => listed(videoById(item.videoId))).map(item => {
-    const video = personal(videoById(item.videoId));
-    const length = (video.durationMs ?? 0) / 1000;
+  const items = playlist.items
+    .filter((item) => listed(videoById(item.videoId)))
+    .map((item) => {
+      const video = personal(videoById(item.videoId));
+      const length = (video.durationMs ?? 0) / 1000;
 
-    return {
-      ...item,
-      video,
-      durationSeconds: item.startSeconds === null ? length : (item.endSeconds ?? length) - item.startSeconds,
-    };
-  });
+      return {
+        ...item,
+        video,
+        durationSeconds: item.startSeconds === null ? length : (item.endSeconds ?? length) - item.startSeconds,
+      };
+    });
 
   return {
     id: playlist.id,
@@ -226,25 +246,31 @@ const playlistOut = (persona, playlist) => {
     updatedAt: "2026-11-01T10:00:00Z",
   };
 };
-const ownPlaylist = id => {
-  const found = state.playlists.find(playlist => playlist.id === id && playlist.owner === null);
+const ownPlaylist = (id) => {
+  const found = state.playlists.find((playlist) => playlist.id === id && playlist.owner === null);
 
   if (!found) {
     throw new GraphQLError("NOT_FOUND", "Spellistan finns inte.");
   }
   return found;
 };
-const collectionsOf = (persona, videoId) => state.collections
-  .filter(collection => collection.videoIds.includes(videoId))
-  .map(collection => ({ id: collection.id, title: collection.title }));
+const collectionsOf = (persona, videoId) =>
+  state.collections
+    .filter((collection) => collection.videoIds.includes(videoId))
+    .map((collection) => ({ id: collection.id, title: collection.title }));
 const collectionOut = (persona, collection) => ({
   ...collection,
-  videos: collection.videoIds.map(id => visible(persona).find(v => v.id === id)).filter(Boolean).map(personal),
+  videos: collection.videoIds
+    .map((id) => visible(persona).find((v) => v.id === id))
+    .filter(Boolean)
+    .map(personal),
 });
 // The next listed video: in the first collection with one after it, else of the same spex by kind and performance date
 const nextOf = (persona, current) => {
-  for (const collection of state.collections.filter(candidate => candidate.videoIds.includes(current.id))) {
-    const ids = collection.videoIds.filter(id => id === current.id || state.videos.some(v => v.id === id && listed(v)));
+  for (const collection of state.collections.filter((candidate) => candidate.videoIds.includes(current.id))) {
+    const ids = collection.videoIds.filter(
+      (id) => id === current.id || state.videos.some((v) => v.id === id && listed(v))
+    );
     const next = ids[ids.indexOf(current.id) + 1];
 
     if (next) {
@@ -252,13 +278,20 @@ const nextOf = (persona, current) => {
     }
   }
 
-  const siblings = state.videos.filter(v => v.id === current.id || (listed(v) && current.spex.length > 0 && isAbout(v, current.spex[0].familyId)))
-    .sort((a, b) => kindOf(a.kindId).position - kindOf(b.kindId).position || (a.performanceDate ?? "").localeCompare(b.performanceDate ?? ""));
-  const next = siblings[siblings.findIndex(v => v.id === current.id) + 1];
+  const siblings = state.videos
+    .filter(
+      (v) => v.id === current.id || (listed(v) && current.spex.length > 0 && isAbout(v, current.spex[0].familyId))
+    )
+    .sort(
+      (a, b) =>
+        kindOf(a.kindId).position - kindOf(b.kindId).position ||
+        (a.performanceDate ?? "").localeCompare(b.performanceDate ?? "")
+    );
+  const next = siblings[siblings.findIndex((v) => v.id === current.id) + 1];
 
   return next ? personal(next) : null;
 };
-const isAdmin = persona => persona.roles.includes("ADMIN");
+const isAdmin = (persona) => persona.roles.includes("ADMIN");
 
 function requireEditor(persona) {
   if (!isEditor(persona)) {
@@ -274,13 +307,19 @@ function requireAdmin(persona) {
 
 function audit(persona, action, entityId, summary, entityType = "VIDEO") {
   state.audit.unshift({
-    id: String(state.nextId++), at: new Date().toISOString(), actorName: persona.name, action,
-    entityType, entityId, summary, actor: persona.sub,
+    id: String(state.nextId++),
+    at: new Date().toISOString(),
+    actorName: persona.name,
+    action,
+    entityType,
+    entityId,
+    summary,
+    actor: persona.sub,
   });
 }
 
-const videoById = id => {
-  const found = state.videos.find(candidate => candidate.id === id);
+const videoById = (id) => {
+  const found = state.videos.find((candidate) => candidate.id === id);
 
   if (!found) {
     throw new GraphQLError("NOT_FOUND", "Filmen finns inte.");
@@ -306,7 +345,7 @@ const queue = (target, source) => {
 const categories = [{ id: uuidOf(1), name: "Chalmersspexet", videoCount: 1 }];
 
 const resolvers = {
-  Me: persona => ({
+  Me: (persona) => ({
     me: { username: persona.email, displayName: persona.name, roles: persona.roles, spexifyUser: true },
     settings: state.settings,
   }),
@@ -314,46 +353,68 @@ const resolvers = {
     // The admin's pick while it is listed, else the newest show (the default kind), else the newest video
     featuredVideo: (() => {
       const all = state.videos.filter(listed);
-      const picked = all.find(v => v.id === state.settings.featuredVideoId);
-      const shows = all.filter(v => v.kindId === sortedKinds()[0]?.id).sort((x, y) => (y.year ?? 0) - (x.year ?? 0));
+      const picked = all.find((v) => v.id === state.settings.featuredVideoId);
+      const shows = all.filter((v) => v.kindId === sortedKinds()[0]?.id).sort((x, y) => (y.year ?? 0) - (x.year ?? 0));
       const featured = picked ?? shows[0] ?? all[0];
 
       return featured ? personal(featured) : null;
     })(),
-    watchList: state.videos.filter(v => listed(v) && state.watchList.has(v.id)).map(personal),
-    videoKinds: sortedKinds().map(kind => kindOf(kind.id)),
+    watchList: state.videos.filter((v) => listed(v) && state.watchList.has(v.id)).map(personal),
+    videoKinds: sortedKinds().map((kind) => kindOf(kind.id)),
     videos: state.videos.filter(listed).map(personal),
-    collections: state.collections.map(collection => ({
-      id: collection.id, title: collection.title,
-      videos: collection.videoIds.map(id => state.videos.find(v => v.id === id)).filter(v => v && listed(v)).map(personal),
-    })).filter(collection => collection.videos.length > 0),
-    continueWatching: state.videos.filter(v => listed(v) && state.progress[v.id]).map(personal),
-    highestRated: state.videos.filter(v => listed(v) && state.ratings[v.id]).sort((a, b) => state.ratings[b.id] - state.ratings[a.id]).map(personal),
+    collections: state.collections
+      .map((collection) => ({
+        id: collection.id,
+        title: collection.title,
+        videos: collection.videoIds
+          .map((id) => state.videos.find((v) => v.id === id))
+          .filter((v) => v && listed(v))
+          .map(personal),
+      }))
+      .filter((collection) => collection.videos.length > 0),
+    continueWatching: state.videos.filter((v) => listed(v) && state.progress[v.id]).map(personal),
+    highestRated: state.videos
+      .filter((v) => listed(v) && state.ratings[v.id])
+      .sort((a, b) => state.ratings[b.id] - state.ratings[a.id])
+      .map(personal),
     recentVideos: state.videos.filter(listed).map(personal),
-    topVideos: state.videos.filter(v => listed(v) && ratingsOf(v.id).length).map(personal)
+    topVideos: state.videos
+      .filter((v) => listed(v) && ratingsOf(v.id).length)
+      .map(personal)
       .sort((a, b) => b.averageRating - a.averageRating),
-    likedVideos: [...state.liked].reverse().map(id => personal(videoById(id))),
+    likedVideos: [...state.liked].reverse().map((id) => personal(videoById(id))),
   }),
-  Liked: () => ({ likedVideos: [...state.liked].reverse().map(id => personal(videoById(id))) }),
+  Liked: () => ({ likedVideos: [...state.liked].reverse().map((id) => personal(videoById(id))) }),
   Top: (persona, { by }) => {
-    const score = v => by === "LIKED" ? v.likeCount : by === "WATCHED" ? (state.finished.has(v.id) ? 1 : 0) : v.averageRating ?? 0;
+    const score = (v) =>
+      by === "LIKED" ? v.likeCount : by === "WATCHED" ? (state.finished.has(v.id) ? 1 : 0) : (v.averageRating ?? 0);
 
     return {
-      topVideos: state.videos.filter(listed).map(personal).filter(v => score(v) > 0).sort((a, b) => score(b) - score(a)),
+      topVideos: state.videos
+        .filter(listed)
+        .map(personal)
+        .filter((v) => score(v) > 0)
+        .sort((a, b) => score(b) - score(a)),
       categories,
       years: [1975],
     };
   },
   VideoLike: (persona, { videoId, liked }) => {
-    state.liked = state.liked.filter(id => id !== videoId);
+    state.liked = state.liked.filter((id) => id !== videoId);
     if (liked) {
       state.liked.push(videoId);
     }
     return { videoLike: null };
   },
-  Playlists: persona => ({ playlists: state.playlists.filter(playlist => playlist.owner === null || playlist.isPublic).map(playlist => playlistOut(persona, playlist)) }),
+  Playlists: (persona) => ({
+    playlists: state.playlists
+      .filter((playlist) => playlist.owner === null || playlist.isPublic)
+      .map((playlist) => playlistOut(persona, playlist)),
+  }),
   Playlist: (persona, { id }) => {
-    const found = state.playlists.find(playlist => playlist.id === id && (playlist.owner === null || playlist.isPublic));
+    const found = state.playlists.find(
+      (playlist) => playlist.id === id && (playlist.owner === null || playlist.isPublic)
+    );
 
     return { playlist: found ? playlistOut(persona, found) : null };
   },
@@ -382,7 +443,7 @@ const resolvers = {
   },
   PlaylistDelete: (persona, { id }) => {
     ownPlaylist(id);
-    state.playlists = state.playlists.filter(playlist => playlist.id !== id);
+    state.playlists = state.playlists.filter((playlist) => playlist.id !== id);
     return { playlistDelete: null };
   },
   PlaylistAddItem: (persona, { playlistId, videoId, startSeconds }) => {
@@ -392,7 +453,7 @@ const resolvers = {
 
     if (startSeconds !== null && startSeconds !== undefined) {
       const chapters = [...video.chapters].sort((a, b) => a.startSeconds - b.startSeconds);
-      const index = chapters.findIndex(chapter => chapter.startSeconds === startSeconds);
+      const index = chapters.findIndex((chapter) => chapter.startSeconds === startSeconds);
 
       if (index < 0) {
         throw new GraphQLError("BAD_REQUEST", "Filmen har inget kapitel som börjar där.");
@@ -409,40 +470,57 @@ const resolvers = {
   PlaylistRemoveItem: (persona, { playlistId, itemId }) => {
     const playlist = ownPlaylist(playlistId);
 
-    playlist.items = playlist.items.filter(item => item.id !== itemId);
+    playlist.items = playlist.items.filter((item) => item.id !== itemId);
     return { playlistRemoveItem: playlistOut(persona, playlist) };
   },
   PlaylistReorder: (persona, { playlistId, itemIds }) => {
     const playlist = ownPlaylist(playlistId);
 
-    playlist.items = [...itemIds.map(id => playlist.items.find(item => item.id === id)), ...playlist.items.filter(item => !itemIds.includes(item.id))];
+    playlist.items = [
+      ...itemIds.map((id) => playlist.items.find((item) => item.id === id)),
+      ...playlist.items.filter((item) => !itemIds.includes(item.id)),
+    ];
     return { playlistReorder: playlistOut(persona, playlist) };
   },
   Videos: (persona, { filter }) => ({
-    videos: visible(persona).filter(v => listed(v) || filter?.includeUnpublished).filter(v => !filter?.kindId || v.kindId === filter.kindId)
-      .filter(v => !filter?.spexId || isAbout(v, filter.spexId))
-      .filter(v => !filter?.liked || state.liked.includes(v.id)).filter(v => !filter?.unwatched || !state.finished.has(v.id))
+    videos: visible(persona)
+      .filter((v) => listed(v) || filter?.includeUnpublished)
+      .filter((v) => !filter?.kindId || v.kindId === filter.kindId)
+      .filter((v) => !filter?.spexId || isAbout(v, filter.spexId))
+      .filter((v) => !filter?.liked || state.liked.includes(v.id))
+      .filter((v) => !filter?.unwatched || !state.finished.has(v.id))
       .map(personal)
-      .sort((a, b) => filter?.sort === "TITLE" ? a.title.localeCompare(b.title, "sv") : filter?.sort === "LIKES" ? b.likeCount - a.likeCount : 0),
-    categories, years: [1975], videoKinds: sortedKinds().map(kind => kindOf(kind.id)),
+      .sort((a, b) =>
+        filter?.sort === "TITLE"
+          ? a.title.localeCompare(b.title, "sv")
+          : filter?.sort === "LIKES"
+            ? b.likeCount - a.likeCount
+            : 0
+      ),
+    categories,
+    years: [1975],
+    videoKinds: sortedKinds().map((kind) => kindOf(kind.id)),
   }),
   Video: (persona, { id }) => {
-    const found = visible(persona).find(v => v.id === id);
+    const found = visible(persona).find((v) => v.id === id);
 
     return {
-      video: found ? {
-        ...personal(found),
-        collections: collectionsOf(persona, id),
-        next: nextOf(persona, found),
-      } : null,
+      video: found
+        ? {
+            ...personal(found),
+            collections: collectionsOf(persona, id),
+            next: nextOf(persona, found),
+          }
+        : null,
     };
   },
-  Collections: persona => ({
-    collections: state.collections.map(collection => collectionOut(persona, collection))
-      .filter(collection => isEditor(persona) || collection.videos.length > 0),
+  Collections: (persona) => ({
+    collections: state.collections
+      .map((collection) => collectionOut(persona, collection))
+      .filter((collection) => isEditor(persona) || collection.videos.length > 0),
   }),
   Collection: (persona, { id }) => {
-    const found = state.collections.find(collection => collection.id === id);
+    const found = state.collections.find((collection) => collection.id === id);
 
     return { collection: found ? collectionOut(persona, found) : null };
   },
@@ -450,8 +528,12 @@ const resolvers = {
     requireEditor(persona);
 
     const created = {
-      id: uuidOf(state.nextId++), title: input.title, description: input.description ?? null, videoIds: input.videoIds,
-      createdAt: new Date().toISOString(), lastModifiedAt: null,
+      id: uuidOf(state.nextId++),
+      title: input.title,
+      description: input.description ?? null,
+      videoIds: input.videoIds,
+      createdAt: new Date().toISOString(),
+      lastModifiedAt: null,
     };
 
     state.collections.push(created);
@@ -461,7 +543,7 @@ const resolvers = {
   CollectionUpdate: (persona, { id, input }) => {
     requireEditor(persona);
 
-    const found = state.collections.find(collection => collection.id === id);
+    const found = state.collections.find((collection) => collection.id === id);
 
     Object.assign(found, {
       title: input.title,
@@ -474,7 +556,7 @@ const resolvers = {
   },
   CollectionDelete: (persona, { id }) => {
     requireAdmin(persona);
-    state.collections = state.collections.filter(collection => collection.id !== id);
+    state.collections = state.collections.filter((collection) => collection.id !== id);
     audit(persona, "DELETE", id, "Tog bort samlingen", "COLLECTION");
     return { collectionDelete: null };
   },
@@ -496,8 +578,9 @@ const resolvers = {
     }
     return {
       playback: {
-        masterUrl: `http://localhost:${PORT}/media/${videoId}/master.m3u8`, thumbnailsUrl: null,
-        subtitles: found.subtitles.map(sub => ({
+        masterUrl: `http://localhost:${PORT}/media/${videoId}/master.m3u8`,
+        thumbnailsUrl: null,
+        subtitles: found.subtitles.map((sub) => ({
           ...sub,
           url: `http://localhost:${PORT}/media/${videoId}/subtitles/${sub.language}.vtt`,
         })),
@@ -505,8 +588,12 @@ const resolvers = {
       },
     };
   },
-  Search: (persona, { q }) => ({ search: visible(persona).filter(v => v.title.toLowerCase().includes(q.toLowerCase())).map(personal) }),
-  WatchList: () => ({ watchList: state.videos.filter(v => state.watchList.has(v.id)).map(personal) }),
+  Search: (persona, { q }) => ({
+    search: visible(persona)
+      .filter((v) => v.title.toLowerCase().includes(q.toLowerCase()))
+      .map(personal),
+  }),
+  WatchList: () => ({ watchList: state.videos.filter((v) => state.watchList.has(v.id)).map(personal) }),
   VideoRate: (persona, { videoId, rating }) => {
     if (rating === 0) {
       delete state.ratings[videoId];
@@ -527,7 +614,7 @@ const resolvers = {
     state.progress[videoId] = positionSeconds;
     return { progressSave: null };
   },
-  SpexSearch: persona => {
+  SpexSearch: (persona) => {
     requireEditor(persona);
     if (!state.spexregisterUp) {
       throw new GraphQLError("SPEXREGISTER_UNAVAILABLE", MESSAGES.SPEXREGISTER_UNAVAILABLE);
@@ -544,16 +631,20 @@ const resolvers = {
     };
   },
   // Empty while Spexify is down, as the server answers
-  SpexifyTracks: persona => {
+  SpexifyTracks: (persona) => {
     requireEditor(persona);
     return {
-      spexifyTracks: state.spexifyUp ? [{
-        id: uuidOf(12),
-        title: "Kärleksduetten",
-        discNumber: 1,
-        trackNumber: 2,
-        albumTitle: "Nobel",
-      }] : [],
+      spexifyTracks: state.spexifyUp
+        ? [
+            {
+              id: uuidOf(12),
+              title: "Kärleksduetten",
+              discNumber: 1,
+              trackNumber: 2,
+              albumTitle: "Nobel",
+            },
+          ]
+        : [],
     };
   },
   VideoCreate: (persona, { input }) => {
@@ -587,7 +678,12 @@ const resolvers = {
       throw new GraphQLError("BAD_REQUEST", "Filmen kan publiceras när den är färdigbearbetad.");
     }
     found.published = published;
-    audit(persona, published ? "PUBLISH" : "UNPUBLISH", id, `${published ? "Publicerade" : "Avpublicerade"} filmen ${found.title}`);
+    audit(
+      persona,
+      published ? "PUBLISH" : "UNPUBLISH",
+      id,
+      `${published ? "Publicerade" : "Avpublicerade"} filmen ${found.title}`
+    );
     return { videoPublish: { id } };
   },
   VideoUpdate: (persona, { id, input }) => {
@@ -631,38 +727,49 @@ const resolvers = {
     videoById(id).posterSeconds = seconds;
     return { videoPosterFrame: { id } };
   },
-  Credits: persona => {
+  Credits: (persona) => {
     const counts = new Map();
 
-    visible(persona).filter(v => isEditor(persona) || listed(v)).forEach(v => (v.credits ?? []).forEach(credit => {
-      const key = credit.name.toLowerCase();
-      const entry = counts.get(key) ?? { name: credit.name, videos: new Set() };
+    visible(persona)
+      .filter((v) => isEditor(persona) || listed(v))
+      .forEach((v) =>
+        (v.credits ?? []).forEach((credit) => {
+          const key = credit.name.toLowerCase();
+          const entry = counts.get(key) ?? { name: credit.name, videos: new Set() };
 
-      entry.videos.add(v.id);
-      counts.set(key, entry);
-    }));
+          entry.videos.add(v.id);
+          counts.set(key, entry);
+        })
+      );
     return {
-      credits: [...counts.values()].map(entry => ({ name: entry.name, videoCount: entry.videos.size }))
+      credits: [...counts.values()]
+        .map((entry) => ({ name: entry.name, videoCount: entry.videos.size }))
         .sort((a, b) => a.name.localeCompare(b.name, "sv")),
     };
   },
   CreditVideos: (persona, { name }) => ({
-    creditVideos: visible(persona).filter(v => isEditor(persona) || listed(v)).flatMap(v => {
-      const credit = (v.credits ?? []).find(candidate => candidate.name.toLowerCase() === name.trim().toLowerCase());
+    creditVideos: visible(persona)
+      .filter((v) => isEditor(persona) || listed(v))
+      .flatMap((v) => {
+        const credit = (v.credits ?? []).find(
+          (candidate) => candidate.name.toLowerCase() === name.trim().toLowerCase()
+        );
 
-      return credit ? [{ role: credit.role ?? null, video: personal(v) }] : [];
-    }),
+        return credit ? [{ role: credit.role ?? null, video: personal(v) }] : [];
+      }),
   }),
   CreditsSet: (persona, { videoId, credits }) => {
     requireEditor(persona);
-    videoById(videoId).credits = credits.filter(credit => credit.name.trim())
-      .map(credit => ({ name: credit.name.trim(), role: credit.role ?? null }));
+    videoById(videoId).credits = credits
+      .filter((credit) => credit.name.trim())
+      .map((credit) => ({ name: credit.name.trim(), role: credit.role ?? null }));
     return { creditsSet: { id: videoId } };
   },
   ChaptersSet: (persona, { videoId, chapters }) => {
     requireEditor(persona);
-    videoById(videoId).chapters = [...chapters].sort((a, b) => a.startSeconds - b.startSeconds)
-      .map(chapter => ({ spexifyTrackId: null, spexifyTrackTitle: null, ...chapter }));
+    videoById(videoId).chapters = [...chapters]
+      .sort((a, b) => a.startSeconds - b.startSeconds)
+      .map((chapter) => ({ spexifyTrackId: null, spexifyTrackTitle: null, ...chapter }));
     return { chaptersSet: { id: videoId } };
   },
   SubtitleRemove: (persona, { videoId, language }) => {
@@ -670,7 +777,7 @@ const resolvers = {
 
     const found = videoById(videoId);
 
-    found.subtitles = found.subtitles.filter(sub => sub.language !== language);
+    found.subtitles = found.subtitles.filter((sub) => sub.language !== language);
     return { subtitleRemove: { id: videoId } };
   },
   VideoTrash: (persona, { id }) => {
@@ -689,22 +796,22 @@ const resolvers = {
   },
   VideoDelete: (persona, { id }) => {
     requireAdmin(persona);
-    state.videos = state.videos.filter(v => v.id !== id);
+    state.videos = state.videos.filter((v) => v.id !== id);
     return { videoDelete: null };
   },
-  TrashEmpty: persona => {
+  TrashEmpty: (persona) => {
     requireAdmin(persona);
-    state.videos = state.videos.filter(v => !v.trashedAt);
+    state.videos = state.videos.filter((v) => !v.trashedAt);
     return { trashEmpty: null };
   },
-  VideoKinds: persona => {
+  VideoKinds: (persona) => {
     if (!persona) {
       throw new GraphQLError("UNAUTHORIZED", "Du är inte inloggad.");
     }
     return {
-      videoKinds: sortedKinds().map(kind => ({
+      videoKinds: sortedKinds().map((kind) => ({
         ...kindOf(kind.id),
-        videoCount: state.videos.filter(v => v.kindId === kind.id).length,
+        videoCount: state.videos.filter((v) => v.kindId === kind.id).length,
       })),
     };
   },
@@ -723,39 +830,48 @@ const resolvers = {
   },
   VideoKindUpdate: (persona, { id, input }) => {
     requireAdmin(persona);
-    Object.assign(state.kinds.find(kind => kind.id === id), { nameSv: input.nameSv, nameEn: input.nameEn });
+    Object.assign(
+      state.kinds.find((kind) => kind.id === id),
+      { nameSv: input.nameSv, nameEn: input.nameEn }
+    );
     return { videoKindUpdate: { id } };
   },
   VideoKindsReorder: (persona, { ids }) => {
     requireAdmin(persona);
-    ids.forEach((id, i) => state.kinds.find(kind => kind.id === id).position = i + 1);
-    return { videoKindsReorder: ids.map(id => ({ id })) };
+    ids.forEach((id, i) => (state.kinds.find((kind) => kind.id === id).position = i + 1));
+    return { videoKindsReorder: ids.map((id) => ({ id })) };
   },
   VideoKindDelete: (persona, { id }) => {
     requireAdmin(persona);
 
-    const count = state.videos.filter(v => v.kindId === id).length;
+    const count = state.videos.filter((v) => v.kindId === id).length;
 
     if (count > 0) {
       throw new GraphQLError("CONFLICT", `Filmsorten används av ${count} filmer och kan inte raderas.`);
     }
-    state.kinds = state.kinds.filter(kind => kind.id !== id);
+    state.kinds = state.kinds.filter((kind) => kind.id !== id);
     return { videoKindDelete: null };
   },
-  Trash: persona => {
+  Trash: (persona) => {
     requireEditor(persona);
-    return { trash: state.videos.filter(v => v.trashedAt).map(personal) };
+    return { trash: state.videos.filter((v) => v.trashedAt).map(personal) };
   },
   AuditLog: (persona, { page = 0, size = 50, filter = {} }) => {
     requireEditor(persona);
 
     const f = filter ?? {};
     const entries = state.audit
-      .filter(entry => isAdmin(persona) ? !f.actorId || entry.actor === f.actorId : entry.actor === persona.sub)
-      .filter(entry => (!f.entityType || entry.entityType === f.entityType) && (!f.action || entry.action === f.action)
-        && (!f.entityId || entry.entityId === f.entityId) && (!f.q || entry.summary.toLowerCase().includes(f.q.toLowerCase()))
-        && (!f.from || entry.at >= f.from) && (!f.to || entry.at < f.to))
-      .map(entry => ({ ...entry, actorId: entry.actor }));
+      .filter((entry) => (isAdmin(persona) ? !f.actorId || entry.actor === f.actorId : entry.actor === persona.sub))
+      .filter(
+        (entry) =>
+          (!f.entityType || entry.entityType === f.entityType) &&
+          (!f.action || entry.action === f.action) &&
+          (!f.entityId || entry.entityId === f.entityId) &&
+          (!f.q || entry.summary.toLowerCase().includes(f.q.toLowerCase())) &&
+          (!f.from || entry.at >= f.from) &&
+          (!f.to || entry.at < f.to)
+      )
+      .map((entry) => ({ ...entry, actorId: entry.actor }));
 
     return {
       auditLog: {
@@ -766,10 +882,14 @@ const resolvers = {
       },
     };
   },
-  AuditActors: persona => {
+  AuditActors: (persona) => {
     requireEditor(persona);
 
-    const actors = new Map(state.audit.filter(entry => isAdmin(persona) || entry.actor === persona.sub).map(entry => [entry.actor, entry.actorName]));
+    const actors = new Map(
+      state.audit
+        .filter((entry) => isAdmin(persona) || entry.actor === persona.sub)
+        .map((entry) => [entry.actor, entry.actorName])
+    );
 
     return { auditActors: [...actors].map(([id, name]) => ({ id, name })) };
   },
@@ -782,41 +902,53 @@ const resolvers = {
     state.settings = { featuredVideoId: null, castingEnabled: true, ...input };
     return { settingsUpdate: state.settings };
   },
-  Queue: persona => {
+  Queue: (persona) => {
     requireEditor(persona);
     return {
-      processingQueue: [{
-        id: "1", videoId: uuidOf(3), videoTitle: "Bearbetas", status: "RUNNING", progress: 40, attempts: 1,
-        error: null, createdAt: "2026-10-31T10:00:00Z", startedAt: "2026-10-31T10:00:00Z", finishedAt: null,
-      },
-        ...state.videos.filter(v => v.job).map(v => v.job)],
+      processingQueue: [
+        {
+          id: "1",
+          videoId: uuidOf(3),
+          videoTitle: "Bearbetas",
+          status: "RUNNING",
+          progress: 40,
+          attempts: 1,
+          error: null,
+          createdAt: "2026-10-31T10:00:00Z",
+          startedAt: "2026-10-31T10:00:00Z",
+          finishedAt: null,
+        },
+        ...state.videos.filter((v) => v.job).map((v) => v.job),
+      ],
     };
   },
-  SpexipediaSync: persona => {
+  SpexipediaSync: (persona) => {
     requireAdmin(persona);
     return {
       spexipediaSync: {
         lastPulledAt: "2026-11-01T11:55:00Z",
         lastSuccess: "2026-11-01T11:55:00Z",
         lastError: null,
-        skipped: [{
-          sequence: "412",
-          kind: "SPEX",
-          id: "00000000-0000-7000-8000-0000000000e2",
-          change: "UPSERT",
-          error: "The category is not here yet",
-          skippedAt: "2026-10-30T09:00:00Z",
-        }],
+        skipped: [
+          {
+            sequence: "412",
+            kind: "SPEX",
+            id: "00000000-0000-7000-8000-0000000000e2",
+            change: "UPSERT",
+            error: "The category is not here yet",
+            skippedAt: "2026-10-30T09:00:00Z",
+          },
+        ],
       },
     };
   },
-  MaintenanceJobs: persona => {
+  MaintenanceJobs: (persona) => {
     requireAdmin(persona);
     return { maintenanceJobs: state.maintenanceJobs };
   },
   MaintenanceJobRun: (persona, { job }) => {
     requireAdmin(persona);
-    const status = state.maintenanceJobs.find(j => j.job === job);
+    const status = state.maintenanceJobs.find((j) => j.job === job);
 
     if (!status || status.running) {
       return { maintenanceJobRun: false };
@@ -826,7 +958,7 @@ const resolvers = {
     status.lastSucceeded = true;
     return { maintenanceJobRun: true };
   },
-  Storage: persona => {
+  Storage: (persona) => {
     if (!persona.roles.includes("ADMIN")) {
       throw forbidden();
     }
@@ -854,7 +986,7 @@ function handleGraphql(req, body, res) {
   try {
     payload = JSON.parse(body);
   } catch {
-    res.writeHead(400).end("{\"errors\":[{\"message\":\"bad json\"}]}");
+    res.writeHead(400).end('{"errors":[{"message":"bad json"}]}');
     return;
   }
   const op = operationNameOf(payload.query || "");
@@ -875,16 +1007,20 @@ function handleGraphql(req, body, res) {
     res.end(JSON.stringify({ data: resolver(persona, payload.variables || {}) }));
   } catch (error) {
     if (error instanceof GraphQLError) {
-      res.end(JSON.stringify({
-        data: null,
-        errors: [{ message: error.message, extensions: { classification: error.classification } }],
-      }));
+      res.end(
+        JSON.stringify({
+          data: null,
+          errors: [{ message: error.message, extensions: { classification: error.classification } }],
+        })
+      );
     } else {
       console.error(error);
-      res.end(JSON.stringify({
-        data: null,
-        errors: [{ message: String(error), extensions: { classification: "INTERNAL_ERROR" } }],
-      }));
+      res.end(
+        JSON.stringify({
+          data: null,
+          errors: [{ message: String(error), extensions: { classification: "INTERNAL_ERROR" } }],
+        })
+      );
     }
   }
 }
@@ -907,7 +1043,7 @@ const { privateKey, publicKey } = await generateKeyPair("RS256", { extractable: 
 const publicJwk = { ...(await exportJWK(publicKey)), kid: KID, alg: "RS256", use: "sig" };
 const pendingCodes = new Map();
 
-const userClaims = persona => ({
+const userClaims = (persona) => ({
   sub: persona.sub,
   name: persona.name,
   email: persona.email,
@@ -940,7 +1076,7 @@ function handleAuthorize(url, res) {
     if (url.searchParams.get("state")) {
       back.searchParams.set("state", url.searchParams.get("state"));
     }
-    res.writeHead(302, {location: back.toString()}).end();
+    res.writeHead(302, { location: back.toString() }).end();
     return;
   }
   const code = randomUUID();
@@ -969,19 +1105,25 @@ async function handleToken(body, res) {
   }
   const { persona, nonce } = pending;
   res.writeHead(200, { "content-type": "application/json" });
-  res.end(JSON.stringify({
-    access_token: await signJwt(persona, {
-      ...userClaims(persona),
-      typ: "Bearer",
-      azp: CLIENT_ID,
-      resource_access: { [CLIENT_ID]: { roles: persona.roles } },
-    }, "account"),
-    id_token: await signJwt(persona, { ...userClaims(persona), ...(nonce ? { nonce } : {}) }, CLIENT_ID),
-    refresh_token: `refresh-${randomUUID()}`,
-    token_type: "Bearer",
-    expires_in: TOKEN_TTL,
-    scope: "openid profile email",
-  }));
+  res.end(
+    JSON.stringify({
+      access_token: await signJwt(
+        persona,
+        {
+          ...userClaims(persona),
+          typ: "Bearer",
+          azp: CLIENT_ID,
+          resource_access: { [CLIENT_ID]: { roles: persona.roles } },
+        },
+        "account"
+      ),
+      id_token: await signJwt(persona, { ...userClaims(persona), ...(nonce ? { nonce } : {}) }, CLIENT_ID),
+      refresh_token: `refresh-${randomUUID()}`,
+      token_type: "Bearer",
+      expires_in: TOKEN_TTL,
+      scope: "openid profile email",
+    })
+  );
 }
 
 function multipartField(body, name) {
@@ -998,21 +1140,30 @@ function handleTus(req, path, body, res) {
   const persona = personaOf(req);
 
   if (req.method === "OPTIONS") {
-    res.writeHead(204, {
-      ...headers,
-      "tus-version": "1.0.0",
-      "tus-extension": "creation,termination",
-      "tus-max-size": "53687091200",
-    }).end();
+    res
+      .writeHead(204, {
+        ...headers,
+        "tus-version": "1.0.0",
+        "tus-extension": "creation,termination",
+        "tus-max-size": "53687091200",
+      })
+      .end();
   } else if (!persona || !isEditor(persona)) {
-    res.writeHead(403, { "content-type": "application/json" }).end(JSON.stringify({
-      code: "FORBIDDEN",
-      message: "Du har inte behörighet att göra det.",
-    }));
+    res.writeHead(403, { "content-type": "application/json" }).end(
+      JSON.stringify({
+        code: "FORBIDDEN",
+        message: "Du har inte behörighet att göra det.",
+      })
+    );
   } else if (req.method === "POST") {
     const upload = randomUUID();
-    const metadata = Object.fromEntries((req.headers["upload-metadata"] ?? "").split(",").filter(Boolean)
-      .map(pair => pair.trim().split(" ")).map(([key, value]) => [key, Buffer.from(value ?? "", "base64").toString("utf8")]));
+    const metadata = Object.fromEntries(
+      (req.headers["upload-metadata"] ?? "")
+        .split(",")
+        .filter(Boolean)
+        .map((pair) => pair.trim().split(" "))
+        .map(([key, value]) => [key, Buffer.from(value ?? "", "base64").toString("utf8")])
+    );
 
     state.uploads.set(upload, {
       name: metadata.filename ?? "upload",
@@ -1025,12 +1176,14 @@ function handleTus(req, path, body, res) {
   } else if (req.method === "HEAD") {
     const upload = state.uploads.get(id);
 
-    res.writeHead(200, {
-      ...headers,
-      "upload-offset": String(upload.offset),
-      "upload-length": String(upload.length),
-      "cache-control": "no-store",
-    }).end();
+    res
+      .writeHead(200, {
+        ...headers,
+        "upload-offset": String(upload.offset),
+        "upload-length": String(upload.length),
+        "cache-control": "no-store",
+      })
+      .end();
   } else if (req.method === "PATCH") {
     const upload = state.uploads.get(id);
 
@@ -1050,14 +1203,16 @@ function handleTus(req, path, body, res) {
 
 const server = createServer((req, res) => {
   const chunks = [];
-  req.on("data", chunk => chunks.push(chunk));
-  req.on("end", () => handle(req, res, chunks).catch(error => {
-    // A broken handler answers 500 instead of taking the mock down for every later test
-    console.error(error);
-    if (!res.headersSent) {
-      res.writeHead(500).end();
-    }
-  }));
+  req.on("data", (chunk) => chunks.push(chunk));
+  req.on("end", () =>
+    handle(req, res, chunks).catch((error) => {
+      // A broken handler answers 500 instead of taking the mock down for every later test
+      console.error(error);
+      if (!res.headersSent) {
+        res.writeHead(500).end();
+      }
+    })
+  );
 });
 
 async function handle(req, res, chunks) {
@@ -1079,7 +1234,9 @@ async function handle(req, res, chunks) {
       const persona = personaOf(req) ?? PERSONAS[currentPersona];
       res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify(userClaims(persona)));
     } else if (path.endsWith("/protocol/openid-connect/logout")) {
-      res.writeHead(302, { location: url.searchParams.get("post_logout_redirect_uri") || `http://localhost:${PORT}/` }).end();
+      res
+        .writeHead(302, { location: url.searchParams.get("post_logout_redirect_uri") || `http://localhost:${PORT}/` })
+        .end();
     } else if (req.method === "POST" && path === "/__reset") {
       resetState();
       currentPersona = "admin";
@@ -1108,18 +1265,27 @@ async function handle(req, res, chunks) {
       // The worker finishes, or fails, every queued job
       const { failure } = JSON.parse(body || "{}");
 
-      state.videos.filter(v => v.job && v.job.status !== "DONE").forEach(v => {
-        Object.assign(v.job, {
-          status: failure ? "FAILED" : "DONE",
-          progress: 100,
-          finishedAt: new Date().toISOString(),
-          error: failure ?? null,
+      state.videos
+        .filter((v) => v.job && v.job.status !== "DONE")
+        .forEach((v) => {
+          Object.assign(v.job, {
+            status: failure ? "FAILED" : "DONE",
+            progress: 100,
+            finishedAt: new Date().toISOString(),
+            error: failure ?? null,
+          });
+          Object.assign(
+            v,
+            failure
+              ? { status: "FAILED", failure }
+              : {
+                  status: "READY",
+                  failure: null,
+                  durationMs: 60000,
+                  renditions: [{ height: 720, width: 1280, bitrateKbps: 3000, copied: false, size: 1000 }],
+                }
+          );
         });
-        Object.assign(v, failure ? { status: "FAILED", failure } : {
-          status: "READY", failure: null, durationMs: 60000,
-          renditions: [{ height: 720, width: 1280, bitrateKbps: 3000, copied: false, size: 1000 }],
-        });
-      });
       res.writeHead(204).end();
     } else if (req.method === "POST" && path === "/__progress") {
       const { videoId, seconds } = JSON.parse(body);
@@ -1127,73 +1293,83 @@ async function handle(req, res, chunks) {
       state.progress[videoId] = seconds;
       res.writeHead(204).end();
     } else if (req.method === "GET" && path === "/__state") {
-      res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify({
-        uploads: state.uploads.size, progress: state.progress, kinds: state.kinds, ratings: state.ratings,
-        liked: state.liked, playlists: state.playlists, finished: [...state.finished], collections: state.collections,
-        videos: state.videos.map(({
-                                    id,
-                                    title,
-                                    status,
-                                    published,
-                                    trashedAt,
-                                    posterSeconds,
-                                    chapters,
-                                    subtitles,
-                                    job,
-                                  }) =>
-          ({
-            id,
-            title,
-            status,
-            published,
-            trashedAt,
-            posterSeconds,
-            chapters,
-            subtitles,
-            jobStatus: job?.status ?? null,
-          })),
-      }));
+      res.writeHead(200, { "content-type": "application/json" }).end(
+        JSON.stringify({
+          uploads: state.uploads.size,
+          progress: state.progress,
+          kinds: state.kinds,
+          ratings: state.ratings,
+          liked: state.liked,
+          playlists: state.playlists,
+          finished: [...state.finished],
+          collections: state.collections,
+          videos: state.videos.map(
+            ({ id, title, status, published, trashedAt, posterSeconds, chapters, subtitles, job }) => ({
+              id,
+              title,
+              status,
+              published,
+              trashedAt,
+              posterSeconds,
+              chapters,
+              subtitles,
+              jobStatus: job?.status ?? null,
+            })
+          ),
+        })
+      );
     } else if (path === "/api/uploads" || path.startsWith("/api/uploads/")) {
       handleTus(req, path, rawBody, res);
     } else if (req.method === "POST" && /^\/api\/videos\/[^/]+\/(poster|subtitles)$/.test(path)) {
-      const found = state.videos.find(v => v.id === path.split("/")[3]);
+      const found = state.videos.find((v) => v.id === path.split("/")[3]);
 
       if (!isEditor(personaOf(req) ?? { roles: [] })) {
-        res.writeHead(403, { "content-type": "application/json" }).end(JSON.stringify({
-          code: "FORBIDDEN",
-          message: "Du har inte behörighet att göra det.",
-        }));
+        res.writeHead(403, { "content-type": "application/json" }).end(
+          JSON.stringify({
+            code: "FORBIDDEN",
+            message: "Du har inte behörighet att göra det.",
+          })
+        );
         return;
       }
       if (path.endsWith("/subtitles")) {
         const language = multipartField(body, "language");
 
         if (!/-->/.test(body)) {
-          res.writeHead(400, { "content-type": "application/json" }).end(JSON.stringify({
-            code: "BAD_REQUEST",
-            message: "Filen är inte WebVTT eller SRT.",
-          }));
+          res.writeHead(400, { "content-type": "application/json" }).end(
+            JSON.stringify({
+              code: "BAD_REQUEST",
+              message: "Filen är inte WebVTT eller SRT.",
+            })
+          );
           return;
         }
-        found.subtitles = [...found.subtitles.filter(sub => sub.language !== language), {
-          language,
-          label: multipartField(body, "label"),
-        }];
+        found.subtitles = [
+          ...found.subtitles.filter((sub) => sub.language !== language),
+          {
+            language,
+            label: multipartField(body, "label"),
+          },
+        ];
       } else {
         found.posterUploaded = true;
       }
-      res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify({
-        id: found.id,
-        title: found.title,
-        subtitles: found.subtitles,
-      }));
+      res.writeHead(200, { "content-type": "application/json" }).end(
+        JSON.stringify({
+          id: found.id,
+          title: found.title,
+          subtitles: found.subtitles,
+        })
+      );
     } else if (req.method === "GET" && /^\/api\/videos\/[^/]+\/poster$/.test(path)) {
       res.writeHead(404).end();
     } else if (req.method === "GET" && path.startsWith("/media/")) {
-      res.writeHead(200, {
-        "content-type": "application/vnd.apple.mpegurl",
-        "access-control-allow-origin": "*",
-      }).end("#EXTM3U\n");
+      res
+        .writeHead(200, {
+          "content-type": "application/vnd.apple.mpegurl",
+          "access-control-allow-origin": "*",
+        })
+        .end("#EXTM3U\n");
     } else if (req.method === "POST" && path.includes("/api/graphql")) {
       handleGraphql(req, body, res);
     } else {

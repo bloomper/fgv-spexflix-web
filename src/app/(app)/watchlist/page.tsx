@@ -13,8 +13,15 @@ export default async function WatchListPage() {
 
     return (
       <Page variant="content">
-        <PageHeader title={t("title")}/>
-        {videos.length > 0 ? <VideoGrid videos={videos} /> : <DataEmpty title={t("none")} description={null} />}
+        <PageHeader title={t("title")} />
+        {videos.length > 0 ? (
+          <VideoGrid videos={videos} />
+        ) : (
+          <DataEmpty
+            title={t("none")}
+            description={null}
+          />
+        )}
       </Page>
     );
   });

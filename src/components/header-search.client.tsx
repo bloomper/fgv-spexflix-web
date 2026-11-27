@@ -44,7 +44,7 @@ export function HeaderSearch() {
 
     let cancelled = false;
     const timer = setTimeout(() => {
-      void searchPreviewAction(typed).then(videos => {
+      void searchPreviewAction(typed).then((videos) => {
         if (!cancelled) {
           setHits({ q: typed, videos });
         }
@@ -62,57 +62,89 @@ export function HeaderSearch() {
 
   return (
     <>
-      <Link href="/search" aria-label={t("title")} title={t("title")}
-            className={buttonVariants({ variant: "ghost", size: "icon", className: "h-8 w-8 sm:hidden" })}>
+      <Link
+        href="/search"
+        aria-label={t("title")}
+        title={t("title")}
+        className={buttonVariants({ variant: "ghost", size: "icon", className: "h-8 w-8 sm:hidden" })}
+      >
         <Search />
       </Link>
-      <form ref={box} role="search" className="relative hidden sm:block"
-            onFocus={() => setOpen(true)}
-            onBlur={event => {
-              if (!box.current?.contains(event.relatedTarget as Node | null)) {
-                setOpen(false);
-              }
-            }}
-            onKeyDown={event => {
-              if (event.key === "Escape") {
-                setOpen(false);
-              }
-            }}
-            onSubmit={event => {
-              event.preventDefault();
-              setOpen(false);
-              router.push(typed ? all : "/search");
-            }}>
-        <Search className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input name="q" type="search" value={text} placeholder={t("placeholder")} autoComplete="off"
-               aria-label={t("placeholder")} aria-controls={shown ? listId : undefined} aria-expanded={shown}
-               onChange={event => {
-                 setText(event.target.value);
-                 setOpen(true);
-               }}
-               className="h-8 w-48 pl-8 md:w-64" />
+      <form
+        ref={box}
+        role="search"
+        className="relative hidden sm:block"
+        onFocus={() => setOpen(true)}
+        onBlur={(event) => {
+          if (!box.current?.contains(event.relatedTarget as Node | null)) {
+            setOpen(false);
+          }
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            setOpen(false);
+          }
+        }}
+        onSubmit={(event) => {
+          event.preventDefault();
+          setOpen(false);
+          router.push(typed ? all : "/search");
+        }}
+      >
+        <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2" />
+        <Input
+          name="q"
+          type="search"
+          value={text}
+          placeholder={t("placeholder")}
+          autoComplete="off"
+          aria-label={t("placeholder")}
+          aria-controls={shown ? listId : undefined}
+          aria-expanded={shown}
+          onChange={(event) => {
+            setText(event.target.value);
+            setOpen(true);
+          }}
+          className="h-8 w-48 pl-8 md:w-64"
+        />
         {shown && hits && (
-          <div id={listId} role="region" aria-label={t("quickResults")}
-               className="absolute top-full right-0 z-50 mt-1 w-80 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-lg">
-            {hits.videos.length === 0
-              ? <p className="px-3 py-2 text-sm text-muted-foreground">{t("none")}</p>
-              : (
-                <ul>
-                  {hits.videos.map(video => (
-                    <li key={video.id}>
-                      <Link href={`/videos/${video.id}`} onClick={() => setOpen(false)}
-                            className="flex items-center gap-3 px-2 py-1.5 text-sm hover:bg-accent focus-visible:bg-accent focus-visible:outline-none">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={`/api/poster/${video.id}`} alt="" className="aspect-video w-16 shrink-0 rounded bg-muted object-cover" />
-                        <span className="min-w-0 flex-1 truncate">{video.title}</span>
-                        {video.year && <span className="shrink-0 text-xs text-muted-foreground tabular-nums">{video.year}</span>}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            <Link href={all} onClick={() => setOpen(false)}
-                  className="block border-t px-3 py-2 text-sm text-link hover:bg-accent focus-visible:bg-accent focus-visible:outline-none">
+          <div
+            id={listId}
+            role="region"
+            aria-label={t("quickResults")}
+            className="bg-popover text-popover-foreground absolute top-full right-0 z-50 mt-1 w-80 overflow-hidden rounded-md border shadow-lg"
+          >
+            {hits.videos.length === 0 ? (
+              <p className="text-muted-foreground px-3 py-2 text-sm">{t("none")}</p>
+            ) : (
+              <ul>
+                {hits.videos.map((video) => (
+                  <li key={video.id}>
+                    <Link
+                      href={`/videos/${video.id}`}
+                      onClick={() => setOpen(false)}
+                      className="hover:bg-accent focus-visible:bg-accent flex items-center gap-3 px-2 py-1.5 text-sm focus-visible:outline-none"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`/api/poster/${video.id}`}
+                        alt=""
+                        className="bg-muted aspect-video w-16 shrink-0 rounded object-cover"
+                      />
+                      <span className="min-w-0 flex-1 truncate">{video.title}</span>
+                      {video.year && (
+                        <span className="text-muted-foreground shrink-0 text-xs tabular-nums">{video.year}</span>
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Link
+              href={all}
+              onClick={() => setOpen(false)}
+              className="text-link hover:bg-accent focus-visible:bg-accent block border-t px-3 py-2 text-sm focus-visible:outline-none"
+            >
               {t("allResults", { q: typed })}
             </Link>
           </div>

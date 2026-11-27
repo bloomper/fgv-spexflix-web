@@ -46,8 +46,9 @@ function changed(videoId?: string) {
   }
 }
 
-const editor = <T, >(work: () => Promise<T>) => withPolicyAction(Policies.editor.requireEditor, () => toActionResult(work));
-const admin = <T, >(work: () => Promise<T>) => withPolicyAction(Policies.admin.requireAdmin, () => toActionResult(work));
+const editor = <T>(work: () => Promise<T>) =>
+  withPolicyAction(Policies.editor.requireEditor, () => toActionResult(work));
+const admin = <T>(work: () => Promise<T>) => withPolicyAction(Policies.admin.requireAdmin, () => toActionResult(work));
 
 export async function searchSpexAction(q: string) {
   return editor(async () => searchSpex(q.slice(0, 100)));
@@ -144,7 +145,10 @@ export async function reprocessAction(id: string): Promise<ActionResult<null>> {
 export async function setCreditsAction(id: string, credits: CreditInput[]): Promise<ActionResult<null>> {
   requireId(id);
   return editor(async () => {
-    await creditsSet(id, credits.map(credit => ({ name: credit.name.trim(), role: credit.role?.trim() || null })));
+    await creditsSet(
+      id,
+      credits.map((credit) => ({ name: credit.name.trim(), role: credit.role?.trim() || null }))
+    );
     changed(id);
     revalidatePath("/credits", "layout");
     return null;
@@ -179,7 +183,7 @@ function collectionsChanged(id?: string) {
 }
 
 function checkCollection(input: CollectionInput) {
-  if (!input.videoIds.every(id => ID.test(String(id)))) {
+  if (!input.videoIds.every((id) => ID.test(String(id)))) {
     throw new Error("Invalid id");
   }
 }

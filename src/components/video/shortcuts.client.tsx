@@ -24,23 +24,38 @@ export function ownsKeys(target: EventTarget | null, key: string): boolean {
   if (!(target instanceof Element)) {
     return false;
   }
-  if (target.closest("input:not([type=range]):not([type=checkbox]):not([type=radio]), textarea, select, [contenteditable=''], [contenteditable='true']")) {
+  if (
+    target.closest(
+      "input:not([type=range]):not([type=checkbox]):not([type=radio]), textarea, select, [contenteditable=''], [contenteditable='true']"
+    )
+  ) {
     return true;
   }
-  if (key === " " && target.closest("button, a, summary, [role='button'], [role='checkbox'], [role='switch'], [role='radio']")) {
+  if (
+    key === " " &&
+    target.closest("button, a, summary, [role='button'], [role='checkbox'], [role='switch'], [role='radio']")
+  ) {
     return true;
   }
-  return (key === " " || key.startsWith("Arrow"))
-    && target.closest("video, input[type=range], [role='slider'], [role='menu'], [role='menuitem'], [role='listbox'], [role='option'], [role='radiogroup']") !== null;
+  return (
+    (key === " " || key.startsWith("Arrow")) &&
+    target.closest(
+      "video, input[type=range], [role='slider'], [role='menu'], [role='menuitem'], [role='listbox'], [role='option'], [role='radiogroup']"
+    ) !== null
+  );
 }
 
 /**
  * The player's keyboard shortcuts, anywhere on the page except where the focused element uses the key itself.
  */
-export function useVideoShortcuts(video: RefObject<HTMLVideoElement | null>, chapters: {
-                                    startSeconds: number
-                                  }[], showHelp: () => void,
-                                  toggleFullscreen?: () => void) {
+export function useVideoShortcuts(
+  video: RefObject<HTMLVideoElement | null>,
+  chapters: {
+    startSeconds: number;
+  }[],
+  showHelp: () => void,
+  toggleFullscreen?: () => void
+) {
   const latest = useRef({ chapters, showHelp, toggleFullscreen });
 
   useEffect(() => {
@@ -51,14 +66,24 @@ export function useVideoShortcuts(video: RefObject<HTMLVideoElement | null>, cha
     const onKey = (event: KeyboardEvent) => {
       const element = video.current;
 
-      if (!element || event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey || ownsKeys(event.target, event.key)) {
+      if (
+        !element ||
+        event.defaultPrevented ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.altKey ||
+        ownsKeys(event.target, event.key)
+      ) {
         return;
       }
 
       const seek = (seconds: number) => {
-        element.currentTime = Math.min(Math.max(0, element.currentTime + seconds), Number.isFinite(element.duration) ? element.duration : Infinity);
+        element.currentTime = Math.min(
+          Math.max(0, element.currentTime + seconds),
+          Number.isFinite(element.duration) ? element.duration : Infinity
+        );
       };
-      const starts = latest.current.chapters.map(chapter => chapter.startSeconds).sort((a, b) => a - b);
+      const starts = latest.current.chapters.map((chapter) => chapter.startSeconds).sort((a, b) => a - b);
       let handled = true;
 
       switch (event.key.toLowerCase()) {
@@ -83,7 +108,7 @@ export function useVideoShortcuts(video: RefObject<HTMLVideoElement | null>, cha
           seek(5);
           break;
         case "n": {
-          const next = starts.find(start => start > element.currentTime + 1);
+          const next = starts.find((start) => start > element.currentTime + 1);
 
           if (next !== undefined) {
             element.currentTime = next;
@@ -92,7 +117,7 @@ export function useVideoShortcuts(video: RefObject<HTMLVideoElement | null>, cha
         }
         case "p": {
           // Back to the start of this chapter, or to the one before when just past its start
-          const previous = starts.filter(start => start < element.currentTime - 3).at(-1);
+          const previous = starts.filter((start) => start < element.currentTime - 3).at(-1);
 
           element.currentTime = previous ?? 0;
           break;
@@ -111,9 +136,9 @@ export function useVideoShortcuts(video: RefObject<HTMLVideoElement | null>, cha
           break;
         case "c": {
           const tracks = Array.from(element.textTracks);
-          const showing = tracks.find(track => track.mode === "showing");
+          const showing = tracks.find((track) => track.mode === "showing");
 
-          tracks.forEach(track => {
+          tracks.forEach((track) => {
             track.mode = "disabled";
           });
           if (!showing && tracks[0]) {
@@ -141,18 +166,26 @@ export function VideoShortcutsDialog({ open, onOpenChange }: { open: boolean; on
   const t = useTranslations("Shortcuts");
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
         <dl className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 text-sm">
-          {SHORTCUTS.map(shortcut => (
+          {SHORTCUTS.map((shortcut) => (
             <React.Fragment key={shortcut.action}>
               <dt className="flex flex-wrap gap-1">
-                {shortcut.keys.map(key => (
-                  <kbd key={key} className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs">{key}</kbd>
+                {shortcut.keys.map((key) => (
+                  <kbd
+                    key={key}
+                    className="bg-muted rounded border px-1.5 py-0.5 font-mono text-xs"
+                  >
+                    {key}
+                  </kbd>
                 ))}
               </dt>
               <dd>{t(shortcut.action)}</dd>

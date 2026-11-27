@@ -19,13 +19,15 @@ const BY: TopBy[] = ["RATED", "LIKED", "WATCHED"];
  * end, for a decade or a category. What it ranks by is chosen with tabs and the chips below narrow the list; every card
  * says the number it is ranked by.
  */
-export default async function TopPage({ searchParams }: {
-  searchParams: Promise<{ by?: string; decade?: string; category?: string }>
+export default async function TopPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ by?: string; decade?: string; category?: string }>;
 }) {
   return withPolicyPage(Policies.app.requireAccess, async () => {
     const t = await getTranslations("Top");
     const query = await searchParams;
-    const by = BY.find(candidate => candidate === query.by) ?? "RATED";
+    const by = BY.find((candidate) => candidate === query.by) ?? "RATED";
     const decade = parseDecade(query.decade);
     const categoryId = query.category && ID.test(query.category) ? query.category : null;
     const data = await getTop(by, { categoryId, fromYear: decade, toYear: decade ? decade + 9 : null });
@@ -45,38 +47,90 @@ export default async function TopPage({ searchParams }: {
       }
       return `/top${search.size ? `?${search}` : ""}`;
     };
-    const chip = (active: boolean) => cn("rounded-full border px-2.5 py-0.5 text-xs",
-      active ? "border-primary bg-primary/10 text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground");
+    const chip = (active: boolean) =>
+      cn(
+        "rounded-full border px-2.5 py-0.5 text-xs",
+        active
+          ? "border-primary bg-primary/10 text-foreground"
+          : "text-muted-foreground hover:bg-accent hover:text-foreground"
+      );
     const videos = data?.topVideos ?? [];
-    const counts = new Map(videos.map(video => [video.id, video]));
+    const counts = new Map(videos.map((video) => [video.id, video]));
 
     return (
       <Page variant="content">
-        <PageHeader title={t("title")} description={t(`text.${by}`)}/>
-        <LinkTabs label={t("by")} items={BY.map(item => ({
-          href: link({ by: item }), label: t(`byLabel.${item}`), active: by === item,
-        }))} />
-        <nav aria-label={t("filters")} className="space-y-2 pt-1">
+        <PageHeader
+          title={t("title")}
+          description={t(`text.${by}`)}
+        />
+        <LinkTabs
+          label={t("by")}
+          items={BY.map((item) => ({
+            href: link({ by: item }),
+            label: t(`byLabel.${item}`),
+            active: by === item,
+          }))}
+        />
+        <nav
+          aria-label={t("filters")}
+          className="space-y-2 pt-1"
+        >
           <div className="flex flex-wrap gap-1.5">
-            <Link href={link({ category: null })} className={chip(!categoryId)}>{t("allCategories")}</Link>
-            {data?.categories.map(item => (
-              <Link key={item.id} href={link({ category: item.id })} className={chip(categoryId === item.id)}
-                    aria-current={categoryId === item.id ? "page" : undefined}>{item.name}</Link>
+            <Link
+              href={link({ category: null })}
+              className={chip(!categoryId)}
+            >
+              {t("allCategories")}
+            </Link>
+            {data?.categories.map((item) => (
+              <Link
+                key={item.id}
+                href={link({ category: item.id })}
+                className={chip(categoryId === item.id)}
+                aria-current={categoryId === item.id ? "page" : undefined}
+              >
+                {item.name}
+              </Link>
             ))}
           </div>
           <div className="flex flex-wrap gap-1.5">
-            <Link href={link({ decade: null })} className={chip(!decade)}>{t("allYears")}</Link>
-            {decadesOf(data?.years ?? []).map(item => (
-              <Link key={item} href={link({ decade: item })} className={cn(chip(decade === item), "tabular-nums")}
-                    aria-current={decade === item ? "page" : undefined}>{t("decade", { decade: item })}</Link>
+            <Link
+              href={link({ decade: null })}
+              className={chip(!decade)}
+            >
+              {t("allYears")}
+            </Link>
+            {decadesOf(data?.years ?? []).map((item) => (
+              <Link
+                key={item}
+                href={link({ decade: item })}
+                className={cn(chip(decade === item), "tabular-nums")}
+                aria-current={decade === item ? "page" : undefined}
+              >
+                {t("decade", { decade: item })}
+              </Link>
             ))}
           </div>
         </nav>
-        {videos.length > 0
-          ? <VideoGrid videos={videos} ranked label={by === "RATED" ? undefined : video => by === "LIKED"
-            ? t("likes", { count: counts.get(video.id)?.likeCount ?? 0 })
-            : t("watches", { count: counts.get(video.id)?.watchCount ?? 0 })} />
-          : <DataEmpty title={t("none")} description={null} />}
+        {videos.length > 0 ? (
+          <VideoGrid
+            videos={videos}
+            ranked
+            label={
+              by === "RATED"
+                ? undefined
+                : (video) =>
+                    by === "LIKED"
+                      ? t("likes", { count: counts.get(video.id)?.likeCount ?? 0 })
+                      : t("watches", { count: counts.get(video.id)?.watchCount ?? 0 })
+            }
+          />
+        ) : (
+          <DataEmpty
+            title={t("none")}
+            description={null}
+          />
+        )}
       </Page>
     );
   });

@@ -52,7 +52,9 @@ describe("video actions", () => {
   });
 
   it("finds the first few videos as the viewer types, and nothing for too little or when the server is down", async () => {
-    api.search.mockResolvedValue(Array.from({ length: 8 }, (_, i) => ({ id: `v${i}`, title: `Nobel ${i}`, year: i ? 1975 : null })));
+    api.search.mockResolvedValue(
+      Array.from({ length: 8 }, (_, i) => ({ id: `v${i}`, title: `Nobel ${i}`, year: i ? 1975 : null }))
+    );
 
     expect(await searchPreviewAction(" n ")).toEqual([]);
     expect(api.search).not.toHaveBeenCalled();
@@ -127,7 +129,10 @@ describe("playlist actions", () => {
   it("creates a playlist, with its first video or clip", async () => {
     api.playlistCreate.mockResolvedValue({ id: PLAYLIST, name: "Bästa numren", itemCount: 0 });
 
-    expect(await createPlaylistAction("Bästa numren", { videoId: VIDEO, startSeconds: 20 })).toEqual({ ok: true, data: PLAYLIST });
+    expect(await createPlaylistAction("Bästa numren", { videoId: VIDEO, startSeconds: 20 })).toEqual({
+      ok: true,
+      data: PLAYLIST,
+    });
     expect(api.playlistCreate).toHaveBeenCalledWith({ name: "Bästa numren", isPublic: false });
     expect(api.playlistAddItem).toHaveBeenCalledWith(PLAYLIST, VIDEO, 20);
     expect(revalidatePath).toHaveBeenCalledWith("/playlists");
@@ -140,7 +145,11 @@ describe("playlist actions", () => {
   it("passes on the server's message when it refuses", async () => {
     api.playlistCreate.mockRejectedValue(new GraphQLRequestError("BAD_REQUEST", "Du kan ha högst 200 spellistor."));
 
-    expect(await createPlaylistAction("En till")).toEqual({ ok: false, code: "BAD_REQUEST", message: "Du kan ha högst 200 spellistor." });
+    expect(await createPlaylistAction("En till")).toEqual({
+      ok: false,
+      code: "BAD_REQUEST",
+      message: "Du kan ha högst 200 spellistor.",
+    });
   });
 
   it("updates, deletes, adds to, removes from and reorders a playlist", async () => {

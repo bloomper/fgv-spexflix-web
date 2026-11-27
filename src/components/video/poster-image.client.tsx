@@ -18,15 +18,24 @@ export function PosterImage({ videoId, title, className }: { videoId: string; ti
 
   if (failed) {
     return (
-      <div className={cn("flex aspect-video items-center justify-center bg-muted text-muted-foreground", className)}
-           role="img" aria-label={title}>
+      <div
+        className={cn("bg-muted text-muted-foreground flex aspect-video items-center justify-center", className)}
+        role="img"
+        aria-label={title}
+      >
         <Film className="size-1/4" />
       </div>
     );
   }
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={`/api/poster/${videoId}`} alt={title} loading="lazy" ref={checkLoaded} onError={() => setFailed(true)}
-         className={cn("aspect-video object-cover", className)} />
+    <img
+      src={`/api/poster/${videoId}`}
+      alt={title}
+      loading="lazy"
+      ref={checkLoaded}
+      onError={() => setFailed(true)}
+      className={cn("aspect-video object-cover", className)}
+    />
   );
 }

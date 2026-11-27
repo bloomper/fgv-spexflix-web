@@ -9,17 +9,36 @@ vi.mock("next/link", () => ({
   default: ({ children, href }: { children?: ReactNode; href: string }) => <a href={href}>{children}</a>,
 }));
 vi.mock("@/components/video/poster-image.client", () => ({
-  PosterImage: ({ videoId, title }: { videoId: string; title: string }) => <span role="img" aria-label={title || `still ${videoId}`} />,
+  PosterImage: ({ videoId, title }: { videoId: string; title: string }) => (
+    <span
+      role="img"
+      aria-label={title || `still ${videoId}`}
+    />
+  ),
 }));
 
 const KIND = { id: "k1", nameSv: "Föreställning", nameEn: "Show" };
-const video = (id: string, extra = {}) => ({ id, title: `Akt ${id}`, year: 1975, kind: KIND, durationMs: 3_600_000, ...extra });
+const video = (id: string, extra = {}) => ({
+  id,
+  title: `Akt ${id}`,
+  year: 1975,
+  kind: KIND,
+  durationMs: 3_600_000,
+  ...extra,
+});
 
 describe("Hero", () => {
   it("shows the featured video over its still with Play and More info", () => {
-    render(<Hero video={video("1", { description: "Hela föreställningen.", spex: [{ categoryName: "Chalmersspexet", familyId: "s1" }] })}>
-      <button type="button">Slumpa</button>
-    </Hero>);
+    render(
+      <Hero
+        video={video("1", {
+          description: "Hela föreställningen.",
+          spex: [{ categoryName: "Chalmersspexet", familyId: "s1" }],
+        })}
+      >
+        <button type="button">Slumpa</button>
+      </Hero>
+    );
 
     expect(screen.getByRole("heading", { level: 1, name: "Akt 1" })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "still 1" })).toBeInTheDocument();
@@ -39,10 +58,15 @@ describe("Hero", () => {
 
 describe("EpisodeList", () => {
   it("lists the videos as episodes with stills, lengths, progress and descriptions", () => {
-    render(<EpisodeList label="Föreställning" videos={[
-      video("1", { finished: true, description: "Första akten." }),
-      video("2", { progressSeconds: 900, spex: [{ revival: true }] }),
-    ]} />);
+    render(
+      <EpisodeList
+        label="Föreställning"
+        videos={[
+          video("1", { finished: true, description: "Första akten." }),
+          video("2", { progressSeconds: 900, spex: [{ revival: true }] }),
+        ]}
+      />
+    );
 
     const items = screen.getByRole("list", { name: "Föreställning" }).querySelectorAll("li");
 

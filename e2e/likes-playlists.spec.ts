@@ -3,10 +3,10 @@ import { answerDialog, expect, hydrated, test } from "./fixtures";
 
 test.describe("Likes and the top list", () => {
   test("likes a video, finds it under Liked and on the start page, and takes the like back", async ({
-                                                                                                      page,
-                                                                                                      loginAs,
-                                                                                                      mock,
-                                                                                                    }) => {
+    page,
+    loginAs,
+    mock,
+  }) => {
     await loginAs("viewer");
     await page.goto(`/videos/${uuidOf(1)}`);
     await page.getByRole("button", { name: "Gilla", exact: true }).click();
@@ -18,7 +18,9 @@ test.describe("Likes and the top list", () => {
     await expect(page.getByRole("link", { name: /Nobel/ })).toBeVisible();
 
     await page.goto("/");
-    await expect(page.getByRole("region", { name: "Gillat av dig" }).getByRole("link", { name: /Nobel/ })).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "Gillat av dig" }).getByRole("link", { name: /Nobel/ })
+    ).toBeVisible();
 
     await page.goto(`/videos/${uuidOf(1)}`);
     await page.getByRole("button", { name: "Gillad" }).click();
@@ -28,7 +30,9 @@ test.describe("Likes and the top list", () => {
   test("ranks the videos by everyone's ratings and likes", async ({ page, loginAs }) => {
     await loginAs("viewer");
     await page.goto("/");
-    await expect(page.getByRole("region", { name: "Topplistan: högst betyg" }).getByRole("link", { name: /Nobel/ })).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "Topplistan: högst betyg" }).getByRole("link", { name: /Nobel/ })
+    ).toBeVisible();
     await page.getByRole("link", { name: "Hela topplistan" }).click();
 
     await expect(page.getByRole("heading", { name: "Topplistan", level: 1 })).toBeVisible();
@@ -41,10 +45,10 @@ test.describe("Likes and the top list", () => {
   });
 
   test("browses by decade, sorts the videos and shows only the liked or unwatched ones", async ({
-                                                                                                  page,
-                                                                                                  loginAs,
-                                                                                                  mock,
-                                                                                                }) => {
+    page,
+    loginAs,
+    mock,
+  }) => {
     await loginAs("viewer");
     await page.goto("/videos?decade=1970");
     await expect(page.getByRole("link", { name: "1975", exact: true })).toBeVisible();
@@ -81,13 +85,21 @@ test.describe("Playlists", () => {
     await page.getByRole("button", { name: "Lägg till Kärleksduetten i en spellista" }).click();
     await page.getByRole("menuitem", { name: "Bästa numren" }).click();
     await expect(page.getByText("Klippet är tillagt i spellistan.")).toBeVisible();
-    await expect.poll(async () => (await mock.state()).playlists.find((playlist: {
-      name: string
-    }) => playlist.name === "Bästa numren")?.items.length).toBe(2);
+    await expect
+      .poll(
+        async () =>
+          (await mock.state()).playlists.find((playlist: { name: string }) => playlist.name === "Bästa numren")?.items
+            .length
+      )
+      .toBe(2);
 
     await page.getByRole("link", { name: "Spellistor" }).click();
-    await expect(page.getByRole("region", { name: "Dina spellistor" }).getByRole("link", { name: /Bästa numren/ })).toBeVisible();
-    await expect(page.getByRole("region", { name: "Andras offentliga spellistor" }).getByRole("link", { name: /Annas favoriter/ })).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "Dina spellistor" }).getByRole("link", { name: /Bästa numren/ })
+    ).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "Andras offentliga spellistor" }).getByRole("link", { name: /Annas favoriter/ })
+    ).toBeVisible();
     await page.getByRole("link", { name: /Bästa numren/ }).click();
 
     await expect(page.getByRole("heading", { name: "Bästa numren", level: 1 })).toBeVisible();
@@ -119,9 +131,12 @@ test.describe("Playlists", () => {
     await page.getByRole("switch", { name: /Offentlig/ }).click();
     await page.getByRole("button", { name: "Spara" }).click();
     await expect(page.getByRole("heading", { name: "Omdöpt", level: 1 })).toBeVisible();
-    await expect.poll(async () => (await mock.state()).playlists.find((playlist: {
-      name: string
-    }) => playlist.name === "Omdöpt")?.isPublic).toBe(true);
+    await expect
+      .poll(
+        async () =>
+          (await mock.state()).playlists.find((playlist: { name: string }) => playlist.name === "Omdöpt")?.isPublic
+      )
+      .toBe(true);
 
     await page.getByRole("button", { name: "Ta bort spellistan" }).click();
     await answerDialog(page, "Ta bort spellistan");
@@ -154,9 +169,9 @@ test.describe("The player", () => {
   });
 
   test("never makes the page scroll, not even with the timeline's hover box at either end", async ({
-                                                                                                     page,
-                                                                                                     loginAs,
-                                                                                                   }) => {
+    page,
+    loginAs,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await loginAs("viewer");
     await page.goto(`/videos/${uuidOf(1)}`);
@@ -164,10 +179,12 @@ test.describe("The player", () => {
 
     const timeline = page.getByRole("slider", { name: "Tidslinje" });
     const box = (await timeline.boundingBox())!;
-    const size = () => page.evaluate(() => ({
-      width: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth,
-      height: document.documentElement.scrollHeight,
-    }));
+    const size = () =>
+      page.evaluate(() => ({
+        width: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+        height: document.documentElement.scrollHeight,
+      }));
     const before = await size();
 
     expect(before.width).toBeLessThanOrEqual(before.clientWidth);

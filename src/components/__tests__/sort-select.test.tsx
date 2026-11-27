@@ -23,7 +23,13 @@ const OPTIONS = [
 
 describe("SortSelect", () => {
   it("keeps the other filters and leaves the default order out of the address", () => {
-    const { rerender } = render(<SortSelect options={OPTIONS} value="TITLE" label="Ordning" />);
+    const { rerender } = render(
+      <SortSelect
+        options={OPTIONS}
+        value="TITLE"
+        label="Ordning"
+      />
+    );
     const select = screen.getByRole("combobox", { name: "Ordning" });
 
     fireEvent.change(select, { target: { value: "RATING" } });
@@ -32,7 +38,13 @@ describe("SortSelect", () => {
     expect(push).toHaveBeenLastCalledWith("/videos?category=c1");
 
     search.value = "sort=TITLE";
-    rerender(<SortSelect options={OPTIONS} value="TITLE" label="Ordning" />);
+    rerender(
+      <SortSelect
+        options={OPTIONS}
+        value="TITLE"
+        label="Ordning"
+      />
+    );
     fireEvent.change(select, { target: { value: "YEAR_DESC" } });
     expect(push).toHaveBeenLastCalledWith("/videos");
   });

@@ -50,8 +50,10 @@ export async function playbackAction(videoId: string) {
 export async function randomVideoAction(): Promise<string | null> {
   return withPolicyAction(Policies.app.requireAccess, async () => {
     try {
-      const videos = ((await getVideos({}))?.videos ?? []).filter(video => video.status === "READY" && video.published);
-      const weighted = videos.flatMap(video => video.finished ? [video] : [video, video]);
+      const videos = ((await getVideos({}))?.videos ?? []).filter(
+        (video) => video.status === "READY" && video.published
+      );
+      const weighted = videos.flatMap((video) => (video.finished ? [video] : [video, video]));
 
       return weighted.length === 0 ? null : weighted[Math.floor(Math.random() * weighted.length)].id;
     } catch {
@@ -75,7 +77,9 @@ export async function searchPreviewAction(q: string): Promise<SearchHit[]> {
   }
   return withPolicyAction(Policies.app.requireAccess, async () => {
     try {
-      return (await search(query)).slice(0, 6).map(video => ({ id: video.id, title: video.title, year: video.year ?? null }));
+      return (await search(query))
+        .slice(0, 6)
+        .map((video) => ({ id: video.id, title: video.title, year: video.year ?? null }));
     } catch {
       return [];
     }
@@ -176,15 +180,17 @@ export async function likeVideoAction(videoId: string, liked: boolean): Promise<
 }
 
 async function playlistChange<T>(work: () => Promise<T>, playlistId?: string): Promise<ActionResult<T>> {
-  return withPolicyAction(Policies.app.requireAccess, () => toActionResult(async () => {
-    const result = await work();
+  return withPolicyAction(Policies.app.requireAccess, () =>
+    toActionResult(async () => {
+      const result = await work();
 
-    revalidatePath("/playlists");
-    if (playlistId) {
-      revalidatePath(`/playlists/${playlistId}`);
-    }
-    return result;
-  }));
+      revalidatePath("/playlists");
+      if (playlistId) {
+        revalidatePath(`/playlists/${playlistId}`);
+      }
+      return result;
+    })
+  );
 }
 
 const invalid = { ok: false, code: "BAD_REQUEST", message: "?" } as const;
@@ -192,10 +198,13 @@ const invalid = { ok: false, code: "BAD_REQUEST", message: "?" } as const;
 /**
  * Creates a playlist, and with a video adds it (or, with a start, its chapter) as the first item. Gives the new id.
  */
-export async function createPlaylistAction(name: string, item?: {
-  videoId: string;
-  startSeconds: number | null
-}): Promise<ActionResult<string | null>> {
+export async function createPlaylistAction(
+  name: string,
+  item?: {
+    videoId: string;
+    startSeconds: number | null;
+  }
+): Promise<ActionResult<string | null>> {
   if (item && !ID.test(item.videoId)) {
     return invalid;
   }
@@ -209,11 +218,14 @@ export async function createPlaylistAction(name: string, item?: {
   });
 }
 
-export async function updatePlaylistAction(id: string, input: {
-  name: string;
-  description: string | null;
-  isPublic: boolean
-}): Promise<ActionResult<unknown>> {
+export async function updatePlaylistAction(
+  id: string,
+  input: {
+    name: string;
+    description: string | null;
+    isPublic: boolean;
+  }
+): Promise<ActionResult<unknown>> {
   return ID.test(id) ? playlistChange(() => playlistUpdate(id, input), id) : invalid;
 }
 
@@ -224,7 +236,11 @@ export async function deletePlaylistAction(id: string): Promise<ActionResult<unk
 /**
  * Adds a whole video, or with a start the chapter that starts there, last in a playlist.
  */
-export async function addToPlaylistAction(playlistId: string, videoId: string, startSeconds: number | null): Promise<ActionResult<unknown>> {
+export async function addToPlaylistAction(
+  playlistId: string,
+  videoId: string,
+  startSeconds: number | null
+): Promise<ActionResult<unknown>> {
   if (!ID.test(playlistId) || !ID.test(videoId) || (startSeconds !== null && !Number.isInteger(startSeconds))) {
     return invalid;
   }
@@ -232,9 +248,13 @@ export async function addToPlaylistAction(playlistId: string, videoId: string, s
 }
 
 export async function removeFromPlaylistAction(playlistId: string, itemId: string): Promise<ActionResult<unknown>> {
-  return ID.test(playlistId) && ID.test(itemId) ? playlistChange(() => playlistRemoveItem(playlistId, itemId), playlistId) : invalid;
+  return ID.test(playlistId) && ID.test(itemId)
+    ? playlistChange(() => playlistRemoveItem(playlistId, itemId), playlistId)
+    : invalid;
 }
 
 export async function reorderPlaylistAction(playlistId: string, itemIds: string[]): Promise<ActionResult<unknown>> {
-  return ID.test(playlistId) && itemIds.every(id => ID.test(id)) ? playlistChange(() => playlistReorder(playlistId, itemIds), playlistId) : invalid;
+  return ID.test(playlistId) && itemIds.every((id) => ID.test(id))
+    ? playlistChange(() => playlistReorder(playlistId, itemIds), playlistId)
+    : invalid;
 }

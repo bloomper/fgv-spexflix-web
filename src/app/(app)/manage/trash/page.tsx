@@ -13,8 +13,14 @@ export default async function TrashPage() {
 
     return (
       <Page variant="content">
-        <PageHeader title={t("title")} description={isAdmin(authz.roles) ? t("textAdmin") : t("text")}/>
-        <TrashList admin={isAdmin(authz.roles)} videos={videos} />
+        <PageHeader
+          title={t("title")}
+          description={isAdmin(authz.roles) ? t("textAdmin") : t("text")}
+        />
+        <TrashList
+          admin={isAdmin(authz.roles)}
+          videos={videos}
+        />
       </Page>
     );
   });

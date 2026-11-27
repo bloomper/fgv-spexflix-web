@@ -16,7 +16,12 @@ type Summary = Awaited<ReturnType<typeof getPlaylists>>[number];
 function PlaylistCards({ playlists }: { playlists: Summary[] }) {
   return (
     <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-      {playlists.map(playlist => <PlaylistCard key={playlist.id} playlist={playlist} />)}
+      {playlists.map((playlist) => (
+        <PlaylistCard
+          key={playlist.id}
+          playlist={playlist}
+        />
+      ))}
     </ul>
   );
 }
@@ -27,22 +32,42 @@ async function PlaylistCard({ playlist }: { playlist: Summary }) {
 
   return (
     <li>
-      <Link href={`/playlists/${playlist.id}`}
-            className="group flex gap-3 rounded-lg border p-2 outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring">
+      <Link
+        href={`/playlists/${playlist.id}`}
+        className="group hover:bg-accent focus-visible:ring-ring flex gap-3 rounded-lg border p-2 outline-none focus-visible:ring-2"
+      >
         <div className="w-28 shrink-0 overflow-hidden rounded">
-          {first
-            ? <PosterImage videoId={first} title={playlist.name} className="w-full" />
-            : <div className="flex aspect-video items-center justify-center bg-muted"><ListVideo
-              className="size-6 text-muted-foreground" /></div>}
+          {first ? (
+            <PosterImage
+              videoId={first}
+              title={playlist.name}
+              className="w-full"
+            />
+          ) : (
+            <div className="bg-muted flex aspect-video items-center justify-center">
+              <ListVideo className="text-muted-foreground size-6" />
+            </div>
+          )}
         </div>
         <div className="min-w-0 space-y-0.5">
           <div className="truncate font-medium">{playlist.name}</div>
-          <div className="text-xs text-muted-foreground">
-            {[t("items", { count: playlist.itemCount }), playlist.durationSeconds > 0 ? formatDuration(playlist.durationSeconds) : null].filter(Boolean).join(" · ")}
+          <div className="text-muted-foreground text-xs">
+            {[
+              t("items", { count: playlist.itemCount }),
+              playlist.durationSeconds > 0 ? formatDuration(playlist.durationSeconds) : null,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
           </div>
-          {!playlist.owned && playlist.ownerName &&
-            <div className="truncate text-xs text-muted-foreground">{t("by", { name: playlist.ownerName })}</div>}
-          {playlist.owned && playlist.isPublic && <Badge variant="secondary"><Globe />{t("public")}</Badge>}
+          {!playlist.owned && playlist.ownerName && (
+            <div className="text-muted-foreground truncate text-xs">{t("by", { name: playlist.ownerName })}</div>
+          )}
+          {playlist.owned && playlist.isPublic && (
+            <Badge variant="secondary">
+              <Globe />
+              {t("public")}
+            </Badge>
+          )}
         </div>
       </Link>
     </li>
@@ -53,19 +78,46 @@ export default async function PlaylistsPage() {
   return withPolicyPage(Policies.app.requireAccess, async () => {
     const t = await getTranslations("Playlists");
     const playlists = await getPlaylists();
-    const mine = playlists.filter(playlist => playlist.owned);
-    const others = playlists.filter(playlist => !playlist.owned);
+    const mine = playlists.filter((playlist) => playlist.owned);
+    const others = playlists.filter((playlist) => !playlist.owned);
 
     return (
       <Page variant="content">
-        <PageHeader title={t("title")} description={t("text")} actions={<NewPlaylistButton />}/>
-        <section aria-labelledby="mine" className="space-y-3">
-          <h2 id="mine" className="text-lg font-semibold">{t("mine")}</h2>
-          {mine.length > 0 ? <PlaylistCards playlists={mine} /> : <DataEmpty title={t("none")} description={null} />}
+        <PageHeader
+          title={t("title")}
+          description={t("text")}
+          actions={<NewPlaylistButton />}
+        />
+        <section
+          aria-labelledby="mine"
+          className="space-y-3"
+        >
+          <h2
+            id="mine"
+            className="text-lg font-semibold"
+          >
+            {t("mine")}
+          </h2>
+          {mine.length > 0 ? (
+            <PlaylistCards playlists={mine} />
+          ) : (
+            <DataEmpty
+              title={t("none")}
+              description={null}
+            />
+          )}
         </section>
         {others.length > 0 && (
-          <section aria-labelledby="others" className="space-y-3">
-            <h2 id="others" className="text-lg font-semibold">{t("others")}</h2>
+          <section
+            aria-labelledby="others"
+            className="space-y-3"
+          >
+            <h2
+              id="others"
+              className="text-lg font-semibold"
+            >
+              {t("others")}
+            </h2>
             <PlaylistCards playlists={others} />
           </section>
         )}

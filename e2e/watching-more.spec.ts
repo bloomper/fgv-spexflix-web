@@ -66,7 +66,8 @@ test.describe("Managing collections", () => {
     await page.getByRole("button", { name: "Skapa" }).click();
 
     await expect(page).toHaveURL(/\/manage\/collections\/[0-9a-f-]{36}$/);
-    await expect.poll(async () => (await mock.state()).collections.find(c => c.title === "Bästa numren")?.videoIds)
+    await expect
+      .poll(async () => (await mock.state()).collections.find((c) => c.title === "Bästa numren")?.videoIds)
       .toEqual([uuidOf(1), uuidOf(4)]);
     await expect(page.getByRole("heading", { name: "Ändringar" })).toBeVisible();
 
