@@ -12,7 +12,10 @@ export default async function NewVideoPage() {
 
     return (
       <Page variant="content">
-        <PageHeader title={t("newVideo")} description={t("newVideoText")}/>
+        <PageHeader
+          title={t("newVideo")}
+          description={t("newVideoText")}
+        />
         <NewVideo kinds={kinds} />
       </Page>
     );

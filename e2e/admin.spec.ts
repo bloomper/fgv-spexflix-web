@@ -29,7 +29,7 @@ test.describe("Administration", () => {
     await page.getByRole("button", { name: "Bearbeta om" }).click();
 
     await expect(page.getByText("Filen väntar på bearbetning")).toBeVisible();
-    expect((await mock.state()).videos.find(v => v.id === uuidOf(1))?.jobStatus).toBe("QUEUED");
+    expect((await mock.state()).videos.find((v) => v.id === uuidOf(1))?.jobStatus).toBe("QUEUED");
   });
 
   test("is not for editors", async ({ page, loginAs }) => {

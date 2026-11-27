@@ -4,7 +4,7 @@ test.describe("The application shell", () => {
   test("shows watching, editing and administration to an admin", async ({ page, loginAs }) => {
     await loginAs("admin");
 
-    const sidebar = page.locator("[data-slot=\"sidebar\"]:visible");
+    const sidebar = page.locator('[data-slot="sidebar"]:visible');
     await expect(sidebar.getByRole("link", { name: "Hem" })).toHaveAttribute("href", "/");
     await expect(sidebar.getByRole("link", { name: "Filmer" }).first()).toHaveAttribute("href", "/videos");
     await expect(sidebar.getByRole("link", { name: "Se senare" })).toBeVisible();
@@ -15,7 +15,7 @@ test.describe("The application shell", () => {
   test("hides editing and administration from a viewer", async ({ page, loginAs }) => {
     await loginAs("viewer");
 
-    const sidebar = page.locator("[data-slot=\"sidebar\"]:visible");
+    const sidebar = page.locator('[data-slot="sidebar"]:visible');
     await expect(sidebar.getByRole("button", { name: "Redigera", exact: true })).toHaveCount(0);
     await expect(sidebar.getByRole("button", { name: "Administration", exact: true })).toHaveCount(0);
     await page.goto("/admin/storage");
@@ -35,7 +35,9 @@ test.describe("The application shell", () => {
   test("shows one row per kind and decade and per collection, and no empty rows", async ({ page, loginAs }) => {
     await loginAs("viewer");
 
-    await expect(page.getByRole("region", { name: "Föreställning" }).getByRole("link", { name: /Nobel/ })).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "Föreställning" }).getByRole("link", { name: /Nobel/ })
+    ).toBeVisible();
     await expect(page.getByRole("region", { name: "Nummer" }).getByRole("link", { name: /Extranumret/ })).toBeVisible();
     await expect(page.getByRole("region", { name: "1970-talet" })).toBeVisible();
     await expect(page.getByRole("region", { name: "Nobel genom åren" })).toBeVisible();
@@ -50,7 +52,9 @@ test.describe("The application shell", () => {
     await numbers.getByRole("button", { name: "Se senare" }).click();
     await expect(numbers.getByRole("button", { name: "Se senare" })).toHaveAttribute("aria-pressed", "true");
     await page.reload();
-    await expect(page.getByRole("region", { name: "Se senare" }).getByRole("link", { name: /Extranumret/ })).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "Se senare" }).getByRole("link", { name: /Extranumret/ })
+    ).toBeVisible();
   });
 
   test("opens a spex's title page from the list of every spex", async ({ page, loginAs }) => {

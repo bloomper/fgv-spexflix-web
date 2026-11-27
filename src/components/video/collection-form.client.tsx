@@ -31,57 +31,98 @@ export function CollectionForm({ initial, videos, submitLabel, onSubmit }: Props
   const [ids, setIds] = useState<string[]>(initial?.videoIds ?? []);
   const [adding, setAdding] = useState("");
   const [pending, startTransition] = useTransition();
-  const byId = new Map(videos.map(video => [video.id, video]));
-  const available = videos.filter(video => !ids.includes(video.id));
-  const label = (video: CollectionVideoOption | undefined) => video ? [video.title, video.year].filter(Boolean).join(", ") : "?";
+  const byId = new Map(videos.map((video) => [video.id, video]));
+  const available = videos.filter((video) => !ids.includes(video.id));
+  const label = (video: CollectionVideoOption | undefined) =>
+    video ? [video.title, video.year].filter(Boolean).join(", ") : "?";
 
-  const move = (from: number, to: number) => setIds(current => {
-    const copy = [...current];
-    const [moved] = copy.splice(from, 1);
+  const move = (from: number, to: number) =>
+    setIds((current) => {
+      const copy = [...current];
+      const [moved] = copy.splice(from, 1);
 
-    copy.splice(to, 0, moved);
-    return copy;
-  });
+      copy.splice(to, 0, moved);
+      return copy;
+    });
 
   return (
-    <form className="max-w-2xl space-y-5" onSubmit={event => {
-      event.preventDefault();
-      startTransition(async () => {
-        await onSubmit({ title: title.trim(), description: description.trim() || null, videoIds: ids });
-      });
-    }}>
+    <form
+      className="max-w-2xl space-y-5"
+      onSubmit={(event) => {
+        event.preventDefault();
+        startTransition(async () => {
+          await onSubmit({ title: title.trim(), description: description.trim() || null, videoIds: ids });
+        });
+      }}
+    >
       <div className="space-y-1.5">
         <Label htmlFor="collection-title">{t("titleLabel")}</Label>
-        <Input id="collection-title" value={title} onChange={event => setTitle(event.target.value)} required
-               maxLength={255} />
+        <Input
+          id="collection-title"
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+          required
+          maxLength={255}
+        />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="collection-description">{t("descriptionLabel")}</Label>
-        <Textarea id="collection-description" rows={3} value={description}
-                  onChange={event => setDescription(event.target.value)} maxLength={4000} />
+        <Textarea
+          id="collection-description"
+          rows={3}
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}
+          maxLength={4000}
+        />
       </div>
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">{t("videosLabel")}</legend>
-        {ids.length === 0 ? <p className="text-sm text-muted-foreground">{t("noVideos")}</p> : (
+        {ids.length === 0 ? (
+          <p className="text-muted-foreground text-sm">{t("noVideos")}</p>
+        ) : (
           <ol className="divide-y rounded-lg border">
             {ids.map((id, i) => {
               const video = byId.get(id);
 
               return (
-                <li key={id} className="flex items-center gap-2 px-3 py-1.5">
-                  <span className="w-6 text-right text-xs tabular-nums text-muted-foreground">{i + 1}</span>
+                <li
+                  key={id}
+                  className="flex items-center gap-2 px-3 py-1.5"
+                >
+                  <span className="text-muted-foreground w-6 text-right text-xs tabular-nums">{i + 1}</span>
                   <span className="min-w-0 flex-1 truncate text-sm">
-                                        {label(video)}{video && !video.published &&
-                    <span className="text-muted-foreground"> · {t("unpublished")}</span>}
-                                    </span>
-                  <Button type="button" variant="ghost" size="icon-sm" disabled={i === 0} onClick={() => move(i, i - 1)}
-                          aria-label={t("moveUp", { title: label(video) })}><ArrowUp /></Button>
-                  <Button type="button" variant="ghost" size="icon-sm" disabled={i === ids.length - 1}
-                          onClick={() => move(i, i + 1)}
-                          aria-label={t("moveDown", { title: label(video) })}><ArrowDown /></Button>
-                  <Button type="button" variant="ghost" size="icon-sm"
-                          onClick={() => setIds(current => current.filter(candidate => candidate !== id))}
-                          aria-label={t("remove", { title: label(video) })}><X /></Button>
+                    {label(video)}
+                    {video && !video.published && <span className="text-muted-foreground"> · {t("unpublished")}</span>}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    disabled={i === 0}
+                    onClick={() => move(i, i - 1)}
+                    aria-label={t("moveUp", { title: label(video) })}
+                  >
+                    <ArrowUp />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    disabled={i === ids.length - 1}
+                    onClick={() => move(i, i + 1)}
+                    aria-label={t("moveDown", { title: label(video) })}
+                  >
+                    <ArrowDown />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => setIds((current) => current.filter((candidate) => candidate !== id))}
+                    aria-label={t("remove", { title: label(video) })}
+                  >
+                    <X />
+                  </Button>
                 </li>
               );
             })}
@@ -90,22 +131,43 @@ export function CollectionForm({ initial, videos, submitLabel, onSubmit }: Props
         <div className="flex flex-wrap items-end gap-2">
           <div className="min-w-0 flex-1 space-y-1.5">
             <Label htmlFor="collection-add">{t("addVideo")}</Label>
-            <NativeSelect id="collection-add" value={adding} onChange={event => setAdding(event.target.value)}
-                          className="w-full">
+            <NativeSelect
+              id="collection-add"
+              value={adding}
+              onChange={(event) => setAdding(event.target.value)}
+              className="w-full"
+            >
               <NativeSelectOption value="">{t("chooseVideo")}</NativeSelectOption>
-              {available.map(video => <NativeSelectOption key={video.id}
-                                                          value={video.id}>{label(video)}</NativeSelectOption>)}
+              {available.map((video) => (
+                <NativeSelectOption
+                  key={video.id}
+                  value={video.id}
+                >
+                  {label(video)}
+                </NativeSelectOption>
+              ))}
             </NativeSelect>
           </div>
-          <Button type="button" variant="outline" disabled={!adding} onClick={() => {
-            setIds(current => [...current, adding]);
-            setAdding("");
-          }}>
-            <Plus />{t("add")}
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!adding}
+            onClick={() => {
+              setIds((current) => [...current, adding]);
+              setAdding("");
+            }}
+          >
+            <Plus />
+            {t("add")}
           </Button>
         </div>
       </fieldset>
-      <Button type="submit" disabled={pending || !title.trim()}>{submitLabel}</Button>
+      <Button
+        type="submit"
+        disabled={pending || !title.trim()}
+      >
+        {submitLabel}
+      </Button>
     </form>
   );
 }

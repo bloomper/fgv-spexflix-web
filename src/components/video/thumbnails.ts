@@ -5,7 +5,7 @@ export type Thumbnail = {
   x: number;
   y: number;
   width: number;
-  height: number
+  height: number;
 };
 
 function seconds(stamp: string): number {
@@ -48,5 +48,5 @@ export function parseThumbnails(vtt: string, indexUrl: string): Thumbnail[] {
 }
 
 export function thumbnailAt(thumbnails: Thumbnail[], time: number): Thumbnail | undefined {
-  return thumbnails.find(thumbnail => time >= thumbnail.start && time < thumbnail.end) ?? thumbnails.at(-1);
+  return thumbnails.find((thumbnail) => time >= thumbnail.start && time < thumbnail.end) ?? thumbnails.at(-1);
 }

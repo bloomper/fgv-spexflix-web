@@ -18,17 +18,24 @@ export function RandomVideoButton() {
   const [pending, startTransition] = useTransition();
 
   return (
-    <Button variant="outline" disabled={pending} onClick={() => startTransition(async () => {
-      const id = await randomVideoAction();
+    <Button
+      variant="outline"
+      disabled={pending}
+      onClick={() =>
+        startTransition(async () => {
+          const id = await randomVideoAction();
 
-      if (!id) {
-        toast.error(t("randomNone"));
-        return;
+          if (!id) {
+            toast.error(t("randomNone"));
+            return;
+          }
+          track("video-random");
+          router.push(`/videos/${id}?autoplay=1`);
+        })
       }
-      track("video-random");
-      router.push(`/videos/${id}?autoplay=1`);
-    })}>
-      <Shuffle />{t("random")}
+    >
+      <Shuffle />
+      {t("random")}
     </Button>
   );
 }

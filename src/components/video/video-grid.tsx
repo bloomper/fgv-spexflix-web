@@ -30,7 +30,13 @@ export type VideoSummary = {
 /**
  * Videos as poster cards, with how far the user has come, everyone's average rating and whether the user likes them.
  */
-export function VideoGrid({ videos, hrefFor, action, label, ranked = false }: {
+export function VideoGrid({
+  videos,
+  hrefFor,
+  action,
+  label,
+  ranked = false,
+}: {
   videos: VideoSummary[];
   hrefFor?: (id: string) => string;
   /** Something to do with a video, shown on its card's corner, e.g. taking it off "continue watching". */
@@ -47,51 +53,79 @@ export function VideoGrid({ videos, hrefFor, action, label, ranked = false }: {
     <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
       {videos.map((video, i) => {
         const duration = (video.durationMs ?? 0) / 1000;
-        const watched = video.finished ? 1 : duration > 0 && video.progressSeconds ? Math.min(1, video.progressSeconds / duration) : 0;
+        const watched = video.finished
+          ? 1
+          : duration > 0 && video.progressSeconds
+            ? Math.min(1, video.progressSeconds / duration)
+            : 0;
 
         return (
-          <li key={video.id} className="relative">
+          <li
+            key={video.id}
+            className="relative"
+          >
             {action && <div className="absolute top-2 right-2 z-10">{action(video)}</div>}
             {ranked && (
-              <span className="pointer-events-none absolute top-2 left-2 z-10 flex size-7 items-center justify-center rounded-full bg-background/90 text-sm font-semibold tabular-nums shadow">
+              <span className="bg-background/90 pointer-events-none absolute top-2 left-2 z-10 flex size-7 items-center justify-center rounded-full text-sm font-semibold tabular-nums shadow">
                 {i + 1}
               </span>
             )}
-            <Link href={hrefFor ? hrefFor(video.id) : `/videos/${video.id}`}
-                  className="group block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <Link
+              href={hrefFor ? hrefFor(video.id) : `/videos/${video.id}`}
+              className="group focus-visible:ring-ring block rounded-lg outline-none focus-visible:ring-2"
+            >
               <div className="relative overflow-hidden rounded-lg shadow-sm">
-                <PosterImage videoId={video.id} title={video.title}
-                             className="w-full transition-transform group-hover:scale-[1.02]" />
+                <PosterImage
+                  videoId={video.id}
+                  title={video.title}
+                  className="w-full transition-transform group-hover:scale-[1.02]"
+                />
                 {duration > 0 && (
-                  <span
-                    className="absolute right-2 bottom-2 rounded bg-black/75 px-1.5 py-0.5 text-xs text-white tabular-nums">
-                                        {formatDuration(duration)}
-                                    </span>
+                  <span className="absolute right-2 bottom-2 rounded bg-black/75 px-1.5 py-0.5 text-xs text-white tabular-nums">
+                    {formatDuration(duration)}
+                  </span>
                 )}
                 {watched > 0 && (
-                  <span className="absolute inset-x-0 bottom-0 h-1 bg-black/40"
-                        aria-label={t("watched", { percent: Math.round(watched * 100) })}>
-                                        <span className="block h-full bg-primary"
-                                              style={{ width: `${watched * 100}%` }} />
-                                    </span>
+                  <span
+                    className="absolute inset-x-0 bottom-0 h-1 bg-black/40"
+                    aria-label={t("watched", { percent: Math.round(watched * 100) })}
+                  >
+                    <span
+                      className="bg-primary block h-full"
+                      style={{ width: `${watched * 100}%` }}
+                    />
+                  </span>
                 )}
               </div>
               <div className="mt-2 space-y-0.5">
-                <div className="line-clamp-2 font-medium leading-tight">{video.title}</div>
-                <div className="text-xs text-muted-foreground">
-                  {[video.year, video.spex?.[0]?.categoryName, kindName(video.kind, locale)].filter(Boolean).join(" · ")}
+                <div className="line-clamp-2 leading-tight font-medium">{video.title}</div>
+                <div className="text-muted-foreground text-xs">
+                  {[video.year, video.spex?.[0]?.categoryName, kindName(video.kind, locale)]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </div>
                 <div className="flex items-center gap-2">
-                  <AverageRating average={video.averageRating} count={video.ratingCount} />
-                  {video.liked &&
-                    <Heart className="size-3 fill-current text-rose-500" role="img" aria-label={t("liked")} />}
+                  <AverageRating
+                    average={video.averageRating}
+                    count={video.ratingCount}
+                  />
+                  {video.liked && (
+                    <Heart
+                      className="size-3 fill-current text-rose-500"
+                      role="img"
+                      aria-label={t("liked")}
+                    />
+                  )}
                 </div>
-                {label?.(video) && <div className="text-xs text-muted-foreground">{label(video)}</div>}
+                {label?.(video) && <div className="text-muted-foreground text-xs">{label(video)}</div>}
                 <div className="flex flex-wrap gap-1 pt-0.5">
                   {video.spex?.[0]?.revival && <Badge variant="secondary">{t("revival")}</Badge>}
                   {video.published === false && <Badge variant="outline">{t("unpublished")}</Badge>}
-                  {video.status && video.status !== "READY" && <Badge
-                    variant={video.status === "FAILED" ? "destructive" : "secondary"}>{t(`status.${video.status}`)}</Badge>}
+                  {video.status && video.status !== "READY" && (
+                    <Badge variant={video.status === "FAILED" ? "destructive" : "secondary"}>
+                      {t(`status.${video.status}`)}
+                    </Badge>
+                  )}
                   {video.finished && <Badge variant="secondary">{t("seen")}</Badge>}
                 </div>
               </div>

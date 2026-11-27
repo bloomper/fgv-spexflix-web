@@ -19,7 +19,7 @@ export async function forwardForm(request: NextRequest, id: string, path: (id: s
   const upstream = await apiFetch(path(id), { method: "POST", body: await request.formData() });
 
   if (!upstream.ok) {
-    const body = await upstream.json().catch(() => ({})) as { code?: string; message?: string };
+    const body = (await upstream.json().catch(() => ({}))) as { code?: string; message?: string };
 
     return NextResponse.json({ code: body.code ?? null, message: body.message ?? null }, { status: upstream.status });
   }

@@ -11,7 +11,9 @@ describe("contentSecurityPolicy", () => {
   });
 
   it("allows Google's Cast sender script", () => {
-    expect(contentSecurityPolicy(undefined, false)).toContain("script-src 'self' 'unsafe-inline' https://www.gstatic.com;");
+    expect(contentSecurityPolicy(undefined, false)).toContain(
+      "script-src 'self' 'unsafe-inline' https://www.gstatic.com;"
+    );
   });
 
   it("ignores an origin that is not one", () => {

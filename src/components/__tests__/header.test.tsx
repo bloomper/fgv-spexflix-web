@@ -13,19 +13,33 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(query.value),
 }));
 vi.mock("next/link", () => ({
-  default: ({ children, href, onClick, ...rest }: { children?: ReactNode; href: string; onClick?: () => void }) =>
-    <a href={href} onClick={onClick} {...rest}>{children}</a>,
+  default: ({ children, href, onClick, ...rest }: { children?: ReactNode; href: string; onClick?: () => void }) => (
+    <a
+      href={href}
+      onClick={onClick}
+      {...rest}
+    >
+      {children}
+    </a>
+  ),
 }));
 vi.mock("@/components/video/actions.server", () => actions);
-vi.mock("@bloomper/fgv-web-ui/ui/sidebar", () => ({ useSidebar: () => ({ toggleSidebar: vi.fn(), openMobile: false }) }));
-vi.mock("@bloomper/fgv-web-ui/shell/app-switcher", () => ({ AppSwitcher: ({ title }: { title: string }) => <span>{title}</span> }));
+vi.mock("@bloomper/fgv-web-ui/ui/sidebar", () => ({
+  useSidebar: () => ({ toggleSidebar: vi.fn(), openMobile: false }),
+}));
+vi.mock("@bloomper/fgv-web-ui/shell/app-switcher", () => ({
+  AppSwitcher: ({ title }: { title: string }) => <span>{title}</span>,
+}));
 vi.mock("@bloomper/fgv-web-ui/shell/toggles", () => ({ ModeToggle: () => null, LanguageToggle: () => null }));
 
 describe("HeaderSearch", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     query.value = "";
-    actions.searchPreviewAction.mockResolvedValue([{ id: "v1", title: "Nobel", year: 1975 }, { id: "v2", title: "Nobelfesten", year: null }]);
+    actions.searchPreviewAction.mockResolvedValue([
+      { id: "v1", title: "Nobel", year: 1975 },
+      { id: "v2", title: "Nobelfesten", year: null },
+    ]);
   });
 
   afterEach(() => {

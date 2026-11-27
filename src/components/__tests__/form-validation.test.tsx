@@ -3,15 +3,31 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { FormValidation } from "@/components/form-validation.client";
 
 describe("FormValidation", () => {
-  const form = () => render(
-    <form>
-      <FormValidation />
-      <input aria-label="name" required />
-      <input aria-label="code" pattern="[a-z]+" title="a-z" defaultValue="A1" />
-      <input aria-label="email" type="email" defaultValue="nej" />
-      <input aria-label="own" ref={input => input?.setCustomValidity("Egen")} />
-    </form>,
-  );
+  const form = () =>
+    render(
+      <form>
+        <FormValidation />
+        <input
+          aria-label="name"
+          required
+        />
+        <input
+          aria-label="code"
+          pattern="[a-z]+"
+          title="a-z"
+          defaultValue="A1"
+        />
+        <input
+          aria-label="email"
+          type="email"
+          defaultValue="nej"
+        />
+        <input
+          aria-label="own"
+          ref={(input) => input?.setCustomValidity("Egen")}
+        />
+      </form>
+    );
 
   it("replaces the browser's messages with the app's", () => {
     form();

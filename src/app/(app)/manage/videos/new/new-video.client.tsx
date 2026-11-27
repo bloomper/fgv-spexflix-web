@@ -18,17 +18,22 @@ export function NewVideo({ kinds }: { kinds: KindOption[] }) {
   const [generation, setGeneration] = useState(0);
 
   return (
-    <VideoForm key={generation} kinds={kinds} submitLabel={t("create")} onSubmit={async input => {
-      const result = await createVideoAction(input);
+    <VideoForm
+      key={generation}
+      kinds={kinds}
+      submitLabel={t("create")}
+      onSubmit={async (input) => {
+        const result = await createVideoAction(input);
 
-      if (result.ok && result.data) {
-        track("video-create", { defaultKind: !input.kindId || input.kindId === kinds[0]?.id });
-        router.push(`/manage/videos/${result.data}`);
-        setGeneration(current => current + 1);
-        return true;
-      }
-      toast.error(result.ok ? t("failed") : result.message);
-      return false;
-    }} />
+        if (result.ok && result.data) {
+          track("video-create", { defaultKind: !input.kindId || input.kindId === kinds[0]?.id });
+          router.push(`/manage/videos/${result.data}`);
+          setGeneration((current) => current + 1);
+          return true;
+        }
+        toast.error(result.ok ? t("failed") : result.message);
+        return false;
+      }}
+    />
   );
 }

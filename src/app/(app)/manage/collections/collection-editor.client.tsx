@@ -33,49 +33,65 @@ export function CollectionEditor({ collection, videos, canDelete = false }: Prop
 
   return (
     <div className="space-y-6">
-      <CollectionForm key={generation} videos={videos} submitLabel={collection ? t("save") : t("create")}
-                      initial={collection ? {
-                        title: collection.title,
-                        description: collection.description,
-                        videoIds: collection.videoIds,
-                      } : undefined}
-                      onSubmit={async input => {
-                        const result = collection ? await updateCollectionAction(collection.id, input) : await createCollectionAction(input);
+      <CollectionForm
+        key={generation}
+        videos={videos}
+        submitLabel={collection ? t("save") : t("create")}
+        initial={
+          collection
+            ? {
+                title: collection.title,
+                description: collection.description,
+                videoIds: collection.videoIds,
+              }
+            : undefined
+        }
+        onSubmit={async (input) => {
+          const result = collection
+            ? await updateCollectionAction(collection.id, input)
+            : await createCollectionAction(input);
 
-                        if (!result.ok) {
-                          toast.error(result.message);
-                          return false;
-                        }
-                        if (collection) {
-                          toast.success(t("saved"));
-                          router.refresh();
-                        } else {
-                          track("collection-create", { videos: input.videoIds.length });
-                          router.push(`/manage/collections/${result.data}`);
-                          setGeneration(current => current + 1);
-                        }
-                        return true;
-                      }} />
-      {collection && canDelete && (
-        <Button variant="outline" onClick={async () => {
-          if (!await confirm({
-            title: t("confirmDelete"),
-            description: t("confirmDeleteText"),
-            confirmLabel: t("delete"),
-            destructive: true,
-          })) {
-            return;
-          }
-
-          const result = await deleteCollectionAction(collection.id);
-
-          if (result.ok) {
-            router.push("/manage/collections");
-          } else {
+          if (!result.ok) {
             toast.error(result.message);
+            return false;
           }
-        }}>
-          <Trash2 />{t("delete")}
+          if (collection) {
+            toast.success(t("saved"));
+            router.refresh();
+          } else {
+            track("collection-create", { videos: input.videoIds.length });
+            router.push(`/manage/collections/${result.data}`);
+            setGeneration((current) => current + 1);
+          }
+          return true;
+        }}
+      />
+      {collection && canDelete && (
+        <Button
+          variant="outline"
+          onClick={async () => {
+            if (
+              !(await confirm({
+                title: t("confirmDelete"),
+                description: t("confirmDeleteText"),
+                confirmLabel: t("delete"),
+                destructive: true,
+              }))
+            ) {
+              return;
+            }
+
+            const result = await deleteCollectionAction(collection.id);
+
+            if (result.ok) {
+              router.push("/manage/collections");
+            } else {
+              toast.error(result.message);
+            }
+          }}
+        >
+          <Trash2 />
+          {t("delete")}
         </Button>
       )}
     </div>

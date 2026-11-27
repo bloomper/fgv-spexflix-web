@@ -69,10 +69,14 @@ describe("the video client", () => {
     ["videoDelete", ["1"], { id: "1" }],
     ["videoPosterFrame", ["1", 42], { id: "1", seconds: 42 }],
     ["videoReprocess", ["1"], { id: "1" }],
-    ["chaptersSet", ["1", [{ startSeconds: 0, title: "Ouvertyr" }]], {
-      videoId: "1",
-      chapters: [{ startSeconds: 0, title: "Ouvertyr" }],
-    }],
+    [
+      "chaptersSet",
+      ["1", [{ startSeconds: 0, title: "Ouvertyr" }]],
+      {
+        videoId: "1",
+        chapters: [{ startSeconds: 0, title: "Ouvertyr" }],
+      },
+    ],
     ["subtitleRemove", ["1", "sv"], { videoId: "1", language: "sv" }],
     ["progressSave", ["1", 90], { videoId: "1", positionSeconds: 90 }],
     ["watchListAdd", ["1"], { videoId: "1" }],

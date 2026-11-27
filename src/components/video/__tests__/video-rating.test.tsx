@@ -16,7 +16,14 @@ describe("VideoRating", () => {
   });
 
   it("rates the video and shows everyone's average", async () => {
-    render(<VideoRating videoId="v-1" rating={0} averageRating={3.5} ratingCount={2} />);
+    render(
+      <VideoRating
+        videoId="v-1"
+        rating={0}
+        averageRating={3.5}
+        ratingCount={2}
+      />
+    );
 
     expect(screen.getByRole("img", { name: /average:.*"average":"3,5".*"count":2/ })).toBeInTheDocument();
     await userEvent.click(screen.getByRole("radio", { name: /"count":4/ }));
@@ -27,7 +34,13 @@ describe("VideoRating", () => {
 
   it("takes the rating back when it cannot be saved", async () => {
     rateVideoAction.mockResolvedValue(false);
-    render(<VideoRating videoId="v-1" rating={2} ratingCount={0} />);
+    render(
+      <VideoRating
+        videoId="v-1"
+        rating={2}
+        ratingCount={0}
+      />
+    );
 
     expect(screen.getByText("noRatings")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("radio", { name: /"count":5/ }));

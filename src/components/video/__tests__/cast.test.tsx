@@ -10,9 +10,14 @@ vi.mock("@/utils/umami", () => ({ track: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
 const MASTER = "https://media.test/v/9/sig/1/3/master.m3u8";
-const SUBTITLES = [{ language: "sv", label: "Svenska", url: "https://media.test/v/9/sig/1/subtitles/sv.vtt" },
-  { language: "en", label: "English", url: "https://media.test/v/9/sig/1/subtitles/en.vtt" }];
-const CHAPTERS = [{ startSeconds: 0, title: "Ouvertyr" }, { startSeconds: 60, title: "Första akten" }];
+const SUBTITLES = [
+  { language: "sv", label: "Svenska", url: "https://media.test/v/9/sig/1/subtitles/sv.vtt" },
+  { language: "en", label: "English", url: "https://media.test/v/9/sig/1/subtitles/en.vtt" },
+];
+const CHAPTERS = [
+  { startSeconds: 0, title: "Ouvertyr" },
+  { startSeconds: 60, title: "Första akten" },
+];
 
 type Player = {
   isConnected: boolean;
@@ -27,17 +32,28 @@ type Player = {
 function installCast(initialState = "NOT_CONNECTED") {
   const stateListeners: ((event: { castState: string }) => void)[] = [];
   const changeListeners: (() => void)[] = [];
-  const player: Player = { isConnected: false, currentTime: 0, duration: 0, isPaused: true, playerState: null, mediaInfo: null };
-  const emit = () => changeListeners.forEach(listener => listener());
+  const player: Player = {
+    isConnected: false,
+    currentTime: 0,
+    duration: 0,
+    isPaused: true,
+    playerState: null,
+    mediaInfo: null,
+  };
+  const emit = () => changeListeners.forEach((listener) => listener());
   const setState = (value: string) => {
     state = value;
-    stateListeners.forEach(listener => listener({ castState: value }));
+    stateListeners.forEach((listener) => listener({ castState: value }));
   };
   const mediaSession = { editTracksInfo: vi.fn() };
   const session = {
     loadMedia: vi.fn(async (request: { media: Player["mediaInfo"]; currentTime: number }) => {
       Object.assign(player, {
-        isConnected: true, mediaInfo: request.media, currentTime: request.currentTime, duration: 120, isPaused: false,
+        isConnected: true,
+        mediaInfo: request.media,
+        currentTime: request.currentTime,
+        duration: 120,
+        isPaused: false,
         playerState: "PLAYING",
       });
       emit();
@@ -49,7 +65,8 @@ function installCast(initialState = "NOT_CONNECTED") {
   let current: typeof session | null = initialState === "CONNECTED" ? session : null;
   const context = {
     setOptions: vi.fn(),
-    addEventListener: (_type: string, listener: (event: { castState: string }) => void) => stateListeners.push(listener),
+    addEventListener: (_type: string, listener: (event: { castState: string }) => void) =>
+      stateListeners.push(listener),
     removeEventListener: vi.fn(),
     getCastState: () => state,
     requestSession: vi.fn(async () => {
@@ -82,7 +99,11 @@ function installCast(initialState = "NOT_CONNECTED") {
     framework: {
       CastContext: { getInstance: () => context },
       CastContextEventType: { CAST_STATE_CHANGED: "caststatechanged" },
-      CastState: { NO_DEVICES_AVAILABLE: "NO_DEVICES_AVAILABLE", NOT_CONNECTED: "NOT_CONNECTED", CONNECTED: "CONNECTED" },
+      CastState: {
+        NO_DEVICES_AVAILABLE: "NO_DEVICES_AVAILABLE",
+        NOT_CONNECTED: "NOT_CONNECTED",
+        CONNECTED: "CONNECTED",
+      },
       RemotePlayer: function RemotePlayer() {
         return player;
       },
@@ -102,17 +123,20 @@ function installCast(initialState = "NOT_CONNECTED") {
       media: {
         DEFAULT_MEDIA_RECEIVER_APP_ID: "CC1AD845",
         MediaInfo: class {
-          constructor(public contentId: string, public contentType: string) {
-          }
+          constructor(
+            public contentId: string,
+            public contentType: string
+          ) {}
         },
         GenericMediaMetadata: Simple,
         LoadRequest: class {
-          constructor(public media: unknown) {
-          }
+          constructor(public media: unknown) {}
         },
         Track: class {
-          constructor(public trackId: number, public type: string) {
-          }
+          constructor(
+            public trackId: number,
+            public type: string
+          ) {}
         },
         TrackType: { TEXT: "TEXT" },
         TextTrackType: { SUBTITLES: "SUBTITLES" },
@@ -120,8 +144,7 @@ function installCast(initialState = "NOT_CONNECTED") {
         HlsSegmentFormat: { TS: "ts" },
         HlsVideoSegmentFormat: { MPEG2_TS: "mpeg2_ts" },
         EditTracksInfoRequest: class {
-          constructor(public activeTrackIds: number[]) {
-          }
+          constructor(public activeTrackIds: number[]) {}
         },
       },
     },
@@ -136,9 +159,19 @@ const castNow = async () => {
   await act(async () => fireEvent.click(button));
 };
 
-const show = (props: Partial<Parameters<typeof VideoPlayer>[0]> = {}) => render(
-  <VideoPlayer videoId="v9" title="Nobel" masterUrl={MASTER} subtitles={SUBTITLES} chapters={CHAPTERS}
-               durationSeconds={120} cast {...props} />);
+const show = (props: Partial<Parameters<typeof VideoPlayer>[0]> = {}) =>
+  render(
+    <VideoPlayer
+      videoId="v9"
+      title="Nobel"
+      masterUrl={MASTER}
+      subtitles={SUBTITLES}
+      chapters={CHAPTERS}
+      durationSeconds={120}
+      cast
+      {...props}
+    />
+  );
 
 describe("casting", () => {
   beforeEach(() => {
@@ -153,7 +186,7 @@ describe("casting", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
-    document.head.querySelectorAll("script").forEach(script => script.remove());
+    document.head.querySelectorAll("script").forEach((script) => script.remove());
   });
 
   it("loads Google's sender only in browsers that can cast, and with the default receiver", async () => {
@@ -172,7 +205,10 @@ describe("casting", () => {
 
     (window as unknown as { __onGCastApiAvailable: (available: boolean) => void }).__onGCastApiAvailable(true);
     await expect(loaded).resolves.toBe(true);
-    expect(context.setOptions).toHaveBeenCalledWith({ receiverApplicationId: "CC1AD845", autoJoinPolicy: "origin_scoped" });
+    expect(context.setOptions).toHaveBeenCalledWith({
+      receiverApplicationId: "CC1AD845",
+      autoJoinPolicy: "origin_scoped",
+    });
     expect(loadCast()).toBe(loaded);
   });
 
@@ -193,8 +229,17 @@ describe("casting", () => {
     expect(screen.queryByRole("button", { name: "cast" })).not.toBeInTheDocument();
     expect(context.setOptions).not.toHaveBeenCalled();
 
-    rerender(<VideoPlayer videoId="v9" title="Nobel" masterUrl={MASTER} subtitles={SUBTITLES} chapters={CHAPTERS}
-                          durationSeconds={120} cast />);
+    rerender(
+      <VideoPlayer
+        videoId="v9"
+        title="Nobel"
+        masterUrl={MASTER}
+        subtitles={SUBTITLES}
+        chapters={CHAPTERS}
+        durationSeconds={120}
+        cast
+      />
+    );
     await waitFor(() => expect(context.setOptions).toHaveBeenCalled());
     expect(screen.queryByRole("button", { name: "cast" })).not.toBeInTheDocument();
   });
@@ -214,7 +259,7 @@ describe("casting", () => {
     await castNow();
 
     const request = session.loadMedia.mock.calls[0][0] as unknown as Record<string, unknown> & {
-      media: Record<string, unknown> & { tracks: Record<string, unknown>[]; metadata: Record<string, unknown> }
+      media: Record<string, unknown> & { tracks: Record<string, unknown>[]; metadata: Record<string, unknown> };
     };
 
     expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled();
@@ -224,11 +269,15 @@ describe("casting", () => {
     expect(request.media.customData).toEqual({ videoId: "v9" });
     expect(request.media.metadata.title).toBe("Nobel");
     expect(request.media.metadata.images).toEqual([{ url: "https://media.test/v/9/sig/1/3/poster.jpg" }]);
-    expect(request.media.tracks.map(track => [track.trackId, track.trackContentId, track.language, track.subtype]))
-      .toEqual([[1, SUBTITLES[0].url, "sv", "SUBTITLES"], [2, SUBTITLES[1].url, "en", "SUBTITLES"]]);
+    expect(
+      request.media.tracks.map((track) => [track.trackId, track.trackContentId, track.language, track.subtype])
+    ).toEqual([
+      [1, SUBTITLES[0].url, "sv", "SUBTITLES"],
+      [2, SUBTITLES[1].url, "en", "SUBTITLES"],
+    ]);
     expect(request.currentTime).toBe(30);
     expect(request.activeTrackIds).toEqual([1]);
-    expect(screen.getByRole("status")).toHaveTextContent("castingTo:{\"device\":\"Vardagsrummet\"}");
+    expect(screen.getByRole("status")).toHaveTextContent('castingTo:{"device":"Vardagsrummet"}');
     expect(screen.getByRole("button", { name: "stopCasting" })).toHaveAttribute("aria-pressed", "true");
 
     // The receiver's time drives the timeline, the chapter and the saved progress

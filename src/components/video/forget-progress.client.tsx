@@ -18,17 +18,24 @@ export function ForgetProgressButton({ videoId, title }: { videoId: string; titl
   const [pending, startTransition] = useTransition();
 
   return (
-    <Button variant="secondary" size="icon-sm" className="rounded-full bg-black/70 text-white hover:bg-black/90"
-            disabled={pending}
-            aria-label={t("forget", { title })} title={t("forget", { title })}
-            onClick={() => startTransition(async () => {
-              if (await setWatchedAction(videoId, false)) {
-                track("continue-forget");
-                router.refresh();
-              } else {
-                toast.error(t("forgetFailed"));
-              }
-            })}>
+    <Button
+      variant="secondary"
+      size="icon-sm"
+      className="rounded-full bg-black/70 text-white hover:bg-black/90"
+      disabled={pending}
+      aria-label={t("forget", { title })}
+      title={t("forget", { title })}
+      onClick={() =>
+        startTransition(async () => {
+          if (await setWatchedAction(videoId, false)) {
+            track("continue-forget");
+            router.refresh();
+          } else {
+            toast.error(t("forgetFailed"));
+          }
+        })
+      }
+    >
       <X />
     </Button>
   );

@@ -17,15 +17,25 @@ export default async function CreditsPage() {
 
     return (
       <Page variant="content">
-        <PageHeader title={t("title")} description={t("text")}/>
-        {credits.length === 0 ? <DataEmpty title={t("none")} description={null} /> : (
+        <PageHeader
+          title={t("title")}
+          description={t("text")}
+        />
+        {credits.length === 0 ? (
+          <DataEmpty
+            title={t("none")}
+            description={null}
+          />
+        ) : (
           <ul className="grid gap-x-6 sm:grid-cols-2 lg:grid-cols-3">
-            {credits.map(credit => (
+            {credits.map((credit) => (
               <li key={credit.name}>
-                <Link href={creditHref(credit.name)}
-                      className="flex items-baseline justify-between gap-3 rounded px-2 py-1.5 hover:bg-accent">
+                <Link
+                  href={creditHref(credit.name)}
+                  className="hover:bg-accent flex items-baseline justify-between gap-3 rounded px-2 py-1.5"
+                >
                   <span className="min-w-0 truncate">{credit.name}</span>
-                  <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                  <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
                     {t("videos", { count: credit.videoCount })}
                   </span>
                 </Link>

@@ -54,17 +54,25 @@ describe.each([
   it("forwards the form to the server", async () => {
     apiFetch.mockResolvedValue(new Response("{}", { status: 200 }));
 
-    const response = await route(upload({ origin: "http://spexflix.test" }), params("01933f2a-7c3e-7b1a-9d2e-4f5a6b7c8d9e"));
+    const response = await route(
+      upload({ origin: "http://spexflix.test" }),
+      params("01933f2a-7c3e-7b1a-9d2e-4f5a6b7c8d9e")
+    );
 
     expect(apiFetch).toHaveBeenCalledWith(path, expect.objectContaining({ method: "POST" }));
     expect(await response.json()).toEqual({ ok: true });
   });
 
   it("passes the server's refusal on with its code and message, also without a body", async () => {
-    apiFetch.mockResolvedValueOnce(new Response(JSON.stringify({
-      code: "BAD_REQUEST",
-      message: "Fel format",
-    }), { status: 400 }));
+    apiFetch.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          code: "BAD_REQUEST",
+          message: "Fel format",
+        }),
+        { status: 400 }
+      )
+    );
 
     const response = await route(upload(), params("01933f2a-7c3e-7b1a-9d2e-4f5a6b7c8d9e"));
 
@@ -79,7 +87,9 @@ describe.each([
   });
 
   it("refuses another site and a bad id", async () => {
-    expect((await route(upload({ origin: "https://evil.test" }), params("01933f2a-7c3e-7b1a-9d2e-4f5a6b7c8d9e"))).status).toBe(403);
+    expect(
+      (await route(upload({ origin: "https://evil.test" }), params("01933f2a-7c3e-7b1a-9d2e-4f5a6b7c8d9e"))).status
+    ).toBe(403);
     expect((await route(upload(), params("x"))).status).toBe(400);
     expect(apiFetch).not.toHaveBeenCalled();
   });

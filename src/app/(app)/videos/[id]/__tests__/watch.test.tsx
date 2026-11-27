@@ -5,8 +5,12 @@ import { Watch } from "../watch.client";
 
 const push = vi.hoisted(() => vi.fn());
 const actions = vi.hoisted(() => ({
-  watchListAction: vi.fn(), setWatchedAction: vi.fn(), saveProgressAction: vi.fn(), likeVideoAction: vi.fn(),
-  addToPlaylistAction: vi.fn(), createPlaylistAction: vi.fn(),
+  watchListAction: vi.fn(),
+  setWatchedAction: vi.fn(),
+  saveProgressAction: vi.fn(),
+  likeVideoAction: vi.fn(),
+  addToPlaylistAction: vi.fn(),
+  createPlaylistAction: vi.fn(),
 }));
 const player = vi.hoisted(() => ({
   props: {} as {
@@ -35,12 +39,28 @@ vi.mock("@/components/video/video-player.client", () => ({
   },
 }));
 
-const show = (extra: Partial<Parameters<typeof Watch>[0]> = {}) => render(
-  <Watch videoId="v1" playback={{ masterUrl: "m", subtitles: [] }}
-         chapters={[{ startSeconds: 0, title: "Ouvertyr" }, { startSeconds: 60, title: "Finalen" }]}
-         durationSeconds={120} startAt={0} inWatchList={false} liked={false} finished={false} spexifyUrl={null}
-         recordProgress
-         next={{ href: "/videos/v2?autoplay=1", title: "Andra akten" }} autoPlay={false} playlists={[]} {...extra} />);
+const show = (extra: Partial<Parameters<typeof Watch>[0]> = {}) =>
+  render(
+    <Watch
+      videoId="v1"
+      playback={{ masterUrl: "m", subtitles: [] }}
+      chapters={[
+        { startSeconds: 0, title: "Ouvertyr" },
+        { startSeconds: 60, title: "Finalen" },
+      ]}
+      durationSeconds={120}
+      startAt={0}
+      inWatchList={false}
+      liked={false}
+      finished={false}
+      spexifyUrl={null}
+      recordProgress
+      next={{ href: "/videos/v2?autoplay=1", title: "Andra akten" }}
+      autoPlay={false}
+      playlists={[]}
+      {...extra}
+    />
+  );
 
 describe("Watch", () => {
   beforeEach(() => {
@@ -132,9 +152,14 @@ describe("Watch", () => {
   it("plays a playlist's clip to its end, then the next item, without marking the video watched", () => {
     vi.useFakeTimers();
     show({
-      startAt: 60, endAt: 120, next: { href: "/videos/v3?playlist=p1&item=i2&autoplay=1", title: "Nästa klipp" },
+      startAt: 60,
+      endAt: 120,
+      next: { href: "/videos/v3?playlist=p1&item=i2&autoplay=1", title: "Nästa klipp" },
       playlist: {
-        id: "p1", name: "Favoritnummer", index: 0, items: [
+        id: "p1",
+        name: "Favoritnummer",
+        index: 0,
+        items: [
           {
             id: "i1",
             href: "/videos/v1?playlist=p1&item=i1",

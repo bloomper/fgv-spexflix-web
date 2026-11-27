@@ -17,10 +17,17 @@ export function TitlePlay({ videos }: { videos: RowVideo[] }) {
     return null;
   }
   return (
-    <Button size="lg" nativeButton={false} render={<Link href={`/videos/${target.video.id}?autoplay=1`} />}>
+    <Button
+      size="lg"
+      nativeButton={false}
+      render={<Link href={`/videos/${target.video.id}?autoplay=1`} />}
+    >
       <Play className="fill-current" />
-      {target.resume ? t("resume", { title: target.video.title })
-        : target.video === videos[0] ? t("play") : t("playNext", { title: target.video.title })}
+      {target.resume
+        ? t("resume", { title: target.video.title })
+        : target.video === videos[0]
+          ? t("play")
+          : t("playNext", { title: target.video.title })}
     </Button>
   );
 }

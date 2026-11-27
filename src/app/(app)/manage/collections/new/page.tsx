@@ -12,7 +12,7 @@ export default async function NewCollectionPage() {
 
     return (
       <Page variant="content">
-        <PageHeader title={t("new")}/>
+        <PageHeader title={t("new")} />
         <CollectionEditor videos={data?.videos ?? []} />
       </Page>
     );

@@ -24,7 +24,7 @@ export function parsePosition(value: string | null | undefined): number | null {
 
   const parts = value.split(":");
 
-  if (parts.length < 2 || parts.length > 3 || parts.some(part => !/^\d+$/.test(part))) {
+  if (parts.length < 2 || parts.length > 3 || parts.some((part) => !/^\d+$/.test(part))) {
     return null;
   }
   return parts.reduce((total, part) => total * 60 + Number(part), 0);

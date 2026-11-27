@@ -4,7 +4,7 @@
 
 Spexflix Web is the frontend of Spexflix, FGV's video service for the recordings of the spex: full shows, numbers,
 trailers and material from behind the scenes. Viewers browse, search and watch, with chapters, subtitles, timeline
-thumbnails, *Continue watching* and a watch list. Editors upload videos and keep their metadata, chapters (linked to
+thumbnails, _Continue watching_ and a watch list. Editors upload videos and keep their metadata, chapters (linked to
 Spexify's tracks), subtitles and posters; admins see storage and settings. It talks to [Spexflix Server][1] over
 GraphQL, and plays video from the media server (`spexflix-media`) through signed, expiring addresses. The product spec
 is in [fgv-spexflix-spec][2].
@@ -33,6 +33,7 @@ The look (logo, favicon and colours) is FGV's, shared with Spexregister and Nyup
 ### Development
 
 1. **Install dependencies:**
+
    ```bash
    npm ci
    ```
@@ -40,6 +41,7 @@ The look (logo, favicon and colours) is FGV's, shared with Spexregister and Nyup
 2. **Configure environment:**
    Start fgv-infra-deploy's local stack and [Spexflix Server][1]'s (its getting started guide describes both), then
    create `.env.local` (`.env` already holds the rest):
+
    ```
    BETTER_AUTH_URL=http://localhost:3003
    AUTH_SECRET=<random string of at least 32 characters>
@@ -55,6 +57,7 @@ The look (logo, favicon and colours) is FGV's, shared with Spexregister and Nyup
    SPEXIPEDIA_WEB_URL=http://localhost:3006
    ARCHIVE_WEB_URL=http://localhost:3005
    ```
+
    The client secret is in `realm/fgv.json` in [fgv-keycloak][7]; search for `fgv-spexflix`.
    For visitor statistics, run fgv-infra-deploy's `local/bin/configure-umami.sh` and put the ID it prints for Spexflix
    in `.env.local` as `UMAMI_WEBSITE_ID`, with `UMAMI_URL=https://analytics.fgv.local.nu:8443`.
@@ -62,19 +65,20 @@ The look (logo, favicon and colours) is FGV's, shared with Spexregister and Nyup
    (`local/.docker/caddy/data/caddy/pki/authorities/local/root.crt`), read from `../../fgv-infra-deploy`, or from
    `INFRA_DEPLOY` if it is checked out elsewhere.
 
-   | Variable                         | Purpose                                                                   |
-   |----------------------------------|---------------------------------------------------------------------------|
-   | `API_GRAPHQL_ENDPOINT`           | Spexflix Server's GraphQL endpoint; its other endpoints share the origin     |
-   | `MEDIA_ORIGIN`                   | The media server's origin, allowed by the pages' Content Security Policy; `http://localhost:8084` when Spexflix Server runs with `bootRun` |
-   | `SPEXIFY_WEB_URL`                | Spexify, for *Listen in Spexify* on chapters; without it there are none; also the application switcher |
-   | `SPEXREGISTER_WEB_URL`           | Spexregister, for links to a spex; also the application switcher          |
-   | `REVIVAL_WEB_URL`            | Nyuppsättning, for the application switcher in the header                 |
-   | `SPEXGRAM_WEB_URL`               | Spexgram, for the application switcher                                    |
-   | `SPEXIPEDIA_WEB_URL`             | Spexipedia, for the application switcher                                    |
-   | `ARCHIVE_WEB_URL`                | Spexarkiv, for the application switcher                                 |
+   | Variable               | Purpose                                                                                                                                    |
+   | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+   | `API_GRAPHQL_ENDPOINT` | Spexflix Server's GraphQL endpoint; its other endpoints share the origin                                                                   |
+   | `MEDIA_ORIGIN`         | The media server's origin, allowed by the pages' Content Security Policy; `http://localhost:8084` when Spexflix Server runs with `bootRun` |
+   | `SPEXIFY_WEB_URL`      | Spexify, for _Listen in Spexify_ on chapters; without it there are none; also the application switcher                                     |
+   | `SPEXREGISTER_WEB_URL` | Spexregister, for links to a spex; also the application switcher                                                                           |
+   | `REVIVAL_WEB_URL`      | Nyuppsättning, for the application switcher in the header                                                                                  |
+   | `SPEXGRAM_WEB_URL`     | Spexgram, for the application switcher                                                                                                     |
+   | `SPEXIPEDIA_WEB_URL`   | Spexipedia, for the application switcher                                                                                                   |
+   | `ARCHIVE_WEB_URL`      | Spexarkiv, for the application switcher                                                                                                    |
 
 3. **Generate GraphQL types:**
    If you change GraphQL queries or the schema, regenerate types from a sibling `fgv-spexflix-server` checkout:
+
    ```bash
    npm run gql-codegen
    ```
@@ -109,7 +113,7 @@ fgv-infra-deploy's local Caddy. To log in, `SPEXFLIX_URL` in fgv-infra-deploy's 
 CI publishes `bloomper/fgv-spexflix-web` for `linux/amd64`:
 
 | Trigger              | Tags                              |
-|----------------------|-----------------------------------|
+| -------------------- | --------------------------------- |
 | push to `develop`    | `develop`, `sha-<commit>`         |
 | push of tag `vX.Y.Z` | `X.Y.Z`, `latest`, `sha-<commit>` |
 
@@ -152,17 +156,10 @@ You can contribute to Spexflix Web by:
 Spexflix Web is open source software released under the [Apache 2.0 license][6].
 
 [1]: https://github.com/bloomper/fgv-spexflix-server
-
 [2]: https://github.com/bloomper/fgv-spexflix-spec
-
 [3]: CODE_OF_CONDUCT.md
-
 [4]: https://help.github.com/articles/using-pull-requests/
-
 [5]: CONTRIBUTING.md
-
 [6]: https://www.apache.org/licenses/LICENSE-2.0.html
-
 [7]: https://github.com/bloomper/fgv-keycloak
-
 [8]: https://github.com/bloomper/fgv-spexflix-deploy

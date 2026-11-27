@@ -15,7 +15,10 @@ export default async function QueuePage() {
 
     return (
       <Page variant="content">
-        <PageHeader title={t("title")} description={t("text")}/>
+        <PageHeader
+          title={t("title")}
+          description={t("text")}
+        />
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
@@ -28,20 +31,29 @@ export default async function QueuePage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {jobs.map(job => (
+              {jobs.map((job) => (
                 <TableRow key={job.id}>
                   <TableCell>
-                    <Link href={`/manage/videos/${job.videoId}`}
-                          className="font-medium hover:text-link">{job.videoTitle}</Link>
-                    {job.error && <div className="text-xs text-destructive">{job.error}</div>}
+                    <Link
+                      href={`/manage/videos/${job.videoId}`}
+                      className="hover:text-link font-medium"
+                    >
+                      {job.videoTitle}
+                    </Link>
+                    {job.error && <div className="text-destructive text-xs">{job.error}</div>}
                   </TableCell>
-                  <TableCell><Badge
-                    variant={job.status === "FAILED" ? "destructive" : "secondary"}>{t(`statuses.${job.status}`)}</Badge></TableCell>
+                  <TableCell>
+                    <Badge variant={job.status === "FAILED" ? "destructive" : "secondary"}>
+                      {t(`statuses.${job.status}`)}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="tabular-nums">{job.progress} %</TableCell>
-                  <TableCell
-                    className="hidden whitespace-nowrap tabular-nums md:table-cell">{formatInstant(job.createdAt)}</TableCell>
-                  <TableCell
-                    className="hidden whitespace-nowrap tabular-nums md:table-cell">{formatInstant(job.finishedAt)}</TableCell>
+                  <TableCell className="hidden whitespace-nowrap tabular-nums md:table-cell">
+                    {formatInstant(job.createdAt)}
+                  </TableCell>
+                  <TableCell className="hidden whitespace-nowrap tabular-nums md:table-cell">
+                    {formatInstant(job.finishedAt)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

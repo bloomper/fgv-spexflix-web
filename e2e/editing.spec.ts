@@ -48,7 +48,9 @@ test.describe("Editing a video", () => {
     await expect(page.getByText("Väntar på tur…")).toBeVisible();
 
     await mock.process("ffmpeg kunde inte läsa filen");
-    await expect(page.getByText("Bearbetningen misslyckades: ffmpeg kunde inte läsa filen")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("Bearbetningen misslyckades: ffmpeg kunde inte läsa filen")).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("saves the video's details", async ({ page }) => {
@@ -71,10 +73,12 @@ test.describe("Editing a video", () => {
     await page.getByRole("button", { name: "Spara kapitlen" }).click();
     await expect(page.getByText("Sparat")).toBeVisible();
 
-    const chapters = (await mock.state()).videos.find(v => v.id === uuidOf(1))?.chapters;
+    const chapters = (await mock.state()).videos.find((v) => v.id === uuidOf(1))?.chapters;
 
-    expect(chapters?.map(chapter => [chapter.startSeconds, chapter.title, chapter.spexifyTrackId]))
-      .toEqual([[20, "Kärleksduetten", uuidOf(12)], [90, "Finalen", null]]);
+    expect(chapters?.map((chapter) => [chapter.startSeconds, chapter.title, chapter.spexifyTrackId])).toEqual([
+      [20, "Kärleksduetten", uuidOf(12)],
+      [90, "Finalen", null],
+    ]);
   });
 
   test("refuses a chapter without a start", async ({ page }) => {
@@ -106,10 +110,12 @@ test.describe("Editing a video", () => {
     await page.getByRole("button", { name: "Ladda upp", exact: true }).click();
 
     await expect(page.getByRole("button", { name: "Ta bort", exact: true })).toBeVisible();
-    expect((await mock.state()).videos.find(v => v.id === uuidOf(1))?.subtitles).toEqual([{
-      language: "sv",
-      label: "Svenska",
-    }]);
+    expect((await mock.state()).videos.find((v) => v.id === uuidOf(1))?.subtitles).toEqual([
+      {
+        language: "sv",
+        label: "Svenska",
+      },
+    ]);
 
     await page.getByRole("button", { name: "Ta bort", exact: true }).click();
     await expect(page.getByRole("button", { name: "Ta bort", exact: true })).toHaveCount(0);
@@ -120,7 +126,7 @@ test.describe("Editing a video", () => {
     await page.getByRole("button", { name: "Använd bilden som affisch" }).click();
 
     await expect(page.getByText("Sparat")).toBeVisible();
-    expect((await mock.state()).videos.find(v => v.id === uuidOf(1))?.posterSeconds).toBe(0);
+    expect((await mock.state()).videos.find((v) => v.id === uuidOf(1))?.posterSeconds).toBe(0);
   });
 
   test("tells the editor when someone else changed the video", async ({ page, mock }) => {

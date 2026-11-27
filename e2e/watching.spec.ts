@@ -2,11 +2,17 @@ import { uuidOf } from "./constants";
 import { expect, test } from "./fixtures";
 
 test.describe("Watching", () => {
-  test("an empty search explains itself, a too short word is pointed out at the field, and searching keeps the page", async ({ page, loginAs }) => {
+  test("an empty search explains itself, a too short word is pointed out at the field, and searching keeps the page", async ({
+    page,
+    loginAs,
+  }) => {
     await loginAs("viewer");
     await page.goto("/search");
     await expect(page.getByText("Vad letar du efter?")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Eller bläddra bland alla filmer" })).toHaveAttribute("href", "/videos");
+    await expect(page.getByRole("link", { name: "Eller bläddra bland alla filmer" })).toHaveAttribute(
+      "href",
+      "/videos"
+    );
 
     await page.goto("/search?q=a");
     await expect(page.getByRole("heading", { level: 1, name: "Sök" })).toBeVisible();
@@ -15,7 +21,9 @@ test.describe("Watching", () => {
     await expect(page.getByText("Vad letar du efter?")).toHaveCount(0);
 
     // The search navigates client side: the document stays
-    await page.evaluate(() => { (window as unknown as { marker: number }).marker = 42; });
+    await page.evaluate(() => {
+      (window as unknown as { marker: number }).marker = 42;
+    });
     await page.getByLabel("Sökord").fill("nob");
     await page.getByRole("button", { name: "Sök", exact: true }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Sökresultat för ”nob”" })).toBeVisible();
@@ -29,7 +37,10 @@ test.describe("Watching", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Nobel" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Kapitel" })).toBeVisible();
     await expect(page.getByRole("button", { name: /Kärleksduetten$/ })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Lyssna på Kärleksduetten i Spexify" })).toHaveAttribute("href", /localhost:3002\/search/);
+    await expect(page.getByRole("link", { name: "Lyssna på Kärleksduetten i Spexify" })).toHaveAttribute(
+      "href",
+      /localhost:3002\/search/
+    );
     await expect(page.getByRole("slider", { name: "Tidslinje" })).toBeVisible();
   });
 
@@ -55,9 +66,9 @@ test.describe("Watching", () => {
 
 test.describe("Editing", () => {
   test("shows unprocessed and unpublished videos to editors and creates a video from a spex", async ({
-                                                                                                       page,
-                                                                                                       loginAs,
-                                                                                                     }) => {
+    page,
+    loginAs,
+  }) => {
     await loginAs("editor");
     await page.goto("/manage/videos");
     await expect(page.getByRole("link", { name: "Opublicerad film" })).toBeVisible();
@@ -73,9 +84,9 @@ test.describe("Editing", () => {
   });
 
   test("creates a video about an original and its revival, found from either, and one about no spex", async ({
-                                                                                                               page,
-                                                                                                               loginAs,
-                                                                                                             }) => {
+    page,
+    loginAs,
+  }) => {
     await loginAs("editor");
     await page.goto("/manage/videos/new");
     await page.getByLabel("Sök spex på titel eller år").fill("Nob");
@@ -87,7 +98,9 @@ test.describe("Editing", () => {
     await page.getByLabel("Titel", { exact: true }).fill("Nobel då och nu");
     await page.getByRole("button", { name: "Skapa" }).click();
     await expect(page).toHaveURL(/\/manage\/videos\/[0-9a-f-]{36}$/);
-    await expect(page.getByRole("list", { name: "Valda spex" }).getByRole("listitem").first()).toContainText("Nobel 2026");
+    await expect(page.getByRole("list", { name: "Valda spex" }).getByRole("listitem").first()).toContainText(
+      "Nobel 2026"
+    );
 
     await page.goto("/manage/videos/new");
     await page.getByRole("checkbox", { name: "Inte kopplat till något spex" }).filter({ visible: true }).click();
@@ -151,15 +164,21 @@ test.describe("Ratings", () => {
     await page.goto(`/videos/${uuidOf(1)}`);
 
     await expect(page.getByRole("img", { name: "Snittbetyg 5,0 av 5 från 1 betyg" }).first()).toBeVisible();
-    await page.getByRole("radiogroup", { name: "Ditt betyg för filmen" }).getByRole("radio", { name: "4 stjärnor" }).click();
+    await page
+      .getByRole("radiogroup", { name: "Ditt betyg för filmen" })
+      .getByRole("radio", { name: "4 stjärnor" })
+      .click();
     await expect.poll(async () => (await mock.state()).ratings[uuidOf(1)]).toBe(4);
 
     await page.goto(`/videos/${uuidOf(1)}`);
     await expect(page.getByRole("img", { name: "Snittbetyg 4,5 av 5 från 2 betyg" }).first()).toBeVisible();
-    await expect(page.getByRole("radiogroup", { name: "Ditt betyg för filmen" }).getByRole("radio", { name: "4 stjärnor" }))
-      .toHaveAttribute("aria-checked", "true");
+    await expect(
+      page.getByRole("radiogroup", { name: "Ditt betyg för filmen" }).getByRole("radio", { name: "4 stjärnor" })
+    ).toHaveAttribute("aria-checked", "true");
 
     await page.goto("/");
-    await expect(page.getByRole("region", { name: "Högst betyg av dig" }).getByRole("link", { name: /Nobel/ })).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "Högst betyg av dig" }).getByRole("link", { name: /Nobel/ })
+    ).toBeVisible();
   });
 });

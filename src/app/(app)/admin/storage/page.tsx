@@ -14,8 +14,14 @@ export default async function StoragePage() {
     const storage = await getStorage();
 
     return (
-      <Page variant="content" className="max-w-2xl">
-        <PageHeader title={t("title")} description={t("text")}/>
+      <Page
+        variant="content"
+        className="max-w-2xl"
+      >
+        <PageHeader
+          title={t("title")}
+          description={t("text")}
+        />
         {storage && (
           <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 rounded-lg border p-4 text-sm">
             <dt className="text-muted-foreground">{t("videos")}</dt>

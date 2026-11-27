@@ -8,18 +8,49 @@ const toast = vi.hoisted(() => ({ error: vi.fn() }));
 const track = vi.hoisted(() => vi.fn());
 
 vi.mock("next/link", () => ({
-  default: ({ children, href, onClick, ...rest }: { children?: ReactNode; href: string; onClick?: (event: unknown) => void }) =>
-    <a href={href} onClick={onClick} {...rest}>{children}</a>,
+  default: ({
+    children,
+    href,
+    onClick,
+    ...rest
+  }: {
+    children?: ReactNode;
+    href: string;
+    onClick?: (event: unknown) => void;
+  }) => (
+    <a
+      href={href}
+      onClick={onClick}
+      {...rest}
+    >
+      {children}
+    </a>
+  ),
 }));
-vi.mock("@/components/video/poster-image.client", () => ({ PosterImage: ({ title }: { title: string }) => <span role="img" aria-label={title} /> }));
+vi.mock("@/components/video/poster-image.client", () => ({
+  PosterImage: ({ title }: { title: string }) => (
+    <span
+      role="img"
+      aria-label={title}
+    />
+  ),
+}));
 vi.mock("@/components/video/actions.server", () => actions);
 vi.mock("sonner", () => ({ toast }));
 vi.mock("@/utils/umami", () => ({ track }));
 
 const KIND = { id: "k1", nameSv: "Föreställning", nameEn: "Show" };
 const NOBEL = {
-  id: "v1", title: "Nobel", year: 1975, kind: KIND, durationMs: 120_000, progressSeconds: 30, averageRating: 4, ratingCount: 2,
-  inWatchList: false, spex: [{ categoryName: "Chalmersspexet", revival: false, familyId: "s1" }],
+  id: "v1",
+  title: "Nobel",
+  year: 1975,
+  kind: KIND,
+  durationMs: 120_000,
+  progressSeconds: 30,
+  averageRating: 4,
+  ratingCount: 2,
+  inWatchList: false,
+  spex: [{ categoryName: "Chalmersspexet", revival: false, familyId: "s1" }],
 };
 
 describe("VideoRow", () => {
@@ -34,9 +65,15 @@ describe("VideoRow", () => {
 
   it("is a region of cards named by its heading, with a link to all of its kind, and is left out when empty", () => {
     const { container, rerender } = render(
-      <VideoRow id="recent" title="Nytt" videos={[NOBEL, { ...NOBEL, id: "v2", title: "Caesar", spex: [] }]}
-                more={{ href: "/videos", label: "Visa alla" }}
-                action={video => <button type="button">Glöm {video.title}</button>} label={() => "4 av 5"} />);
+      <VideoRow
+        id="recent"
+        title="Nytt"
+        videos={[NOBEL, { ...NOBEL, id: "v2", title: "Caesar", spex: [] }]}
+        more={{ href: "/videos", label: "Visa alla" }}
+        action={(video) => <button type="button">Glöm {video.title}</button>}
+        label={() => "4 av 5"}
+      />
+    );
     const row = screen.getByRole("region", { name: "Nytt" });
 
     expect(row).toBeInTheDocument();
@@ -44,18 +81,33 @@ describe("VideoRow", () => {
     expect(screen.getByRole("list", { name: "Nytt" }).children).toHaveLength(2);
     expect(screen.getAllByRole("link", { name: /Nobel/ })[0]).toHaveAttribute("href", "/videos/v1");
     expect(screen.getAllByRole("link", { name: "play" })[0]).toHaveAttribute("href", "/videos/v1?autoplay=1");
-    expect(screen.getAllByRole("link", { name: "moreInfo" }).map(link => link.getAttribute("href"))).toEqual(["/spex/s1", "/videos/v2"]);
+    expect(screen.getAllByRole("link", { name: "moreInfo" }).map((link) => link.getAttribute("href"))).toEqual([
+      "/spex/s1",
+      "/videos/v2",
+    ]);
     expect(screen.getAllByText("1975 · Föreställning · 2:00")).toHaveLength(2);
     expect(screen.getAllByLabelText(/watched:.*"percent":25/)).toHaveLength(2);
     expect(screen.getByRole("button", { name: "Glöm Caesar" })).toBeInTheDocument();
     expect(screen.getAllByText("4 av 5")).toHaveLength(2);
 
-    rerender(<VideoRow id="recent" title="Nytt" videos={[]} />);
+    rerender(
+      <VideoRow
+        id="recent"
+        title="Nytt"
+        videos={[]}
+      />
+    );
     expect(container).toBeEmptyDOMElement();
   });
 
   it("saves the video in the watch list from the card, and takes it back when that fails", async () => {
-    render(<VideoRow id="recent" title="Nytt" videos={[NOBEL]} />);
+    render(
+      <VideoRow
+        id="recent"
+        title="Nytt"
+        videos={[NOBEL]}
+      />
+    );
     const toggle = screen.getByRole("button", { name: "myList" });
 
     await act(async () => fireEvent.click(toggle));
@@ -71,7 +123,13 @@ describe("VideoRow", () => {
 
   it("grows on a long press, without opening the video, until a tap elsewhere", () => {
     vi.useFakeTimers();
-    const { container } = render(<VideoRow id="recent" title="Nytt" videos={[NOBEL]} />);
+    const { container } = render(
+      <VideoRow
+        id="recent"
+        title="Nytt"
+        videos={[NOBEL]}
+      />
+    );
     const card = container.querySelector("[class*='group/card']") as HTMLElement;
     const link = screen.getByRole("link", { name: /Nobel/ });
 
@@ -103,7 +161,13 @@ describe("VideoRow", () => {
   });
 
   it("scrolls sideways with its arrows", () => {
-    render(<VideoRow id="recent" title="Nytt" videos={[NOBEL]} />);
+    render(
+      <VideoRow
+        id="recent"
+        title="Nytt"
+        videos={[NOBEL]}
+      />
+    );
     const list = screen.getByRole("list", { name: "Nytt" });
     const scrollBy = vi.fn();
 

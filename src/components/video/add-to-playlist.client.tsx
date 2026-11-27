@@ -28,7 +28,13 @@ const MENU_PLAYLISTS = 5;
  * A menu that adds a whole video, or with a start the chapter that starts there (a clip), to one of the user's playlists
  * or to a new one. The playlists come most recently changed first; beyond the first few they are chosen in a dialog.
  */
-export function AddToPlaylistMenu({ videoId, startSeconds = null, playlists, label, compact = false }: {
+export function AddToPlaylistMenu({
+  videoId,
+  startSeconds = null,
+  playlists,
+  label,
+  compact = false,
+}: {
   videoId: string;
   startSeconds?: number | null;
   playlists: OwnPlaylist[];
@@ -42,21 +48,22 @@ export function AddToPlaylistMenu({ videoId, startSeconds = null, playlists, lab
   const [pending, startTransition] = useTransition();
   const clip = startSeconds !== null;
 
-  const add = (playlistId: string) => startTransition(async () => {
-    const result = await addToPlaylistAction(playlistId, videoId, startSeconds);
+  const add = (playlistId: string) =>
+    startTransition(async () => {
+      const result = await addToPlaylistAction(playlistId, videoId, startSeconds);
 
-    if (result.ok) {
-      track("playlist-add", { clip, created: false });
-      toast.success(clip ? t("clipAdded") : t("videoAdded"));
-    } else {
-      toast.error(result.message);
-    }
-  });
+      if (result.ok) {
+        track("playlist-add", { clip, created: false });
+        toast.success(clip ? t("clipAdded") : t("videoAdded"));
+      } else {
+        toast.error(result.message);
+      }
+    });
 
   const chooseAndAdd = async () => {
     const playlistId = await choose({
       title: clip ? t("addClipTo") : t("addVideoTo"),
-      items: playlists.map(playlist => ({ id: playlist.id, label: playlist.name })),
+      items: playlists.map((playlist) => ({ id: playlist.id, label: playlist.name })),
       createLabel: t("newPlaylist"),
     });
 
@@ -87,28 +94,53 @@ export function AddToPlaylistMenu({ videoId, startSeconds = null, playlists, lab
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger disabled={pending} render={compact
-        ? <Button variant="ghost" size="icon" className="size-7 shrink-0" aria-label={t("addClip", { title: label })} />
-        : <Button variant="outline" />}>
-        {compact ? <Plus /> : <><ListPlus />{t("addToPlaylist")}</>}
+      <DropdownMenuTrigger
+        disabled={pending}
+        render={
+          compact ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 shrink-0"
+              aria-label={t("addClip", { title: label })}
+            />
+          ) : (
+            <Button variant="outline" />
+          )
+        }
+      >
+        {compact ? (
+          <Plus />
+        ) : (
+          <>
+            <ListPlus />
+            {t("addToPlaylist")}
+          </>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>
           <DropdownMenuLabel>{clip ? t("addClipTo") : t("addVideoTo")}</DropdownMenuLabel>
-          {playlists.slice(0, MENU_PLAYLISTS).map(playlist => (
-            <DropdownMenuItem key={playlist.id} onClick={() => add(playlist.id)}>
-              <ListPlus />{playlist.name}
+          {playlists.slice(0, MENU_PLAYLISTS).map((playlist) => (
+            <DropdownMenuItem
+              key={playlist.id}
+              onClick={() => add(playlist.id)}
+            >
+              <ListPlus />
+              {playlist.name}
             </DropdownMenuItem>
           ))}
           {playlists.length > MENU_PLAYLISTS && (
             <DropdownMenuItem onClick={() => void chooseAndAdd()}>
-              <ListPlus />{t("morePlaylists")}
+              <ListPlus />
+              {t("morePlaylists")}
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
         {playlists.length > 0 && <DropdownMenuSeparator />}
         <DropdownMenuItem onClick={() => void create()}>
-          <Plus />{t("newPlaylist")}
+          <Plus />
+          {t("newPlaylist")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

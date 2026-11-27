@@ -12,7 +12,13 @@ import { useServerState } from "@/hooks/use-server-state.client";
 /**
  * The user's rating of a video, changed at once and taken back when it cannot be saved, and everyone's average.
  */
-export function VideoRating({ videoId, rating: initialRating, averageRating, ratingCount, likeCount = 0 }: {
+export function VideoRating({
+  videoId,
+  rating: initialRating,
+  averageRating,
+  ratingCount,
+  likeCount = 0,
+}: {
   videoId: string;
   rating: number;
   averageRating?: number | null;
@@ -39,11 +45,22 @@ export function VideoRating({ videoId, rating: initialRating, averageRating, rat
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <RatingInput value={rating} onChange={rate} label={t("rate")} />
-      {averageRating && ratingCount > 0
-        ? <AverageRating average={averageRating} count={ratingCount} stars className="text-sm" />
-        : <span className="text-sm text-muted-foreground">{t("noRatings")}</span>}
-      {likeCount > 0 && <span className="text-sm text-muted-foreground">{t("likes", { count: likeCount })}</span>}
+      <RatingInput
+        value={rating}
+        onChange={rate}
+        label={t("rate")}
+      />
+      {averageRating && ratingCount > 0 ? (
+        <AverageRating
+          average={averageRating}
+          count={ratingCount}
+          stars
+          className="text-sm"
+        />
+      ) : (
+        <span className="text-muted-foreground text-sm">{t("noRatings")}</span>
+      )}
+      {likeCount > 0 && <span className="text-muted-foreground text-sm">{t("likes", { count: likeCount })}</span>}
     </div>
   );
 }

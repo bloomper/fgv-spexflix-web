@@ -14,7 +14,9 @@ test.describe("Video kinds", () => {
     await expect(page.getByText("/ Jubilee")).toBeVisible();
 
     await page.getByRole("button", { name: "Flytta upp Nummer" }).click();
-    await expect.poll(async () => (await mock.state()).kinds.find(kind => kind.nameSv === "Nummer")?.position).toBe(1);
+    await expect
+      .poll(async () => (await mock.state()).kinds.find((kind) => kind.nameSv === "Nummer")?.position)
+      .toBe(1);
 
     await page.goto("/manage/videos/new");
     await expect(page.getByLabel("Sort")).toHaveValue(uuidOf(902));
